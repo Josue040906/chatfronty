@@ -1,82 +1,125 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileCheck, Table } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { Upload, Plus, Trash2, Edit, Search, UserCheck } from 'lucide-react';
 
-export default function ExcelImporter() {
-  const [data, setData] = useState([]);
-  const [fileName, setFileName] = useState('');
+export default function ExcelImporter({ darkMode }) {
+  const [employees, setEmployees] = useState([
+    { id: 1, name: 'Jean Dupont', role: 'Développeur Fullstack', department: 'IT', status: 'Actif' },
+    { id: 2, name: 'Marie Curie', role: 'Data Scientist', department: 'R&D', status: 'Actif' },
+    { id: 3, name: 'Paul Martin', role: 'RH Manager', department: 'Ressources Humaines', status: 'En congé' },
+  ]);
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const [searchTerm, setSearchTerm] = useState('');
+  const styles = getStyles(darkMode);
 
-    setFileName(file.name);
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-      const bstr = event.target.result;
-      const workbook = XLSX.read(bstr, { type: 'binary' });
-      const workSheetName = workbook.SheetNames[0];
-      const workSheet = workbook.Sheets[workSheetName];
-      const parsedData = XLSX.utils.sheet_to_json(workSheet, { header: 1 });
-      setData(parsedData);
-    };
-
-    reader.readAsBinaryString(file);
-  };
+  const filteredEmployees = employees.filter(emp =>
+    emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div style={styles.container}>
-      <h2>Module d'Importation Rapide Excel</h2>
-      <p style={{ color: '#64748b' }}>Glissez-déposez un fichier d'entreprise (.xlsx, .xls) pour prévisualiser les données RH.</p>
-
-      <div style={styles.dropZone}>
-        <UploadCloud size={48} color="#6366f1" />
-        <p>Sélectionnez ou glissez un fichier Excel ici</p>
-        <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} style={styles.fileInput} />
+      {/* Header Module */}
+      <div style={styles.header}>
+        <div>
+          <h2 style={styles.title}>Gestion du Personnel & Données RH</h2>
+          <p style={styles.subtitle}>Gérez les données collaborateurs alimentant l'Assistant IA</p>
+        </div>
+        <div style={styles.actions}>
+          <label style={styles.uploadBtn}>
+            <Upload size={16} />
+            <span>Importer Excel</span>
+            <input type="file" accept=".xlsx, .xls" style={{ display: 'none' }} />
+          </label>
+          <button style={styles.addBtn}>
+            <Plus size={16} />
+            <span>Ajouter Collaborateur</span>
+          </button>
+        </div>
       </div>
 
-      {fileName && (
-        <div style={styles.fileInfo}>
-          <FileCheck color="#22c55e" size={20} />
-          <span>Fichier chargé : <strong>{fileName}</strong></span>
+      {/* Barre de Recherche & Filtres */}
+      <div style={styles.searchBarContainer}>
+        <div style={styles.searchWrapper}>
+          <Search size={18} color="#94a3b8" />
+          <input
+            type="text"
+            placeholder="Rechercher un employé, rôle ou département..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchInput}
+          />
         </div>
-      )}
+      </div>
 
-      {data.length > 0 && (
-        <div style={styles.previewContainer}>
-          <div style={styles.tableHeader}>
-            <Table size={18} />
-            <span>Aperçu des 5 premières lignes</span>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={styles.table}>
-              <tbody>
-                {data.slice(0, 6).map((row, rowIndex) => (
-                  <tr key={rowIndex} style={rowIndex === 0 ? styles.headerRow : styles.row}>
-                    {row.map((cell, colIndex) => (
-                      <td key={colIndex} style={styles.cell}>{cell}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* Tableau CRUD */}
+      <div style={styles.tableCard}>
+        <table style={styles.table}>
+          <thead>
+            <tr style={styles.thRow}>
+              <th style={styles.th}>Employé</th>
+              <th style={styles.th}>Poste</th>
+              <th style={styles.th}>Département</th>
+              <th style={styles.th}>Statut</th>
+              <th style={styles.thRight}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredEmployees.map((emp) => (
+              <tr key={emp.id} style={styles.tr}>
+                <td style={styles.td}>
+                  <div style={styles.empInfo}>
+                    <div style={styles.avatar}>{emp.name.split(' ').map(n => n[0]).join('')}</div>
+                    <span style={styles.empName}>{emp.name}</span>
+                  </div>
+                </td>
+                <td style={styles.td}>{emp.role}</td>
+                <td style={styles.td}>{emp.department}</td>
+                <td style={styles.td}>
+                  <span style={emp.status === 'Actif' ? styles.badgeActive : styles.badgeLeave}>
+                    {emp.status}
+                  </span>
+                </td>
+                <td style={styles.tdRight}>
+                  <button style={styles.iconBtn} title="Modifier">
+                    <Edit size={16} color="#5C7CFA" />
+                  </button>
+                  <button style={styles.iconBtn} title="Supprimer">
+                    <Trash2 size={16} color="#e85d9a" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-const styles = {
-  container: { flex: 1, padding: '30px', backgroundColor: '#f8fafc', overflowY: 'auto' },
-  dropZone: { border: '2px dashed #cbd5e1', borderRadius: '12px', padding: '40px', textAlign: 'center', backgroundColor: '#fff', position: 'relative', cursor: 'pointer', marginTop: '20px' },
-  fileInput: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' },
-  fileInfo: { display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px', padding: '12px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', color: '#166534' },
-  previewContainer: { marginTop: '24px', backgroundColor: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' },
-  tableHeader: { display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '12px' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  headerRow: { backgroundColor: '#f1f5f9', fontWeight: 'bold' },
-  row: { borderBottom: '1px solid #e2e8f0' },
-  cell: { padding: '8px 12px', fontSize: '13px', textAlign: 'left' }
-};
+const getStyles = (darkMode) => ({
+  container: { flex: 1, height: '100vh', backgroundColor: darkMode ? '#18122B' : '#ffffff', padding: '32px', boxSizing: 'border-box', overflowY: 'auto', color: darkMode ? '#ffffff' : '#0f172a', transition: 'all 0.3s' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' },
+  title: { margin: 0, fontSize: '22px', fontWeight: 'bold' },
+  subtitle: { margin: '4px 0 0 0', fontSize: '13px', color: '#94a3b8' },
+  actions: { display: 'flex', gap: '12px' },
+  uploadBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', backgroundColor: darkMode ? '#211935' : '#f1f5f9', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', borderRadius: '20px', cursor: 'pointer', fontSize: '13px', color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '500' },
+  addBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'linear-gradient(135deg, #e85d9a, #5c7cfa)', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '13px', color: '#ffffff', fontWeight: '600' },
+  searchBarContainer: { marginBottom: '20px' },
+  searchWrapper: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: darkMode ? '#211935' : '#f8fafc', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', padding: '10px 16px', borderRadius: '16px' },
+  searchInput: { flex: 1, backgroundColor: 'transparent', border: 'none', outline: 'none', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '14px' },
+  tableCard: { backgroundColor: darkMode ? '#211935' : '#ffffff', border: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden' },
+  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' },
+  thRow: { borderBottom: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0', backgroundColor: darkMode ? '#1f1832' : '#f8fafc' },
+  th: { padding: '14px 20px', color: '#94a3b8', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase' },
+  thRight: { padding: '14px 20px', color: '#94a3b8', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' },
+  tr: { borderBottom: darkMode ? '1px solid #2d234a' : '1px solid #f1f5f9' },
+  td: { padding: '14px 20px', color: darkMode ? '#e2e8f0' : '#334155' },
+  tdRight: { padding: '14px 20px', textAlign: 'right' },
+  empInfo: { display: 'flex', alignItems: 'center', gap: '12px' },
+  avatar: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '12px' },
+  empName: { fontWeight: '500' },
+  badgeActive: { backgroundColor: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500' },
+  badgeLeave: { backgroundColor: 'rgba(234, 179, 8, 0.15)', color: '#facc15', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500' },
+  iconBtn: { backgroundColor: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px' }
+});
