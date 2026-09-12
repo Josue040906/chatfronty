@@ -1,10 +1,11 @@
 import React from 'react';
-import { Sparkles, Plus, MessageSquare, Database, Moon, Sun } from 'lucide-react';
+import { Sparkles, Plus, MessageSquare, Database } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat, onNewChat }) {
+export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat, onNewChat, darkMode }) {
+  const styles = getStyles(darkMode);
+
   return (
     <aside style={styles.sidebar}>
-      {/* Brand Logo */}
       <div style={styles.header}>
         <div style={styles.logoBadge}>
           <Sparkles size={20} color="#ffffff" />
@@ -12,13 +13,11 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
         <h2 style={styles.title}>Nova</h2>
       </div>
 
-      {/* Action Button */}
       <button style={styles.newBtn} onClick={onNewChat}>
         <Plus size={18} />
         <span>Nouvelle discussion</span>
       </button>
 
-      {/* Navigation Modules */}
       <div style={styles.menu}>
         <p style={styles.sectionTitle}>Modules</p>
         <button 
@@ -38,7 +37,6 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
         </button>
       </div>
 
-      {/* Recent History */}
       <div style={styles.historyContainer}>
         <p style={styles.sectionTitle}>Aujourd'hui</p>
         {history.slice(0, 3).map((item) => (
@@ -57,7 +55,6 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
         ))}
       </div>
 
-      {/* User Profile Footer */}
       <div style={styles.userFooter}>
         <div style={styles.avatar}>SR</div>
         <div style={styles.userInfo}>
@@ -69,23 +66,23 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
   );
 }
 
-const styles = {
-  sidebar: { width: '280px', backgroundColor: '#211935', color: '#e2e8f0', padding: '20px', display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box', borderRight: '1px solid #2d234a' },
+const getStyles = (darkMode) => ({
+  sidebar: { width: '280px', backgroundColor: darkMode ? '#211935' : '#f1f5f9', color: darkMode ? '#e2e8f0' : '#1e293b', padding: '20px', display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box', borderRight: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', transition: 'all 0.3s' },
   header: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' },
   logoBadge: { width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: '22px', fontWeight: 'bold', margin: 0, color: '#ffffff', letterSpacing: '0.5px' },
-  newBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', background: 'transparent', border: '1px solid #4c3870', color: '#ffffff', borderRadius: '24px', cursor: 'pointer', fontWeight: '500', fontSize: '14px', marginBottom: '24px', transition: 'all 0.2s' },
+  title: { fontSize: '22px', fontWeight: 'bold', margin: 0, color: darkMode ? '#ffffff' : '#0f172a', letterSpacing: '0.5px' },
+  newBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', background: 'transparent', border: darkMode ? '1px solid #4c3870' : '1px solid #cbd5e1', color: darkMode ? '#ffffff' : '#0f172a', borderRadius: '24px', cursor: 'pointer', fontWeight: '500', fontSize: '14px', marginBottom: '24px', transition: 'all 0.2s' },
   menu: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' },
-  sectionTitle: { fontSize: '11px', color: '#94a3b8', fontWeight: '600', marginBottom: '10px', paddingLeft: '8px' },
-  menuItem: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', backgroundColor: 'transparent', color: '#cbd5e1', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', fontSize: '14px' },
-  activeItem: { backgroundColor: '#322550', color: '#ffffff', fontWeight: '600' },
+  sectionTitle: { fontSize: '11px', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600', marginBottom: '10px', paddingLeft: '8px' },
+  menuItem: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', backgroundColor: 'transparent', color: darkMode ? '#cbd5e1' : '#475569', border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', width: '100%', fontSize: '14px' },
+  activeItem: { backgroundColor: darkMode ? '#322550' : '#e2e8f0', color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '600' },
   historyContainer: { flex: 1, overflowY: 'auto' },
-  historyItem: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '8px', cursor: 'pointer', marginBottom: '2px', color: '#cbd5e1' },
+  historyItem: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '8px', cursor: 'pointer', marginBottom: '2px', color: darkMode ? '#cbd5e1' : '#334155' },
   dot: { color: '#ec4899', fontSize: '18px' },
   historyText: { margin: 0, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  userFooter: { display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '16px', borderTop: '1px solid #2d234a' },
+  userFooter: { display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '16px', borderTop: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1' },
   avatar: { width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, #e85d9a, #5c7cfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#fff', fontSize: '14px' },
   userInfo: { display: 'flex', flexDirection: 'column' },
-  userName: { margin: 0, fontSize: '14px', fontWeight: '600', color: '#ffffff' },
-  userPlan: { margin: 0, fontSize: '12px', color: '#94a3b8' }
-};
+  userName: { margin: 0, fontSize: '14px', fontWeight: '600', color: darkMode ? '#ffffff' : '#0f172a' },
+  userPlan: { margin: 0, fontSize: '12px', color: darkMode ? '#94a3b8' : '#64748b' }
+});
