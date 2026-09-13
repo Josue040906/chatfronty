@@ -122,7 +122,7 @@ const INITIAL_TABLES = {
 
 export default function CrudModule({ darkMode, setDarkMode, onBackToChat }) {
   const [tables, setTables] = useState(INITIAL_TABLES);
-  const [activeKey, setActiveKey] = useState('employees');
+  const [activeKey, setActiveKey] = useState('employe');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editDraft, setEditDraft] = useState({});
