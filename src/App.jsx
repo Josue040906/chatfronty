@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
-import ExcelImporter from './components/ExcelImporter';
+import CrudModule from './components/CrudModule';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('chat');
+  // 'chat' : sidebar + fenêtre de discussion. 'crud' : module de données plein écran (sans sidebar).
+  const [mode, setMode] = useState('chat');
   const [darkMode, setDarkMode] = useState(true);
   const [history, setHistory] = useState([
-    { id: 1, title: 'Idées de palette rose & bleu' },
-    { id: 2, title: 'Plan de voyage à Antananarivo' },
-    { id: 3, title: 'Corriger mon script Python' },
-    { id: 4, title: 'Recette de gâteau au yaourt' },
-    { id: 5, title: 'Résumé de réunion' }
+    { id: 1, title: 'Recherche de candidats — Contrôleur financier' },
+    { id: 2, title: "Compétences de l'équipe Informatique" },
+    { id: 3, title: 'Postes vacants à pourvoir' },
+    { id: 4, title: 'Analyse du profil de Jean RAKOTO' },
+    { id: 5, title: 'Comparatif de deux candidats' }
   ]);
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        history={history}
-        darkMode={darkMode}
-        onSelectChat={(item) => setActiveTab('chat')}
-        onNewChat={() => setActiveTab('chat')}
-      />
-      {activeTab === 'chat' ? (
+      {mode === 'chat' && (
+        <Sidebar
+          activeTab={mode}
+          setActiveTab={setMode}
+          history={history}
+          darkMode={darkMode}
+          onSelectChat={() => setMode('chat')}
+          onNewChat={() => setMode('chat')}
+        />
+      )}
+
+      {mode === 'chat' ? (
         <ChatWindow darkMode={darkMode} setDarkMode={setDarkMode} />
       ) : (
-        <ExcelImporter darkMode={darkMode} />
+        <CrudModule darkMode={darkMode} setDarkMode={setDarkMode} onBackToChat={() => setMode('chat')} />
       )}
     </div>
   );

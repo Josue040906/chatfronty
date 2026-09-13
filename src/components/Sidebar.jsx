@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Plus, MessageSquare, Database } from 'lucide-react';
+import { COLORS, accentGradient } from '../theme';
 
 export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat, onNewChat, darkMode }) {
   const styles = getStyles(darkMode);
@@ -10,7 +11,7 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
         <div style={styles.logoBadge}>
           <Sparkles size={20} color="#ffffff" />
         </div>
-        <h2 style={styles.title}>Nova</h2>
+        <h2 style={styles.title}>Assistant <span style={styles.iaHighlight}>RH</span></h2>
       </div>
 
       <button style={styles.newBtn} onClick={onNewChat}>
@@ -25,7 +26,7 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
           onClick={() => setActiveTab('chat')}
         >
           <MessageSquare size={16} />
-          <span>Assistant IA</span>
+          <span>Assistant RH</span>
         </button>
         
         <button 
@@ -33,7 +34,7 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
           onClick={() => setActiveTab('crud')}
         >
           <Database size={16} />
-          <span>Gestion RH & Data</span>
+          <span>Données RH</span>
         </button>
       </div>
 
@@ -69,8 +70,9 @@ export default function Sidebar({ activeTab, setActiveTab, history, onSelectChat
 const getStyles = (darkMode) => ({
   sidebar: { width: '280px', backgroundColor: darkMode ? '#211935' : '#f1f5f9', color: darkMode ? '#e2e8f0' : '#1e293b', padding: '20px', display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box', borderRight: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', transition: 'all 0.3s' },
   header: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' },
-  logoBadge: { width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoBadge: { width: '36px', height: '36px', borderRadius: '50%', background: accentGradient, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: '22px', fontWeight: 'bold', margin: 0, color: darkMode ? '#ffffff' : '#0f172a', letterSpacing: '0.5px' },
+  iaHighlight: { fontWeight: '800', background: accentGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' },
   newBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '12px', background: 'transparent', border: darkMode ? '1px solid #4c3870' : '1px solid #cbd5e1', color: darkMode ? '#ffffff' : '#0f172a', borderRadius: '24px', cursor: 'pointer', fontWeight: '500', fontSize: '14px', marginBottom: '24px', transition: 'all 0.2s' },
   menu: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px' },
   sectionTitle: { fontSize: '11px', color: darkMode ? '#94a3b8' : '#64748b', fontWeight: '600', marginBottom: '10px', paddingLeft: '8px' },
@@ -78,10 +80,10 @@ const getStyles = (darkMode) => ({
   activeItem: { backgroundColor: darkMode ? '#322550' : '#e2e8f0', color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '600' },
   historyContainer: { flex: 1, overflowY: 'auto' },
   historyItem: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '8px', cursor: 'pointer', marginBottom: '2px', color: darkMode ? '#cbd5e1' : '#334155' },
-  dot: { color: '#ec4899', fontSize: '18px' },
+  dot: { color: COLORS.violet, fontSize: '18px' },
   historyText: { margin: 0, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   userFooter: { display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '16px', borderTop: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1' },
-  avatar: { width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, #e85d9a, #5c7cfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#fff', fontSize: '14px' },
+  avatar: { width: '38px', height: '38px', borderRadius: '50%', background: accentGradient, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#fff', fontSize: '14px' },
   userInfo: { display: 'flex', flexDirection: 'column' },
   userName: { margin: 0, fontSize: '14px', fontWeight: '600', color: darkMode ? '#ffffff' : '#0f172a' },
   userPlan: { margin: 0, fontSize: '12px', color: darkMode ? '#94a3b8' : '#64748b' }
