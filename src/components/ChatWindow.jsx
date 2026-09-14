@@ -89,8 +89,8 @@ export default function ChatWindow({ darkMode, setDarkMode }) {
     <div style={styles.container}>
       <div style={styles.topBar}>
         <div>
-          <h3 style={styles.chatTitle}>Recherche de candidats — Contrôleur financier</h3>
-          <p style={styles.chatSub}>Assistant <span style={styles.iaHighlightSmall}>RH</span> • Assistant intelligent d'aide à la décision RH</p>
+          <h1 style={styles.pageTitle}>Assistant RH</h1>
+          <p style={styles.chatSub}>band<span style={styles.iaHighlightSmall}>I'A</span>kama • Assistant intelligent d'aide à la décision RH</p>
         </div>
         <div style={styles.themeToggle}>
           <Sun 
@@ -149,7 +149,7 @@ export default function ChatWindow({ darkMode, setDarkMode }) {
           <Paperclip size={18} color="#94a3b8" style={{ cursor: 'pointer' }} />
           <input
             type="text"
-            placeholder="Écris un message à l'Assistant RH..."
+            placeholder="Écris un message à bandI'Akama..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -160,7 +160,7 @@ export default function ChatWindow({ darkMode, setDarkMode }) {
             <Send size={16} color="#ffffff" />
           </button>
         </div>
-        <p style={styles.disclaimer}>L'Assistant RH peut se tromper. Vérifiez les informations importantes avant toute décision.</p>
+        <p style={styles.disclaimer}>band<span style={styles.iaHighlightSmall}>I'A</span>kama peut se tromper. Vérifiez les informations importantes avant toute décision.</p>
         <p style={styles.disclaimerStrong}>Les résultats présentés sont des aides à l'analyse et ne constituent pas une décision RH automatique.</p>
       </div>
     </div>
@@ -171,6 +171,7 @@ const getStyles = (darkMode) => ({
   container: { flex: 1, height: '100vh', backgroundColor: darkMode ? COLORS.darkBg : '#ffffff', display: 'flex', flexDirection: 'column', color: darkMode ? '#ffffff' : '#0f172a', transition: 'all 0.3s' },
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 32px', borderBottom: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0' },
   chatTitle: { margin: 0, fontSize: '16px', fontWeight: '600', color: darkMode ? '#ffffff' : '#0f172a' },
+  pageTitle: { margin: 0, fontSize: '19px', fontWeight: '800', color: darkMode ? '#ffffff' : '#0f172a' },
   chatSub: { margin: 0, fontSize: '12px', color: '#94a3b8' },
   iaHighlightSmall: { fontWeight: '700', background: accentGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' },
   themeToggle: { display: 'flex', gap: '12px', backgroundColor: darkMode ? COLORS.darkSurface : '#f1f5f9', padding: '6px 12px', borderRadius: '20px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', alignItems: 'center' },

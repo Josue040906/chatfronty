@@ -1,0 +1,11 @@
+[33mf201e3b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: rebrand bandI'Akama, ajout navigation explicite, modales et resolution des FK
+[33m90ebf54[m refactor: UX amelioree pour FK, vue details, formulaires dedies et modales
+[33m2904f3f[m fix: clé de table active par défaut (employees → employe)
+[33m54c32df[m fix: corriger la casse des fichiers CrudModule et EmployeeRankingCard
+[33me8b396f[m Rebranding Assistant RH, module CRUD multi-tables, réponses structurées et palette institutionnelle
+[33mf7dded4[m feat: ajout du composant DataTable
+[33m83cc300[m feat: ajout du squelette CrudLayout
+[33m4a54706[m style: refonte du module CRUD RH avec support du mode sombre Nova
+[33ma6ab93b[m feat: ajout de la bascule entre le mode sombre et le mode clair
+[33mb75d6c2[m style: refonte complète de l'interface Chat selon la maquette Nova
+[33mbd16c84[m feat: initialisation du front-end chatfronty

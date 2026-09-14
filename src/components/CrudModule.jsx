@@ -1,176 +1,70 @@
 import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Plus, Trash2, Edit, Search, Sun, Moon, ArrowLeft, Columns, Check, X } from 'lucide-react';
+import { Upload, Plus, Trash2, Edit, Search, Sun, Moon, ArrowLeft, Columns, Check, X, Eye } from 'lucide-react';
 import { COLORS, accentGradient } from '../theme';
-
-// Données de départ : chaque clé correspond exactement à une table de la base
-// PostgreSQL "assistant_rh" (voir documentation du projet), avec ses colonnes réelles.
-// Les tables de jonction (employe_competence, poste_competence, domaine_competence_relation)
-// n'ont pas de colonne "id" dans le schéma réel : un identifiant technique interne
-// est ajouté uniquement pour la gestion des lignes côté interface (édition/suppression),
-// il n'est pas affiché.
-const INITIAL_TABLES = {
-  service: {
-    label: 'Services',
-    columns: ['id', 'nom', 'description'],
-    rows: [
-      { id: 1, nom: 'Direction des Ressources Humaines', description: 'Gestion du personnel et des compétences' },
-      { id: 2, nom: 'Direction Informatique', description: "Systèmes d'information et développement" },
-      { id: 3, nom: 'Direction Financière', description: 'Gestion budgétaire et comptable' },
-    ],
-  },
-  poste: {
-    label: 'Postes',
-    columns: ['id', 'intitule', 'description', 'service_id'],
-    rows: [
-      { id: 1, intitule: 'Développeur logiciel', description: "Conception et développement d'applications", service_id: 2 },
-      { id: 2, intitule: 'Administrateur systèmes', description: 'Administration des infrastructures IT', service_id: 2 },
-      { id: 3, intitule: 'Analyste financier', description: 'Analyse des données financières', service_id: 3 },
-      { id: 4, intitule: 'Gestionnaire RH', description: 'Gestion administrative du personnel', service_id: 1 },
-      { id: 5, intitule: 'Chef de projet informatique', description: 'Pilotage de projets IT', service_id: 2 },
-      { id: 6, intitule: 'Gestionnaire budgetaire', description: "Suivi de l'exécution budgétaire", service_id: 3 },
-      { id: 7, intitule: 'Controleur financier', description: 'Contrôle des opérations financières', service_id: 3 },
-      { id: 8, intitule: 'Comptable public', description: 'Tenue de la comptabilité publique', service_id: 3 },
-      { id: 9, intitule: 'Auditeur financier', description: 'Audit des comptes et des procédures', service_id: 3 },
-    ],
-  },
-  employe: {
-    label: 'Employés',
-    columns: ['id', 'matricule', 'nom', 'prenom', 'date_naissance', 'date_embauche', 'poste_id', 'service_id'],
-    rows: [
-      { id: 1, matricule: 'EMP001', nom: 'RAKOTO', prenom: 'Jean', date_naissance: '1990-04-12', date_embauche: '2018-06-01', poste_id: 1, service_id: 2 },
-      { id: 2, matricule: 'EMP002', nom: 'RABE', prenom: 'Paul', date_naissance: '1985-11-23', date_embauche: '2015-02-15', poste_id: 5, service_id: 2 },
-      { id: 3, matricule: 'EMP003', nom: 'RASOLO', prenom: 'Marie', date_naissance: '1992-07-08', date_embauche: '2019-09-01', poste_id: 1, service_id: 2 },
-      { id: 4, matricule: 'EMP004', nom: 'ANDRIANA', prenom: 'Luc', date_naissance: '1988-01-30', date_embauche: '2016-03-10', poste_id: 2, service_id: 2 },
-      { id: 5, matricule: 'EMP005', nom: 'RAZAFI', prenom: 'Sarah', date_naissance: '1991-05-19', date_embauche: '2020-01-20', poste_id: 3, service_id: 3 },
-      { id: 6, matricule: 'EMP006', nom: 'RANDRIA', prenom: 'Hery', date_naissance: '1987-09-02', date_embauche: '2014-11-05', poste_id: 4, service_id: 1 },
-    ],
-  },
-  competence: {
-    label: 'Compétences',
-    columns: ['id', 'nom', 'description'],
-    rows: [
-      { id: 1, nom: 'Java', description: 'Langage de programmation orienté objet' },
-      { id: 2, nom: 'SQL', description: 'Requêtage et gestion de bases de données' },
-      { id: 3, nom: 'Gestion de projet', description: 'Planification et pilotage de projets' },
-      { id: 4, nom: 'Administration systèmes', description: "Gestion des infrastructures et serveurs" },
-      { id: 5, nom: 'Développement web', description: "Conception d'applications web" },
-      { id: 6, nom: 'Communication', description: "Capacité à transmettre l'information" },
-      { id: 7, nom: 'Analyse financière', description: 'Analyse des données et indicateurs financiers' },
-      { id: 8, nom: 'Gestion des ressources humaines', description: 'Gestion administrative du personnel' },
-      { id: 9, nom: 'Gestion budgetaire', description: "Élaboration et suivi du budget" },
-      { id: 10, nom: 'Execution budgetaire', description: "Mise en œuvre des dépenses budgétées" },
-      { id: 11, nom: 'Comptabilite publique', description: 'Tenue des comptes publics' },
-      { id: 12, nom: 'Controle financier', description: 'Vérification de la régularité des opérations' },
-      { id: 13, nom: 'Preparation budgetaire', description: "Élaboration des projets de budget" },
-      { id: 14, nom: 'Gestion des depenses publiques', description: 'Suivi des dépenses de l\'État' },
-      { id: 15, nom: 'Gestion des recettes publiques', description: "Suivi des recettes de l'État" },
-      { id: 16, nom: 'Audit financier', description: 'Examen des comptes et procédures' },
-      { id: 17, nom: 'Marches publics', description: 'Gestion des procédures de marchés publics' },
-    ],
-  },
-  employe_competence: {
-    label: 'Compétences employés',
-    columns: ['employe_id', 'competence_id', 'niveau'],
-    rows: [
-      { id: 1, employe_id: 1, competence_id: 1, niveau: 4 },
-      { id: 2, employe_id: 1, competence_id: 2, niveau: 3 },
-      { id: 3, employe_id: 3, competence_id: 1, niveau: 3 },
-      { id: 4, employe_id: 3, competence_id: 5, niveau: 4 },
-      { id: 5, employe_id: 4, competence_id: 4, niveau: 5 },
-      { id: 6, employe_id: 5, competence_id: 7, niveau: 4 },
-      { id: 7, employe_id: 5, competence_id: 9, niveau: 3 },
-      { id: 8, employe_id: 5, competence_id: 12, niveau: 3 },
-      { id: 9, employe_id: 6, competence_id: 8, niveau: 4 },
-      { id: 10, employe_id: 2, competence_id: 3, niveau: 4 },
-    ],
-  },
-  domaine_competence: {
-    label: 'Domaines',
-    columns: ['id', 'nom', 'description'],
-    rows: [
-      { id: 1, nom: 'Développement', description: 'Compétences liées au développement logiciel' },
-      { id: 2, nom: 'Finances publiques', description: 'Compétences liées à la gestion budgétaire et financière' },
-      { id: 3, nom: 'Ressources humaines', description: 'Compétences RH et gestion du personnel' },
-    ],
-  },
-  domaine_competence_relation: {
-    label: 'Domaines ↔ Compétences',
-    columns: ['domaine_id', 'competence_id'],
-    rows: [
-      { id: 1, domaine_id: 1, competence_id: 1 },
-      { id: 2, domaine_id: 1, competence_id: 5 },
-      { id: 3, domaine_id: 2, competence_id: 9 },
-      { id: 4, domaine_id: 2, competence_id: 12 },
-      { id: 5, domaine_id: 3, competence_id: 8 },
-    ],
-  },
-  poste_competence: {
-    label: 'Compétences requises',
-    columns: ['poste_id', 'competence_id', 'niveau_requis'],
-    rows: [
-      { id: 1, poste_id: 6, competence_id: 9, niveau_requis: 4 },
-      { id: 2, poste_id: 6, competence_id: 10, niveau_requis: 3 },
-      { id: 3, poste_id: 6, competence_id: 14, niveau_requis: 3 },
-      { id: 4, poste_id: 7, competence_id: 12, niveau_requis: 4 },
-      { id: 5, poste_id: 7, competence_id: 16, niveau_requis: 3 },
-      { id: 6, poste_id: 1, competence_id: 1, niveau_requis: 4 },
-      { id: 7, poste_id: 1, competence_id: 5, niveau_requis: 3 },
-    ],
-  },
-};
+import { INITIAL_TABLES, SCHEMA, HIDDEN_TABLES, DETAIL_CONFIG } from '../crudSchema';
+import Modal from './crud/Modal';
+import RecordForm from './crud/RecordForm';
+import DetailPanel from './crud/DetailPanel';
 
 export default function CrudModule({ darkMode, setDarkMode, onBackToChat }) {
   const [tables, setTables] = useState(INITIAL_TABLES);
   const [activeKey, setActiveKey] = useState('employe');
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editDraft, setEditDraft] = useState({});
-  const [showAddRow, setShowAddRow] = useState(false);
-  const [newRow, setNewRow] = useState({});
+  const [view, setView] = useState('list'); // 'list' | 'add'
+  const [addDraft, setAddDraft] = useState({});
   const [showAddColumn, setShowAddColumn] = useState(false);
   const [newColumn, setNewColumn] = useState('');
+  const [editingRow, setEditingRow] = useState(null);
+  const [deletingRow, setDeletingRow] = useState(null);
+  const [detailRow, setDetailRow] = useState(null);
   const fileInputRef = useRef(null);
 
   const styles = getStyles(darkMode);
   const activeTable = tables[activeKey];
+  const visibleColumns = activeTable.columns.filter((c) => c !== 'id');
+  const hasDetail = Boolean(DETAIL_CONFIG[activeKey]);
 
   const switchTable = (key) => {
     setActiveKey(key);
     setSearchTerm('');
-    setEditingId(null);
-    setShowAddRow(false);
+    setView('list');
     setShowAddColumn(false);
   };
 
-  // ---- Recherche manuelle ----
+  // ---- Recherche manuelle (sur les libellés affichés, pas les IDs bruts) ----
   const filteredRows = activeTable.rows.filter((row) =>
-    activeTable.columns.some((col) => String(row[col] ?? '').toLowerCase().includes(searchTerm.toLowerCase()))
+    visibleColumns.some((col) => String(resolveLabel(tables, activeKey, col, row[col]) ?? '').toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // ---- Modification manuelle ----
-  const startEdit = (row) => { setEditingId(row.id); setEditDraft(row); };
-  const saveEdit = () => {
-    updateTable((t) => ({ ...t, rows: t.rows.map((r) => (r.id === editDraft.id ? editDraft : r)) }));
-    setEditingId(null);
+  const updateTableByKey = (key, updater) => {
+    setTables((prev) => ({ ...prev, [key]: updater(prev[key]) }));
   };
+  const updateTable = (updater) => updateTableByKey(activeKey, updater);
 
-  // ---- Suppression manuelle ----
-  const deleteRow = (id) => {
-    updateTable((t) => ({ ...t, rows: t.rows.filter((r) => r.id !== id) }));
-  };
-
-  // ---- Ajout de ligne manuel (formulaire) ----
-  const openAddRow = () => {
+  // ---- Ajout manuel (page dédiée) ----
+  const openAddPage = () => {
     const blank = {};
-    activeTable.columns.forEach((c) => (blank[c] = ''));
-    setNewRow(blank);
-    setShowAddRow(true);
+    visibleColumns.forEach((c) => (blank[c] = ''));
+    setAddDraft(blank);
+    setView('add');
   };
-  const submitAddRow = () => {
+  const submitAdd = () => {
     const nextId = activeTable.rows.reduce((max, r) => Math.max(max, r.id), 0) + 1;
-    updateTable((t) => ({ ...t, rows: [...t.rows, { id: nextId, ...newRow }] }));
-    setShowAddRow(false);
+    updateTable((t) => ({ ...t, rows: [...t.rows, { id: nextId, ...addDraft }] }));
+    setView('list');
+  };
+
+  // ---- Modification manuelle (fenêtre) ----
+  const saveEdit = () => {
+    updateTable((t) => ({ ...t, rows: t.rows.map((r) => (r.id === editingRow.id ? editingRow : r)) }));
+    setEditingRow(null);
+  };
+
+  // ---- Suppression manuelle (fenêtre de confirmation) ----
+  const confirmDelete = () => {
+    updateTable((t) => ({ ...t, rows: t.rows.filter((r) => r.id !== deletingRow.id) }));
+    setDeletingRow(null);
   };
 
   // ---- Ajout de colonne manuel (formulaire) ----
@@ -213,10 +107,6 @@ export default function CrudModule({ darkMode, setDarkMode, onBackToChat }) {
     e.target.value = '';
   };
 
-  const updateTable = (updater) => {
-    setTables((prev) => ({ ...prev, [activeKey]: updater(prev[activeKey]) }));
-  };
-
   return (
     <div style={styles.page}>
       <header style={styles.topbar}>
@@ -224,21 +114,24 @@ export default function CrudModule({ darkMode, setDarkMode, onBackToChat }) {
           <button style={styles.backBtn} onClick={onBackToChat} title="Retour à l'assistant">
             <ArrowLeft size={16} />
           </button>
-          <span style={styles.brand}>
-            Assistant <span style={styles.ia}>RH</span> <span style={styles.brandSub}>— Données</span>
-          </span>
+          <div>
+            <h1 style={styles.pageTitle}>Assistant RH</h1>
+            <p style={styles.pageSubtitle}>Données</p>
+          </div>
         </div>
 
         <nav style={styles.tableNav}>
-          {Object.entries(tables).map(([key, t]) => (
-            <button
-              key={key}
-              onClick={() => switchTable(key)}
-              style={{ ...styles.tableTab, ...(key === activeKey ? styles.tableTabActive : {}) }}
-            >
-              {t.label}
-            </button>
-          ))}
+          {Object.entries(tables)
+            .filter(([key]) => !HIDDEN_TABLES.includes(key))
+            .map(([key, t]) => (
+              <button
+                key={key}
+                onClick={() => switchTable(key)}
+                style={{ ...styles.tableTab, ...(key === activeKey ? styles.tableTabActive : {}) }}
+              >
+                {t.label}
+              </button>
+            ))}
         </nav>
 
         <button style={styles.themeToggle} onClick={() => setDarkMode(!darkMode)} title="Changer de thème">
@@ -246,131 +139,168 @@ export default function CrudModule({ darkMode, setDarkMode, onBackToChat }) {
         </button>
       </header>
 
-      <main style={styles.main}>
-        <div style={styles.toolbar}>
-          <div style={styles.searchWrapper}>
-            <Search size={16} color={darkMode ? '#94a3b8' : '#64748b'} />
-            <input
-              style={styles.searchInput}
-              placeholder={`Rechercher dans ${activeTable.label}...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      {view === 'add' ? (
+        <main style={styles.main}>
+          <button style={styles.backToListBtn} onClick={() => setView('list')}>
+            <ArrowLeft size={15} />
+            <span>Retour à la liste</span>
+          </button>
 
-          <div style={styles.toolbarActions}>
-            <label style={styles.ghostBtn}>
-              <Upload size={15} />
-              <span>Importer Excel</span>
+          <div style={styles.addPageCard}>
+            <p style={styles.addPageTitle}>Nouvelle ligne — {activeTable.label}</p>
+            <RecordForm
+              tableKey={activeKey}
+              columns={visibleColumns}
+              tables={tables}
+              value={addDraft}
+              onChange={(col, val) => setAddDraft({ ...addDraft, [col]: val })}
+              darkMode={darkMode}
+            />
+            <div style={styles.addPageActions}>
+              <button style={styles.primaryBtn} onClick={submitAdd}>Enregistrer</button>
+              <button style={styles.ghostBtn} onClick={() => setView('list')}>Annuler</button>
+            </div>
+          </div>
+        </main>
+      ) : (
+        <main style={styles.main}>
+          <div style={styles.toolbar}>
+            <div style={styles.searchWrapper}>
+              <Search size={16} color={darkMode ? '#94a3b8' : '#64748b'} />
               <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                style={{ display: 'none' }}
-                onChange={handleImport}
+                style={styles.searchInput}
+                placeholder={`Rechercher dans ${activeTable.label}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </label>
-            <button style={styles.ghostBtn} onClick={() => setShowAddColumn(true)}>
-              <Columns size={15} />
-              <span>Ajouter une colonne</span>
-            </button>
-            <button style={styles.primaryBtn} onClick={openAddRow}>
-              <Plus size={15} />
-              <span>Ajouter manuellement</span>
-            </button>
-          </div>
-        </div>
-
-        {showAddColumn && (
-          <div style={styles.inlineForm}>
-            <input
-              style={styles.formInput}
-              placeholder="Nom de la nouvelle colonne"
-              value={newColumn}
-              onChange={(e) => setNewColumn(e.target.value)}
-              autoFocus
-            />
-            <button style={styles.confirmBtn} onClick={submitAddColumn}><Check size={14} /></button>
-            <button style={styles.cancelBtn} onClick={() => { setShowAddColumn(false); setNewColumn(''); }}><X size={14} /></button>
-          </div>
-        )}
-
-        {showAddRow && (
-          <div style={styles.addRowCard}>
-            <p style={styles.addRowTitle}>Nouvelle ligne — {activeTable.label}</p>
-            <div style={styles.addRowGrid}>
-              {activeTable.columns.map((col) => (
-                <div key={col} style={styles.formField}>
-                  <label style={styles.formLabel}>{col}</label>
-                  <input
-                    style={styles.formInput}
-                    value={newRow[col] || ''}
-                    onChange={(e) => setNewRow({ ...newRow, [col]: e.target.value })}
-                  />
-                </div>
-              ))}
             </div>
-            <div style={styles.addRowActions}>
-              <button style={styles.primaryBtn} onClick={submitAddRow}>Enregistrer</button>
-              <button style={styles.ghostBtn} onClick={() => setShowAddRow(false)}>Annuler</button>
+
+            <div style={styles.toolbarActions}>
+              <label style={styles.ghostBtn}>
+                <Upload size={15} />
+                <span>Importer Excel</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  style={{ display: 'none' }}
+                  onChange={handleImport}
+                />
+              </label>
+              <button style={styles.ghostBtn} onClick={() => setShowAddColumn(true)}>
+                <Columns size={15} />
+                <span>Ajouter une colonne</span>
+              </button>
+              <button style={styles.primaryBtn} onClick={openAddPage}>
+                <Plus size={15} />
+                <span>Ajouter manuellement</span>
+              </button>
             </div>
           </div>
-        )}
 
-        <div style={styles.tableCard}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                {activeTable.columns.map((col) => (
-                  <th key={col} style={styles.th}>{col}</th>
-                ))}
-                <th style={styles.thRight}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.length > 0 ? (
-                filteredRows.map((row) => (
-                  <tr key={row.id} style={styles.tr}>
-                    {activeTable.columns.map((col) => (
-                      <td key={col} style={styles.td}>
-                        {editingId === row.id ? (
-                          <input
-                            style={styles.editInput}
-                            value={editDraft[col] ?? ''}
-                            onChange={(e) => setEditDraft({ ...editDraft, [col]: e.target.value })}
-                          />
-                        ) : (
-                          row[col]
+          {showAddColumn && (
+            <div style={styles.inlineForm}>
+              <input
+                style={styles.formInput}
+                placeholder="Nom de la nouvelle colonne"
+                value={newColumn}
+                onChange={(e) => setNewColumn(e.target.value)}
+                autoFocus
+              />
+              <button style={styles.confirmBtn} onClick={submitAddColumn}><Check size={14} /></button>
+              <button style={styles.cancelBtn} onClick={() => { setShowAddColumn(false); setNewColumn(''); }}><X size={14} /></button>
+            </div>
+          )}
+
+          <div style={styles.tableCard}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  {visibleColumns.map((col) => (
+                    <th key={col} style={styles.th}>{col}</th>
+                  ))}
+                  <th style={styles.thRight}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.length > 0 ? (
+                  filteredRows.map((row) => (
+                    <tr key={row.id} style={styles.tr}>
+                      {visibleColumns.map((col) => (
+                        <td key={col} style={styles.td}>{resolveLabel(tables, activeKey, col, row[col])}</td>
+                      ))}
+                      <td style={styles.tdRight}>
+                        {hasDetail && (
+                          <button style={styles.iconBtn} onClick={() => setDetailRow(row)} title="Détails">
+                            <Eye size={15} color={COLORS.violet} />
+                          </button>
                         )}
-                      </td>
-                    ))}
-                    <td style={styles.tdRight}>
-                      {editingId === row.id ? (
-                        <button style={styles.saveBtn} onClick={saveEdit}>Enregistrer</button>
-                      ) : (
-                        <button style={styles.iconBtn} onClick={() => startEdit(row)} title="Modifier">
+                        <button style={styles.iconBtn} onClick={() => setEditingRow({ ...row })} title="Modifier">
                           <Edit size={15} color="#5C7CFA" />
                         </button>
-                      )}
-                      <button style={styles.iconBtn} onClick={() => deleteRow(row.id)} title="Supprimer">
-                        <Trash2 size={15} color="#e85d9a" />
-                      </button>
+                        <button style={styles.iconBtn} onClick={() => setDeletingRow(row)} title="Supprimer">
+                          <Trash2 size={15} color="#e85d9a" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={visibleColumns.length + 1} style={styles.emptyRow}>
+                      Aucune donnée trouvée.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={activeTable.columns.length + 1} style={styles.emptyRow}>
-                    Aucune donnée trouvée.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </main>
+      )}
+
+      {editingRow && (
+        <Modal darkMode={darkMode} title={`Modifier — ${activeTable.label}`} onClose={() => setEditingRow(null)}>
+          <RecordForm
+            tableKey={activeKey}
+            columns={visibleColumns}
+            tables={tables}
+            value={editingRow}
+            onChange={(col, val) => setEditingRow({ ...editingRow, [col]: val })}
+            darkMode={darkMode}
+          />
+          <div style={styles.modalActions}>
+            <button style={styles.primaryBtn} onClick={saveEdit}>Enregistrer</button>
+            <button style={styles.ghostBtn} onClick={() => setEditingRow(null)}>Annuler</button>
+          </div>
+        </Modal>
+      )}
+
+      {deletingRow && (
+        <Modal darkMode={darkMode} title="Confirmer la suppression" onClose={() => setDeletingRow(null)} maxWidth="380px">
+          <p style={styles.confirmText}>
+            Voulez-vous vraiment supprimer cette ligne de « {activeTable.label} » ? Cette action est irréversible.
+          </p>
+          <div style={styles.modalActions}>
+            <button style={styles.dangerBtn} onClick={confirmDelete}>Supprimer</button>
+            <button style={styles.ghostBtn} onClick={() => setDeletingRow(null)}>Annuler</button>
+          </div>
+        </Modal>
+      )}
+
+      {detailRow && hasDetail && (
+        <Modal darkMode={darkMode} title="Détails" onClose={() => setDetailRow(null)} maxWidth="520px">
+          <DetailPanel tableKey={activeKey} row={detailRow} tables={tables} updateJunction={updateTableByKey} darkMode={darkMode} />
+        </Modal>
+      )}
     </div>
   );
+}
+
+// Remplace un identifiant de clé étrangère par le nom lisible correspondant.
+function resolveLabel(tables, tableKey, column, value) {
+  const fk = SCHEMA[tableKey]?.fks?.[column];
+  if (!fk) return value;
+  const refRow = (tables[fk.table]?.rows || []).find((r) => r.id === value);
+  return refRow ? fk.getLabel(refRow) : '—';
 }
 
 const getStyles = (darkMode) => ({
@@ -378,10 +308,9 @@ const getStyles = (darkMode) => ({
 
   topbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', borderBottom: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0', backgroundColor: darkMode ? '#211935' : '#f8fafc', gap: '16px' },
   topbarLeft: { display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 },
-  backBtn: { width: '34px', height: '34px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', background: 'transparent', color: darkMode ? '#e2e8f0' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-  brand: { fontWeight: '700', fontSize: '15px', whiteSpace: 'nowrap' },
-  ia: { fontWeight: '800', background: accentGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' },
-  brandSub: { fontWeight: '500', fontSize: '12px', color: '#94a3b8', marginLeft: '4px' },
+  backBtn: { width: '34px', height: '34px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', background: 'transparent', color: darkMode ? '#e2e8f0' : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 },
+  pageTitle: { margin: 0, fontSize: '19px', fontWeight: '800', whiteSpace: 'nowrap', color: darkMode ? '#ffffff' : '#0f172a' },
+  pageSubtitle: { margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: '500' },
 
   tableNav: { display: 'flex', gap: '6px', overflowX: 'auto', flex: 1, justifyContent: 'center' },
   tableTab: { padding: '8px 16px', borderRadius: '999px', border: 'none', background: 'transparent', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '13px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' },
@@ -398,18 +327,19 @@ const getStyles = (darkMode) => ({
   toolbarActions: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
   ghostBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', backgroundColor: darkMode ? '#211935' : '#f1f5f9', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', borderRadius: '14px', cursor: 'pointer', fontSize: '13px', color: darkMode ? '#ffffff' : '#0f172a', fontWeight: '500' },
   primaryBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: accentGradient, border: 'none', borderRadius: '14px', cursor: 'pointer', fontSize: '13px', color: '#ffffff', fontWeight: '600' },
+  dangerBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#ef4444', border: 'none', borderRadius: '14px', cursor: 'pointer', fontSize: '13px', color: '#ffffff', fontWeight: '600' },
 
   inlineForm: { display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' },
   confirmBtn: { width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: '#22c55e', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   cancelBtn: { width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 
-  addRowCard: { backgroundColor: darkMode ? '#211935' : '#f8fafc', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', borderRadius: '16px', padding: '18px', marginBottom: '18px' },
-  addRowTitle: { margin: '0 0 12px 0', fontSize: '14px', fontWeight: '700' },
-  addRowGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '14px' },
-  formField: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  formLabel: { fontSize: '11px', color: '#94a3b8', textTransform: 'capitalize' },
-  formInput: { padding: '9px 12px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
-  addRowActions: { display: 'flex', gap: '10px' },
+  backToListBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', color: COLORS.violet, fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: 0, marginBottom: '18px' },
+  addPageCard: { backgroundColor: darkMode ? '#211935' : '#f8fafc', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', borderRadius: '18px', padding: '26px', maxWidth: '480px' },
+  addPageTitle: { margin: '0 0 18px 0', fontSize: '15px', fontWeight: '700' },
+  addPageActions: { display: 'flex', gap: '10px', marginTop: '22px' },
+
+  modalActions: { display: 'flex', gap: '10px', marginTop: '20px' },
+  confirmText: { fontSize: '13.5px', color: darkMode ? '#e2e8f0' : '#334155', lineHeight: '1.6', margin: 0 },
 
   tableCard: { backgroundColor: darkMode ? '#211935' : '#ffffff', border: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' },
@@ -418,8 +348,6 @@ const getStyles = (darkMode) => ({
   tr: { borderBottom: darkMode ? '1px solid #2d234a' : '1px solid #f1f5f9' },
   td: { padding: '14px 20px', color: darkMode ? '#e2e8f0' : '#334155' },
   tdRight: { padding: '14px 20px', textAlign: 'right', whiteSpace: 'nowrap' },
-  editInput: { padding: '6px 10px', borderRadius: '8px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none', width: '100%' },
   iconBtn: { backgroundColor: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', marginLeft: '4px' },
-  saveBtn: { background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' },
   emptyRow: { padding: '24px', textAlign: 'center', color: '#94a3b8' },
 });
