@@ -8,11 +8,13 @@ import { SCHEMA } from '../../crudSchema';
 export default function RecordForm({ tableKey, columns, tables, value, onChange, darkMode }) {
   const styles = getStyles(darkMode);
   const fks = SCHEMA[tableKey]?.fks || {};
+  const enums = SCHEMA[tableKey]?.enums || {};
 
   return (
     <div style={styles.form}>
       {columns.map((col) => {
         const fk = fks[col];
+        const choices = enums[col];
         return (
           <div key={col} style={styles.field}>
             <label style={styles.label}>{fieldLabel(col)}</label>
@@ -22,11 +24,29 @@ export default function RecordForm({ tableKey, columns, tables, value, onChange,
                 value={value[col] ?? ''}
                 onChange={(e) => onChange(col, e.target.value ? Number(e.target.value) : '')}
               >
-                <option value="">— Sélectionner —</option>
+                <option value="">{fk.optional ? '— Aucune —' : '— Sélectionner —'}</option>
                 {(tables[fk.table]?.rows || []).map((row) => (
                   <option key={row.id} value={row.id}>{fk.getLabel(row)}</option>
                 ))}
               </select>
+            ) : choices ? (
+              <select
+                style={styles.input}
+                value={value[col] ?? ''}
+                onChange={(e) => onChange(col, e.target.value)}
+              >
+                <option value="">— Sélectionner —</option>
+                {choices.map((choice) => (
+                  <option key={choice} value={choice}>{choice}</option>
+                ))}
+              </select>
+            ) : col.includes('date') || col === 'echeance' ? (
+              <input
+                type="date"
+                style={styles.input}
+                value={value[col] ?? ''}
+                onChange={(e) => onChange(col, e.target.value)}
+              />
             ) : (
               <input
                 style={styles.input}
