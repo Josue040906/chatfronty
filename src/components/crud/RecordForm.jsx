@@ -71,5 +71,5 @@ const getStyles = (darkMode) => ({
   form: { display: 'flex', flexDirection: 'column', gap: '16px' },
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '12px', fontWeight: '600', color: darkMode ? '#94a3b8' : '#64748b' },
-  input: { padding: '11px 14px', borderRadius: '12px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' },
+  input: { padding: '11px 14px', borderRadius: '12px', border: darkMode ? '1px solid #43281C' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#1F1410' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' },
 });

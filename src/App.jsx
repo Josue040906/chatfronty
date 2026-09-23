@@ -1,93 +1,60 @@
-import { useState } from 'react';
-import TopNav from './components/layout/TopNav';
-import Dashboard from './components/pages/Dashboard';
-import DataPage from './components/pages/DataPage';
-import AssistantPanel from './components/assistant/AssistantPanel';
-import { INITIAL_TABLES, CURRENT_USER_ID } from './crudSchema';
-import { COLORS } from './theme';
+import React, { useState, useEffect } from 'react';
+import Header from './components/layout/Header';
+import Sidebar from './components/layout/Sidebar';
+import MobileNavigation from './components/layout/MobileNavigation';
+import PageContainer from './components/layout/PageContainer';
+import Login from './components/pages/Login';
+import LoadingState from './components/ui/LoadingState';
+import { useAuth } from './hooks/useAuth';
 
 export default function App() {
-  const [tables, setTables] = useState(INITIAL_TABLES);
-  const [section, setSection] = useState('dashboard');
-  const [focusRecord, setFocusRecord] = useState(null); // { table, id }
-  const [assistantOpen, setAssistantOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const { user, loading, login, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [darkMode, setDarkMode] = useState(false);
 
-  const currentUser = tables.employe.rows.find((a) => a.id === CURRENT_USER_ID) || tables.employe.rows[0];
-  const notifications = tables.notification.rows;
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
-  const markAllRead = () => {
-    setTables((prev) => ({
-      ...prev,
-      notification: { ...prev.notification, rows: prev.notification.rows.map((n) => ({ ...n, lue: true })) },
-    }));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingState message="Initialisation de l'application..." />
+      </div>
+    );
+  }
 
-  // Ouvre directement la fiche d'un enregistrement depuis le tableau de bord
-  // ou depuis l'assistant.
-  const openRecord = (tableKey, id) => {
-    setSection(tableKey);
-    setFocusRecord({ table: tableKey, id });
-  };
-
-  const navigate = (key) => {
-    setSection(key);
-    setFocusRecord(null);
-  };
-
-  const shell = {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
-    backgroundColor: darkMode ? COLORS.darkBg : '#f8fafc',
-    color: darkMode ? '#ffffff' : '#0f172a',
-    transition: 'background-color 0.3s',
-  };
+  if (!user) {
+    return <Login onLogin={login} />;
+  }
 
   return (
-    <div style={shell}>
-      <TopNav
-        activeSection={section}
-        onNavigate={navigate}
-        notifications={notifications}
-        onMarkAllRead={markAllRead}
-        currentUser={currentUser}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <Header user={user} onLogout={logout} darkMode={darkMode} setDarkMode={setDarkMode} />
+      
+      <div className="flex flex-1">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        
+        <PageContainer
+          title={
+            activeTab === 'dashboard' ? 'Tableau de bord' :
+            activeTab === 'employees' ? 'Gestion des Employés' : 'Paramètres'
+          }
+          description="Gérez les activités et les données de votre application"
+        >
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-300">
+              Contenu de la section <strong>{activeTab}</strong>. Connecté en tant que <strong>{user.email}</strong>.
+            </p>
+          </div>
+        </PageContainer>
+      </div>
 
-      <main style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {section === 'dashboard' ? (
-          <Dashboard
-            tables={tables}
-            onNavigate={navigate}
-            onOpenRecord={openRecord}
-            darkMode={darkMode}
-          />
-        ) : (
-          <DataPage
-            key={section}
-            tableKey={section}
-            tables={tables}
-            setTables={setTables}
-            focusRecordId={focusRecord?.table === section ? focusRecord.id : null}
-            onFocusHandled={() => setFocusRecord(null)}
-            darkMode={darkMode}
-          />
-        )}
-      </main>
-
-      <AssistantPanel
-        open={assistantOpen}
-        onOpen={() => setAssistantOpen(true)}
-        onClose={() => setAssistantOpen(false)}
-        tables={tables}
-        onNavigate={navigate}
-        onOpenRecord={openRecord}
-        darkMode={darkMode}
-      />
+      <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 }

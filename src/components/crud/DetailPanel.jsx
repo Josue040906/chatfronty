@@ -72,7 +72,7 @@ function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }
               <span style={styles.relationLabel}>{otherRow ? rel.getOtherLabel(otherRow) : '—'}</span>
               {rel.extraField && <span style={styles.relationBadge}>{jr[rel.extraField.key]}</span>}
               <button style={styles.removeBtn} onClick={() => handleRemove(jr.id)} title="Retirer">
-                <Trash2 size={13} color={COLORS.pink} />
+                <Trash2 size={13} color="#ef4444" />
               </button>
             </div>
           );
@@ -147,7 +147,7 @@ function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
               <span style={styles.logDate}>{entry.date}</span>
               <span style={styles.relationBadge}>{entry.evenement}</span>
               <button style={styles.removeBtn} onClick={() => handleRemove(entry.id)} title="Retirer">
-                <Trash2 size={13} color={COLORS.pink} />
+                <Trash2 size={13} color="#ef4444" />
               </button>
             </div>
             <p style={styles.logDetail}>{entry.situation_avant} → {entry.situation_apres}</p>
@@ -217,25 +217,25 @@ const getStyles = (darkMode) => ({
   identityTitle: { margin: 0, fontSize: '17px', fontWeight: '700', color: darkMode ? '#ffffff' : '#0f172a' },
   identitySubtitle: { margin: '4px 0 0 0', fontSize: '13px', color: '#94a3b8' },
 
-  section: { marginTop: '18px', paddingTop: '18px', borderTop: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0' },
+  section: { marginTop: '18px', paddingTop: '18px', borderTop: darkMode ? '1px solid #43281C' : '1px solid #e2e8f0' },
   sectionTitle: { margin: '0 0 10px 0', fontSize: '13px', fontWeight: '700', color: darkMode ? '#e2e8f0' : '#334155' },
   emptyText: { margin: 0, fontSize: '12.5px', color: '#94a3b8', fontStyle: 'italic' },
 
   relationList: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' },
-  relationItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '10px', backgroundColor: darkMode ? '#18122B' : '#f8fafc', border: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0' },
+  relationItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '10px', backgroundColor: darkMode ? '#1F1410' : '#f8fafc', border: darkMode ? '1px solid #43281C' : '1px solid #e2e8f0' },
   relationLabel: { flex: 1, fontSize: '13px', color: darkMode ? '#e2e8f0' : '#334155' },
-  relationBadge: { fontSize: '11px', fontWeight: '600', color: COLORS.violet, backgroundColor: darkMode ? 'rgba(124,92,250,0.15)' : 'rgba(124,92,250,0.1)', padding: '2px 8px', borderRadius: '999px' },
+  relationBadge: { fontSize: '11px', fontWeight: '600', color: COLORS.violet, backgroundColor: darkMode ? 'rgba(230,57,70,0.15)' : 'rgba(230,57,70,0.1)', padding: '2px 8px', borderRadius: '999px' },
   removeBtn: { background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' },
 
-  logItem: { padding: '8px 12px', borderRadius: '10px', backgroundColor: darkMode ? '#18122B' : '#f8fafc', border: darkMode ? '1px solid #2d234a' : '1px solid #e2e8f0' },
+  logItem: { padding: '8px 12px', borderRadius: '10px', backgroundColor: darkMode ? '#1F1410' : '#f8fafc', border: darkMode ? '1px solid #43281C' : '1px solid #e2e8f0' },
   logHeader: { display: 'flex', alignItems: 'center', gap: '10px' },
   logDate: { fontSize: '11.5px', fontWeight: '700', color: '#94a3b8', minWidth: '78px' },
   logDetail: { margin: '6px 0 0 0', fontSize: '12.5px', color: darkMode ? '#e2e8f0' : '#334155' },
   logForm: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
-  logInput: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '12.5px', outline: 'none' },
+  logInput: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: darkMode ? '1px solid #43281C' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#1F1410' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '12.5px', outline: 'none' },
 
   addRow: { display: 'flex', gap: '8px' },
-  addSelect: { flex: 1, padding: '9px 12px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
-  addNumber: { width: '64px', padding: '9px 10px', borderRadius: '10px', border: darkMode ? '1px solid #2d234a' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#18122B' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
+  addSelect: { flex: 1, padding: '9px 12px', borderRadius: '10px', border: darkMode ? '1px solid #43281C' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#1F1410' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
+  addNumber: { width: '64px', padding: '9px 10px', borderRadius: '10px', border: darkMode ? '1px solid #43281C' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#1F1410' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
   addBtn: { width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: accentGradient, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 });

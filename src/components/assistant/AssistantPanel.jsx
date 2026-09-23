@@ -325,7 +325,7 @@ const getStyles = (darkMode, size) => ({
     fontWeight: '700',
     fontFamily: "'Baloo 2', sans-serif",
     cursor: 'pointer',
-    boxShadow: '0 10px 30px rgba(232, 93, 154, 0.4)',
+    boxShadow: '0 10px 30px rgba(230, 57, 70, 0.4)',
     zIndex: 80
   },
   iaHighlightOnGradient: {
@@ -437,7 +437,7 @@ const getStyles = (darkMode, size) => ({
     padding: '11px 14px',
     borderRadius: '14px',
     borderTopLeftRadius: '4px',
-    backgroundColor: darkMode ? '#211935' : '#f1f5f9',
+    backgroundColor: darkMode ? '#2B1B14' : '#f1f5f9',
     color: darkMode ? '#e2e8f0' : '#1e293b',
     fontSize: '13.5px',
     lineHeight: 1.55
@@ -478,7 +478,7 @@ const getStyles = (darkMode, size) => ({
     padding: '9px 12px',
     borderRadius: '10px',
     border: darkMode ? `1px solid ${COLORS.darkBorder}` : '1px solid #e2e8f0',
-    backgroundColor: darkMode ? '#211935' : '#f8fafc',
+    backgroundColor: darkMode ? '#2B1B14' : '#f8fafc',
     cursor: 'pointer',
     textAlign: 'left'
   },
