@@ -1,10 +1,9 @@
-import React from 'react';
-import { SCHEMA } from '../../crudSchema';
+﻿import { SCHEMA } from '../../crudSchema';
 
-// Formulaire vertical (haut → bas) partagé par la page d'ajout et la fenêtre
-// de modification. Toute colonne qui est une clé étrangère (voir crudSchema)
-// devient un menu déroulant listant les entités par leur nom — jamais un
-// champ où l'utilisateur devrait saisir ou retenir un identifiant.
+// Formulaire vertical (haut â†’ bas) partagÃ© par la page d'ajout et la fenÃªtre
+// de modification. Toute colonne qui est une clÃ© Ã©trangÃ¨re (voir crudSchema)
+// devient un menu dÃ©roulant listant les entitÃ©s par leur nom â€” jamais un
+// champ oÃ¹ l'utilisateur devrait saisir ou retenir un identifiant.
 export default function RecordForm({ tableKey, columns, tables, value, onChange, darkMode }) {
   const styles = getStyles(darkMode);
   const fks = SCHEMA[tableKey]?.fks || {};
@@ -24,7 +23,7 @@ export default function RecordForm({ tableKey, columns, tables, value, onChange,
                 value={value[col] ?? ''}
                 onChange={(e) => onChange(col, e.target.value ? Number(e.target.value) : '')}
               >
-                <option value="">{fk.optional ? '— Aucune —' : '— Sélectionner —'}</option>
+                <option value="">{fk.optional ? 'â€” Aucune â€”' : 'â€” SÃ©lectionner â€”'}</option>
                 {(tables[fk.table]?.rows || []).map((row) => (
                   <option key={row.id} value={row.id}>{fk.getLabel(row)}</option>
                 ))}
@@ -35,7 +34,7 @@ export default function RecordForm({ tableKey, columns, tables, value, onChange,
                 value={value[col] ?? ''}
                 onChange={(e) => onChange(col, e.target.value)}
               >
-                <option value="">— Sélectionner —</option>
+                <option value="">â€” SÃ©lectionner â€”</option>
                 {choices.map((choice) => (
                   <option key={choice} value={choice}>{choice}</option>
                 ))}

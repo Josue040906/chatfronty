@@ -1,5 +1,4 @@
-import React from 'react';
-
+﻿
 export default function Badge({ children, variant = 'default' }) {
   const variants = {
     default: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',

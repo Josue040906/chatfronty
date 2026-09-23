@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { DETAIL_CONFIG } from '../../crudSchema';
 import { COLORS, accentGradient } from '../../theme';
 
-// Contenu de la fiche "Détails" : identité de l'enregistrement + ses relations.
-// Les relations éditables (ex. compétences d'un employé) se gèrent ici,
-// directement, sans jamais montrer à l'utilisateur la table de jonction brute
+// Contenu de la fiche "DÃ©tails" : identitÃ© de l'enregistrement + ses relations.
+// Les relations Ã©ditables (ex. compÃ©tences d'un employÃ©) se gÃ¨rent ici,
+// directement, sans jamais montrer Ã  l'utilisateur la table de jonction brute
 // (employe_competence, poste_competence, domaine_competence_relation).
 export default function DetailPanel({ tableKey, row, tables, updateJunction, darkMode }) {
   const config = DETAIL_CONFIG[tableKey];
@@ -20,12 +20,24 @@ export default function DetailPanel({ tableKey, row, tables, updateJunction, dar
       </div>
 
       {(config.editableRelations || []).map((rel) => (
-        <EditableRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} darkMode={darkMode} styles={styles} />
-      ))}
+<EditableRelation
+  key={rel.title}
+  rel={rel}
+  row={row}
+  tables={tables}
+  updateJunction={updateJunction}
+  styles={styles}
+/>      ))}
 
       {(config.logRelations || []).map((rel) => (
-        <LogRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} darkMode={darkMode} styles={styles} />
-      ))}
+<LogRelation
+  key={rel.title}
+  rel={rel}
+  row={row}
+  tables={tables}
+  updateJunction={updateJunction}
+  styles={styles}
+/>      ))}
 
       {(config.readonlyRelations || []).map((rel) => (
         <ReadonlyRelation key={rel.title} rel={rel} row={row} tables={tables} styles={styles} />
@@ -34,7 +46,7 @@ export default function DetailPanel({ tableKey, row, tables, updateJunction, dar
   );
 }
 
-function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
+function EditableRelation({ rel, row, tables, updateJunction, styles }) {
   const [selected, setSelected] = useState('');
   const [extraValue, setExtraValue] = useState(rel.extraField ? rel.extraField.default : null);
 
@@ -62,14 +74,14 @@ function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }
     <div style={styles.section}>
       <p style={styles.sectionTitle}>{rel.title}</p>
 
-      {junctionRows.length === 0 && <p style={styles.emptyText}>Aucune donnée pour le moment.</p>}
+      {junctionRows.length === 0 && <p style={styles.emptyText}>Aucune donnÃ©e pour le moment.</p>}
 
       <div style={styles.relationList}>
         {junctionRows.map((jr) => {
           const otherRow = otherRows.find((r) => r.id === jr[rel.otherField]);
           return (
             <div key={jr.id} style={styles.relationItem}>
-              <span style={styles.relationLabel}>{otherRow ? rel.getOtherLabel(otherRow) : '—'}</span>
+              <span style={styles.relationLabel}>{otherRow ? rel.getOtherLabel(otherRow) : 'â€”'}</span>
               {rel.extraField && <span style={styles.relationBadge}>{jr[rel.extraField.key]}</span>}
               <button style={styles.removeBtn} onClick={() => handleRemove(jr.id)} title="Retirer">
                 <Trash2 size={13} color="#ef4444" />
@@ -81,7 +93,7 @@ function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }
 
       <div style={styles.addRow}>
         <select style={styles.addSelect} value={selected} onChange={(e) => setSelected(e.target.value)}>
-          <option value="">— Ajouter —</option>
+          <option value="">â€” Ajouter â€”</option>
           {availableOptions.map((opt) => (
             <option key={opt.id} value={opt.id}>{rel.getOtherLabel(opt)}</option>
           ))}
@@ -105,13 +117,13 @@ function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }
   );
 }
 
-// Historique de carrière : contrairement aux compétences (qui pointent vers
-// une autre table), chaque ligne est une saisie libre à plusieurs champs
-// (date, événement, situation avant/après). On peut en ajouter et en
-// supprimer, mais jamais les modifier après coup — un historique ne s'édite
-// pas, il se complète.
-function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
-  const blank = {};
+// Historique de carriÃ¨re : contrairement aux compÃ©tences (qui pointent vers
+// une autre table), chaque ligne est une saisie libre Ã  plusieurs champs
+// (date, Ã©vÃ©nement, situation avant/aprÃ¨s). On peut en ajouter et en
+// supprimer, mais jamais les modifier aprÃ¨s coup â€” un historique ne s'Ã©dite
+// pas, il se complÃ¨te.
+function LogRelation({ rel, row, tables, updateJunction, styles }) {
+    const blank = {};
   rel.fields.forEach((f) => (blank[f.key] = ''));
   const [draft, setDraft] = useState(blank);
 
@@ -138,7 +150,7 @@ function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
     <div style={styles.section}>
       <p style={styles.sectionTitle}>{rel.title}</p>
 
-      {entries.length === 0 && <p style={styles.emptyText}>Aucun événement enregistré.</p>}
+      {entries.length === 0 && <p style={styles.emptyText}>Aucun Ã©vÃ©nement enregistrÃ©.</p>}
 
       <div style={styles.relationList}>
         {entries.map((entry) => (
@@ -150,7 +162,7 @@ function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
                 <Trash2 size={13} color="#ef4444" />
               </button>
             </div>
-            <p style={styles.logDetail}>{entry.situation_avant} → {entry.situation_apres}</p>
+            <p style={styles.logDetail}>{entry.situation_avant} â†’ {entry.situation_apres}</p>
           </div>
         ))}
       </div>
@@ -166,7 +178,7 @@ function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
             onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))}
           />
         ))}
-        <button style={styles.addBtn} onClick={handleAdd} disabled={!canAdd} title="Ajouter un événement">
+        <button style={styles.addBtn} onClick={handleAdd} disabled={!canAdd} title="Ajouter un Ã©vÃ©nement">
           <Plus size={14} color="#fff" />
         </button>
       </div>
@@ -177,8 +189,8 @@ function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
 function ReadonlyRelation({ rel, row, tables, styles }) {
   let items = [];
   if (rel.resolve) {
-    // Relation calculée sur plusieurs niveaux (ex : agents d'un grade, retrouvés
-    // via la chaîne échelon → classe → grade), plutôt qu'une simple clé étrangère.
+    // Relation calculÃ©e sur plusieurs niveaux (ex : agents d'un grade, retrouvÃ©s
+    // via la chaÃ®ne Ã©chelon â†’ classe â†’ grade), plutÃ´t qu'une simple clÃ© Ã©trangÃ¨re.
     items = rel.resolve(tables, row);
   } else if (rel.table) {
     items = tables[rel.table].rows
@@ -189,7 +201,7 @@ function ReadonlyRelation({ rel, row, tables, styles }) {
       .filter((r) => r[rel.ownerField] === row.id)
       .map((jr) => {
         const otherRow = tables[rel.otherTable].rows.find((r) => r.id === jr[rel.otherField]);
-        return { label: otherRow ? rel.getLabel(otherRow) : '—', extra: rel.getExtra ? rel.getExtra(jr) : null };
+        return { label: otherRow ? rel.getLabel(otherRow) : 'â€”', extra: rel.getExtra ? rel.getExtra(jr) : null };
       });
   }
 
@@ -197,7 +209,7 @@ function ReadonlyRelation({ rel, row, tables, styles }) {
     <div style={styles.section}>
       <p style={styles.sectionTitle}>{rel.title}</p>
       {items.length === 0 ? (
-        <p style={styles.emptyText}>Aucune donnée.</p>
+        <p style={styles.emptyText}>Aucune donnÃ©e.</p>
       ) : (
         <div style={styles.relationList}>
           {items.map((item, i) => (
@@ -239,3 +251,4 @@ const getStyles = (darkMode) => ({
   addNumber: { width: '64px', padding: '9px 10px', borderRadius: '10px', border: darkMode ? '1px solid #43281C' : '1px solid #cbd5e1', backgroundColor: darkMode ? '#1F1410' : '#ffffff', color: darkMode ? '#ffffff' : '#0f172a', fontSize: '13px', outline: 'none' },
   addBtn: { width: '36px', height: '36px', borderRadius: '10px', border: 'none', background: accentGradient, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 });
+

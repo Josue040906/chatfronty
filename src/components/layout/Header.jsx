@@ -1,34 +1,77 @@
-import React from 'react';
+﻿import {
+  Bell,
+  ChevronDown,
+  Menu,
+  Search,
+  UserRound,
+} from 'lucide-react';
 
-export default function Header({ user, onLogout, darkMode, setDarkMode }) {
+export default function Header({
+  user,
+  onMenuClick,
+  onLogout,
+}) {
+  const displayName = user?.name || user?.nom || user?.email || 'Utilisateur';
+
   return (
-    <header className="sticky top-0 z-10 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white/80 px-4 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80 sm:px-6">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Chatfronty</h1>
-      </div>
-
-      <div className="flex items-center gap-4">
+    <header className="app-header">
+      <div className="header-left">
         <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          aria-label="Toggle dark mode"
+          type="button"
+          className="header-menu-button"
+          onClick={onMenuClick}
+          aria-label="Ouvrir le menu"
         >
-          {darkMode ? '☀️' : '🌙'}
+          <Menu size={20} />
         </button>
 
-        {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {user.name}
-            </span>
-            <button
-              onClick={onLogout}
-              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium"
-            >
-              Déconnexion
-            </button>
+        <div className="header-search">
+          <Search size={17} />
+
+          <input
+            type="search"
+            placeholder="Rechercher un agent, un service..."
+            aria-label="Recherche globale"
+          />
+
+          <span className="header-search-shortcut">
+            Ctrl K
+          </span>
+        </div>
+      </div>
+
+      <div className="header-right">
+        <button
+          type="button"
+          className="header-icon-button"
+          aria-label="Notifications"
+        >
+          <Bell size={18} />
+          <span className="notification-dot" />
+        </button>
+
+        <div className="header-divider" />
+
+        <div className="header-user">
+          <div className="header-avatar">
+            <UserRound size={17} />
           </div>
-        ) : null}
+
+          <div className="header-user-info">
+            <strong>{displayName}</strong>
+            <span>Gestionnaire RH</span>
+          </div>
+
+          <button
+            type="button"
+            className="header-user-menu"
+            onClick={onLogout}
+            title="Se déconnecter"
+            aria-label="Se déconnecter"
+          >
+            <ChevronDown size={16} />
+          </button>
+        </div>
       </div>
     </header>
   );

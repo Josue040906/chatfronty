@@ -1,10 +1,9 @@
-import React from 'react';
-
+﻿
 export default function MobileNavigation({ activeTab, setActiveTab }) {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'employees', label: 'Employés', icon: '👥' },
-    { id: 'settings', label: 'Paramètres', icon: '⚙️' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'ðŸ“Š' },
+    { id: 'employees', label: 'EmployÃ©s', icon: 'ðŸ‘¥' },
+    { id: 'settings', label: 'ParamÃ¨tres', icon: 'âš™ï¸' },
   ];
 
   return (

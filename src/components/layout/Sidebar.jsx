@@ -1,30 +1,172 @@
-import React from 'react';
+﻿import {
+  BarChart3,
+  BriefcaseBusiness,
+  Building2,
+  FileText,
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  Users,
+  X,
+} from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab }) {
-  const navItems = [
-    { id: 'dashboard', label: 'Tableau de bord', icon: '📊' },
-    { id: 'employees', label: 'Employés', icon: '👥' },
-    { id: 'settings', label: 'Paramètres', icon: '⚙️' },
-  ];
+import { NavLink } from 'react-router-dom';
 
+const mainNavigation = [
+  {
+    id: 'dashboard',
+    label: 'Tableau de bord',
+    icon: LayoutDashboard,
+  },
+  {
+    id: 'organisation',
+    label: 'Organisation',
+    icon: Building2,
+  },
+  {
+    id: 'agents',
+    label: 'Agents',
+    icon: Users,
+  },
+  {
+    id: 'carrieres',
+    label: 'Carrières',
+    icon: BarChart3,
+  },
+  {
+    id: 'documents',
+    label: 'Documents RH',
+    icon: FileText,
+  },
+  {
+    id: 'assistant',
+    label: 'Assistant',
+    icon: Sparkles,
+  },
+];
+
+const administrationNavigation = [
+  {
+    id: 'administration',
+    label: 'Administration',
+    icon: Settings,
+  },
+];
+
+export default function Sidebar({ open, onClose }) {
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 min-h-screen p-4">
-      <div className="space-y-1">
-        {navItems.map((item) => (
+    <>
+      <div
+        className={`sidebar-overlay ${
+          open ? 'sidebar-overlay-visible' : ''
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <aside
+        className={`app-sidebar ${
+          open ? 'app-sidebar-open' : ''
+        }`}
+      >
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            <div className="sidebar-brand-mark">
+              <Sparkles size={18} strokeWidth={2} />
+            </div>
+
+            <div>
+              <div className="sidebar-brand-name">
+                bandI'Akam
+              </div>
+
+              <div className="sidebar-brand-subtitle">
+                Assistant RH intelligent
+              </div>
+            </div>
+          </div>
+
           <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-              activeTab === item.id
-                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
+            type="button"
+            className="sidebar-close"
+            onClick={onClose}
+            aria-label="Fermer le menu"
           >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
+            <X size={18} />
           </button>
-        ))}
-      </div>
-    </aside>
+        </div>
+
+        <nav className="sidebar-navigation">
+          <p className="sidebar-section-label">
+            Gestion des agents
+          </p>
+
+          <div className="sidebar-nav-list">
+            {mainNavigation.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.id}
+                  to={`/${item.id}`}
+                  className={({ isActive }) =>
+                    `sidebar-nav-item ${
+                      isActive
+                        ? 'sidebar-nav-item-active'
+                        : ''
+                    }`
+                  }
+                  onClick={onClose}
+                >
+                  <Icon size={18} strokeWidth={1.8} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+
+          <p className="sidebar-section-label sidebar-admin-label">
+            Configuration
+          </p>
+
+          <div className="sidebar-nav-list">
+            {administrationNavigation.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.id}
+                  to={`/${item.id}`}
+                  className={({ isActive }) =>
+                    `sidebar-nav-item ${
+                      isActive
+                        ? 'sidebar-nav-item-active'
+                        : ''
+                    }`
+                  }
+                  onClick={onClose}
+                >
+                  <Icon size={18} strokeWidth={1.8} />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-footer-card">
+            <div className="sidebar-footer-icon">
+              <BriefcaseBusiness size={16} />
+            </div>
+
+            <div>
+              <strong>Espace RH</strong>
+              <span>MEF Madagascar</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }

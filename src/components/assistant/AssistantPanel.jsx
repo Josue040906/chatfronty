@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles, Send, X, Maximize2, Minimize2, ChevronRight } from 'lucide-react';
 import { COLORS, accentGradient, accentGradientSoft } from '../../theme';
-import { employeLabel } from '../../crudSchema';
+
 
 const SIZES = ['small', 'wide', 'full'];
 const SIZE_WIDTH = { small: '380px', wide: '560px', full: '100vw' };
 const SUGGESTIONS = [
   'Affiche les agents du SGEAE',
-  'Combien d’agents par service ?',
+  'Combien dâ€™agents par service ?',
   'Ouvre la fiche de Jean RAKOTO',
 ];
 
@@ -89,9 +89,6 @@ export default function AssistantPanel({
   open,
   onOpen,
   onClose,
-  tables,
-  onNavigate,
-  onOpenRecord,
   darkMode
 }) {
   const [size, setSize] = useState('small');
@@ -100,7 +97,7 @@ export default function AssistantPanel({
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: "Bonjour, je suis bandI'Akam. Posez-moi une question sur les agents, les services ou vos tâches — je peux aussi ouvrir directement un écran pour vous."
+      text: "Bonjour, je suis bandI'Akam. Posez-moi une question sur les agents, les services ou vos tÃ¢ches â€” je peux aussi ouvrir directement un Ã©cran pour vous."
     },
   ]);
 
@@ -163,7 +160,7 @@ export default function AssistantPanel({
         ...m.slice(0, -1),
         {
           role: 'assistant',
-          text: "Je n'arrive pas à communiquer avec le serveur RH."
+          text: "Je n'arrive pas Ã  communiquer avec le serveur RH."
         }
       ]);
     } finally {
@@ -197,7 +194,7 @@ export default function AssistantPanel({
             <p style={styles.name}>
               band<span style={styles.iaHighlight}>I'A</span>kam
             </p>
-            <p style={styles.status}>Connecté aux données RH</p>
+            <p style={styles.status}>ConnectÃ© aux donnÃ©es RH</p>
           </div>
         </div>
 
@@ -279,7 +276,7 @@ export default function AssistantPanel({
       <div style={styles.composer}>
         <input
           style={styles.input}
-          placeholder="Écrivez votre demande..."
+          placeholder="Ã‰crivez votre demande..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -299,7 +296,7 @@ export default function AssistantPanel({
       </div>
 
       <p style={styles.disclaimer}>
-        Aide à l'analyse — ne constitue pas une décision RH automatique.
+        Aide Ã  l'analyse â€” ne constitue pas une dÃ©cision RH automatique.
       </p>
     </aside>
   );
@@ -546,3 +543,4 @@ const getStyles = (darkMode, size) => ({
     flexShrink: 0
   }
 });
+

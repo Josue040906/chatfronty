@@ -1,9 +1,8 @@
-import React from 'react';
-import { X } from 'lucide-react';
+﻿import { X } from 'lucide-react';
 
-// Fenêtre générique (fond + carte centrée) réutilisée pour l'édition, la
-// confirmation de suppression et les fiches "Détails". Reprend exactement les
-// couleurs, rayons et bordures déjà utilisés dans le module CRUD.
+// FenÃªtre gÃ©nÃ©rique (fond + carte centrÃ©e) rÃ©utilisÃ©e pour l'Ã©dition, la
+// confirmation de suppression et les fiches "DÃ©tails". Reprend exactement les
+// couleurs, rayons et bordures dÃ©jÃ  utilisÃ©s dans le module CRUD.
 export default function Modal({ darkMode, title, onClose, children, maxWidth = '480px' }) {
   const styles = getStyles(darkMode, maxWidth);
   return (
@@ -29,3 +28,4 @@ const getStyles = (darkMode, maxWidth) => ({
   closeBtn: { width: '30px', height: '30px', borderRadius: '10px', border: 'none', background: 'transparent', color: darkMode ? '#94a3b8' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
   body: { padding: '20px 22px' },
 });
+

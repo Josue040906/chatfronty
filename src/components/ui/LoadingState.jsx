@@ -1,5 +1,4 @@
-import React from 'react';
-
+﻿
 export default function LoadingState({ message = 'Chargement...' }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 text-center">

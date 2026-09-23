@@ -1,6 +1,5 @@
-import React from 'react';
-
-export default function EmptyState({ title = 'Aucune donnée', description, action }) {
+﻿
+export default function EmptyState({ title = 'Aucune donnÃ©e', description, action }) {
   return (
     <div className="text-center p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
       <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>

@@ -1,41 +1,49 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+
+const getStoredUser = () => {
+  const savedUser = localStorage.getItem('user');
+
+  if (!savedUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(savedUser);
+  } catch (error) {
+    console.error('Failed to parse stored user', error);
+    localStorage.removeItem('user');
+    return null;
+  }
+};
 
 export function useAuth() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('auth_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
-      }
-    }
-    setLoading(false);
-  }, []);
+  const [user, setUser] = useState(getStoredUser);
 
   const login = async (credentials) => {
-    // Simuler une requête de connexion
-    if (credentials.email && credentials.password) {
-      const userData = {
-        id: '1',
-        name: credentials.email.split('@')[0],
-        email: credentials.email,
-        role: 'Admin'
-      };
-      setUser(userData);
-      localStorage.setItem('auth_user', JSON.stringify(userData));
-      return { success: true };
-    }
-    return { success: false, error: 'Identifiants invalides' };
+    // Logique de connexion existante à conserver ici.
+    // Cette fonction sera reliée à l'API d'authentification plus tard.
+    const mockUser = {
+      email: credentials.email,
+    };
+
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    setUser(mockUser);
+
+    return {
+      success: true,
+      user: mockUser,
+    };
   };
 
   const logout = () => {
+    localStorage.removeItem('user');
     setUser(null);
-    localStorage.removeItem('auth_user');
   };
 
-  return { user, loading, login, logout };
+  return {
+    user,
+    loading: false,
+    login,
+    logout,
+  };
 }
