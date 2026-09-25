@@ -11,7 +11,11 @@ export default function Header({
   onMenuClick,
   onLogout,
 }) {
-  const displayName = user?.name || user?.nom || user?.email || 'Utilisateur';
+  const displayName =
+    user?.name ||
+    user?.nom ||
+    user?.email ||
+    'Utilisateur';
 
   return (
     <header className="app-header">
@@ -24,6 +28,10 @@ export default function Header({
         >
           <Menu size={20} />
         </button>
+
+        <div className="header-brand-mobile">
+          <strong>SYGPERS</strong>
+        </div>
 
         <div className="header-search">
           <Search size={17} />

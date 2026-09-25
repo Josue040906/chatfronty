@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import AssistantFloating from '../assistant/AssistantFloating';
 
 export default function AppLayout({ user, onLogout, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,6 +24,9 @@ export default function AppLayout({ user, onLogout, children }) {
           {children}
         </main>
       </div>
+
+      {/* Assistant disponible sur toutes les pages protégées */}
+      <AssistantFloating />
     </div>
   );
 }

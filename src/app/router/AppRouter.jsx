@@ -8,6 +8,24 @@ import {
 import DashboardPage from '../../pages/Dashboard/DashboardPage';
 import LoginPage from '../../pages/Login/LoginPage';
 import AppLayout from '../../components/layout/AppLayout';
+import AgentsPage from '../../pages/Agents/AgentsPage';
+import AgentProfilePage from '../../pages/Agents/AgentProfilePage';
+import CareerAnalysisPage from '../../pages/Carrieres/CareerAnalysisPage';
+import OrganisationPage from '../../pages/Organisation/OrganisationPage';
+import CarrieresPage from '../../pages/Carrieres/CarrieresPage';
+import DocumentsPage from '../../pages/Documents/DocumentsPage';
+import NewDocumentPage from '../../pages/Documents/NewDocumentPage';
+import DocumentHistoryPage from '../../pages/Documents/DocumentHistoryPage';
+import DocumentDetailsPage from '../../pages/Documents/DocumentDetailsPage';
+import MesActivitesPage from '../../pages/Activites/MesActivitesPage';
+import AdministrationPage from '../../pages/Administration/AdministrationPage';
+import DirectionsPage from '../../pages/Administration/DirectionsPage';
+import ServicesPage from '../../pages/Administration/ServicesPage';
+import PostesPage from '../../pages/Administration/PostesPage';
+import GradesPage from '../../pages/Administration/GradesPage';
+import StatutsPage from '../../pages/Administration/StatutsPage';
+import ReglesRhPage from '../../pages/Administration/ReglesRhPage';
+
 
 function ProtectedLayout({ user, onLogout }) {
   if (!user) {
@@ -25,77 +43,8 @@ function ProtectedLayout({ user, onLogout }) {
 }
 
 
-function OrganisationPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          ORGANISATION
-        </p>
 
-        <h1>Organisation</h1>
 
-        <p>
-          Structure des directions, services et postes.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function AgentsPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          RESSOURCES HUMAINES
-        </p>
-
-        <h1>Agents</h1>
-
-        <p>
-          Consultation et gestion des agents du ministère.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function CarrieresPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          ÉVOLUTION PROFESSIONNELLE
-        </p>
-
-        <h1>Carrières</h1>
-
-        <p>
-          Analyse des parcours et possibilités d'évolution.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function DocumentsPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          DOCUMENTS RH
-        </p>
-
-        <h1>Documents RH</h1>
-
-        <p>
-          Création, consultation et suivi des documents administratifs.
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function AssistantPage() {
   return (
@@ -115,23 +64,7 @@ function AssistantPage() {
   );
 }
 
-function AdministrationPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          CONFIGURATION
-        </p>
-
-        <h1>Administration</h1>
-
-        <p>
-          Paramétrage de la plateforme et des référentiels RH.
-        </p>
-      </div>
-    </div>
-  );
-}
+  
 
 function NotFoundPage() {
   return (
@@ -211,25 +144,84 @@ export default function AppRouter({
           element={<AgentsPage />}
         />
 
+        <Route 
+          path="/agents/:id" 
+          element={<AgentProfilePage />}
+        />
+        <Route
+          path="/carrieres/:id/analyse"
+          element={<CareerAnalysisPage />}
+        />
         <Route
           path="/carrieres"
           element={<CarrieresPage />}
         />
 
-        <Route
-          path="/documents"
-          element={<DocumentsPage />}
-        />
+      <Route
+        path="/documents"
+        element={<DocumentsPage />}
+      />
 
+      <Route
+        path="/documents/nouveau"
+        element={<NewDocumentPage />}
+      />
+      <Route
+        path="/documents/:id"
+        element={ <DocumentDetailsPage />}
+      />
+
+
+
+      <Route
+        path="/documents/historique"
+        element={<DocumentHistoryPage />}
+      />
+      <Route
+        path="/activites"
+        element={ <MesActivitesPage />}
+      />
+  
         <Route
           path="/assistant"
           element={<AssistantPage />}
         />
 
+        
+        <Route
+          path="/administration/directions"
+          element={<DirectionsPage />}
+        />
+
+        <Route
+          path="/administration/services"
+          element={<ServicesPage />}
+        />
+        <Route
+          path="/administration/postes"
+          element={<PostesPage />}
+        />
+
+        <Route
+          path="/administration/grades"
+          element={<GradesPage />}
+        />
+
+        <Route
+          path="/administration/statuts"
+          element={<StatutsPage />}
+        />
+<Route
+path="/administration/regles-rh"
+element={<ReglesRhPage />}
+/>
+
+        
         <Route
           path="/administration"
           element={<AdministrationPage />}
         />
+
       </Route>
 
       <Route

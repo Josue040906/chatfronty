@@ -1,13 +1,15 @@
 ﻿import {
+  Activity,
   BarChart3,
   BriefcaseBusiness,
   Building2,
   FileText,
   LayoutDashboard,
   Settings,
-  Sparkles,
   Users,
   X,
+  Plus,
+  History,
 } from 'lucide-react';
 
 import { NavLink } from 'react-router-dom';
@@ -17,31 +19,52 @@ const mainNavigation = [
     id: 'dashboard',
     label: 'Tableau de bord',
     icon: LayoutDashboard,
+    path: '/dashboard',
   },
   {
     id: 'organisation',
     label: 'Organisation',
     icon: Building2,
+    path: '/organisation',
   },
   {
     id: 'agents',
     label: 'Agents',
     icon: Users,
+    path: '/agents',
   },
   {
     id: 'carrieres',
     label: 'Carrières',
     icon: BarChart3,
+    path: '/carrieres',
   },
   {
     id: 'documents',
     label: 'Documents RH',
     icon: FileText,
+    path: '/documents',
   },
   {
-    id: 'assistant',
-    label: 'Assistant',
-    icon: Sparkles,
+    id: 'activites',
+    label: 'Mes activités',
+    icon: Activity,
+    path: '/activites',
+  },
+];
+
+const documentNavigation = [
+  {
+    id: 'nouveau-document',
+    label: 'Nouveau document',
+    icon: Plus,
+    path: '/documents/nouveau',
+  },
+  {
+    id: 'historique-documents',
+    label: 'Historique',
+    icon: History,
+    path: '/documents/historique',
   },
 ];
 
@@ -50,8 +73,28 @@ const administrationNavigation = [
     id: 'administration',
     label: 'Administration',
     icon: Settings,
+    path: '/administration',
   },
 ];
+
+function NavigationItem({ item, onClose }) {
+  const Icon = item.icon;
+
+  return (
+    <NavLink
+      to={item.path}
+      className={({ isActive }) =>
+        `sidebar-nav-item ${
+          isActive ? 'sidebar-nav-item-active' : ''
+        }`
+      }
+      onClick={onClose}
+    >
+      <Icon size={18} strokeWidth={1.8} />
+      <span>{item.label}</span>
+    </NavLink>
+  );
+}
 
 export default function Sidebar({ open, onClose }) {
   return (
@@ -70,21 +113,25 @@ export default function Sidebar({ open, onClose }) {
         }`}
       >
         <div className="sidebar-header">
-          <div className="sidebar-brand">
+          <NavLink
+            to="/dashboard"
+            className="sidebar-brand"
+            onClick={onClose}
+          >
             <div className="sidebar-brand-mark">
-              <Sparkles size={18} strokeWidth={2} />
+              <span>SY</span>
             </div>
 
-            <div>
+            <div className="sidebar-brand-text">
               <div className="sidebar-brand-name">
-                bandI'Akam
+                SYGPERS
               </div>
 
               <div className="sidebar-brand-subtitle">
-                Assistant RH intelligent
+                Gestion des ressources humaines
               </div>
             </div>
-          </div>
+          </NavLink>
 
           <button
             type="button"
@@ -98,31 +145,31 @@ export default function Sidebar({ open, onClose }) {
 
         <nav className="sidebar-navigation">
           <p className="sidebar-section-label">
-            Gestion des agents
+            Gestion RH
           </p>
 
           <div className="sidebar-nav-list">
-            {mainNavigation.map((item) => {
-              const Icon = item.icon;
+            {mainNavigation.map((item) => (
+              <NavigationItem
+                key={item.id}
+                item={item}
+                onClose={onClose}
+              />
+            ))}
+          </div>
 
-              return (
-                <NavLink
-                  key={item.id}
-                  to={`/${item.id}`}
-                  className={({ isActive }) =>
-                    `sidebar-nav-item ${
-                      isActive
-                        ? 'sidebar-nav-item-active'
-                        : ''
-                    }`
-                  }
-                  onClick={onClose}
-                >
-                  <Icon size={18} strokeWidth={1.8} />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
+          <p className="sidebar-section-label sidebar-admin-label">
+            Documents
+          </p>
+
+          <div className="sidebar-nav-list">
+            {documentNavigation.map((item) => (
+              <NavigationItem
+                key={item.id}
+                item={item}
+                onClose={onClose}
+              />
+            ))}
           </div>
 
           <p className="sidebar-section-label sidebar-admin-label">
@@ -130,27 +177,13 @@ export default function Sidebar({ open, onClose }) {
           </p>
 
           <div className="sidebar-nav-list">
-            {administrationNavigation.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <NavLink
-                  key={item.id}
-                  to={`/${item.id}`}
-                  className={({ isActive }) =>
-                    `sidebar-nav-item ${
-                      isActive
-                        ? 'sidebar-nav-item-active'
-                        : ''
-                    }`
-                  }
-                  onClick={onClose}
-                >
-                  <Icon size={18} strokeWidth={1.8} />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
+            {administrationNavigation.map((item) => (
+              <NavigationItem
+                key={item.id}
+                item={item}
+                onClose={onClose}
+              />
+            ))}
           </div>
         </nav>
 
