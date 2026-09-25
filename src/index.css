@@ -7247,3 +7247,375 @@ select[aria-label] option {
     padding: 16px;
   }
 }
+
+/* ---------------------------------------------------------
+   Actions des cartes CRUD
+   --------------------------------------------------------- */
+
+.administration-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.administration-icon-button {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #e3ddd7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6f6258;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.administration-icon-button:hover {
+  border-color: #cfc2b6;
+  background: #f8f5f2;
+  color: #4f392b;
+  transform: translateY(-1px);
+}
+
+.administration-icon-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.administration-icon-button-danger {
+  color: #a34a4a;
+}
+
+.administration-icon-button-danger:hover {
+  border-color: #e3c4c4;
+  background: #fff6f6;
+  color: #9a3030;
+}
+
+
+/* ---------------------------------------------------------
+   Message de succès
+   --------------------------------------------------------- */
+
+.administration-state-success {
+  min-height: auto;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #ecfdf3;
+  color: #18794e;
+  font-size: 13px;
+}
+
+
+/* ---------------------------------------------------------
+   Modal CRUD
+   --------------------------------------------------------- */
+
+.administration-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(45, 34, 27, 0.42);
+  backdrop-filter: blur(3px);
+}
+
+.administration-modal {
+  width: min(620px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  border: 1px solid #e2d9d0;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 70px rgba(45, 34, 27, 0.20);
+}
+
+.administration-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 22px 24px;
+
+  border-bottom: 1px solid #eee9e4;
+}
+
+.administration-modal-header h2 {
+  margin: 5px 0 0;
+
+  color: #3a2a1e;
+
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.administration-modal-close {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 1px solid #e5dfd8;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #6f6258;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.administration-modal-close:hover {
+  border-color: #d4c8bd;
+  background: #f8f5f2;
+  color: #4f392b;
+}
+
+.administration-modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ---------------------------------------------------------
+   Formulaire
+   --------------------------------------------------------- */
+
+.administration-form {
+  padding: 24px;
+}
+
+.administration-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.administration-form-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.administration-form-field > span {
+  color: #4d4037;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.administration-form-field input,
+.administration-form-field textarea,
+.administration-form-field select {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #2f2925;
+
+  font: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.administration-form-field input,
+.administration-form-field select {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.administration-form-field textarea {
+  min-height: 100px;
+  padding: 11px 13px;
+
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.administration-form-field input:focus,
+.administration-form-field textarea:focus,
+.administration-form-field select:focus {
+  border-color: #bca996;
+
+  box-shadow:
+    0 0 0 3px rgba(120, 91, 66, 0.08);
+}
+
+.administration-form-field input:disabled,
+.administration-form-field textarea:disabled,
+.administration-form-field select:disabled {
+  background: #f8f7f5;
+  color: #8b837c;
+  cursor: not-allowed;
+}
+
+.administration-form-field input::placeholder,
+.administration-form-field textarea::placeholder {
+  color: #aaa29b;
+}
+
+.administration-form-field small {
+  margin-top: -1px;
+
+  color: #958b83;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+
+/* ---------------------------------------------------------
+   Erreur dans le formulaire
+   --------------------------------------------------------- */
+
+.administration-form-error {
+  padding: 11px 13px;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   Actions du formulaire
+   --------------------------------------------------------- */
+
+.administration-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 24px;
+  padding-top: 18px;
+
+  border-top: 1px solid #eee9e4;
+}
+
+.administration-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 42px;
+  padding: 0 16px;
+
+  border: 1px solid #ded8d2;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #655b54;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.administration-secondary-button:hover {
+  border-color: #cfc2b6;
+  background: #f8f5f2;
+  color: #4f392b;
+}
+
+.administration-secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .administration-modal-overlay {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .administration-modal {
+    max-height: calc(100vh - 28px);
+    border-radius: 13px;
+  }
+
+  .administration-modal-header {
+    padding: 18px;
+  }
+
+  .administration-form {
+    padding: 18px;
+  }
+
+  .administration-form-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .administration-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .administration-form-actions button {
+    width: 100%;
+  }
+
+  .administration-list-actions {
+    margin-left: 8px;
+    gap: 4px;
+  }
+
+  .administration-icon-button {
+    width: 32px;
+    height: 32px;
+  }
+}
