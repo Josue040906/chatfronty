@@ -1,0 +1,58 @@
+/* =========================================================
+   Base / reset / app-loading
+   (extrait automatiquement de l'ancien index.css, lignes 1-53)
+   ========================================================= */
+
+:root {
+  font-family: 'Public Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #3A2A1E;
+  background: #F3EEE3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  background: #F3EEE3;
+  color: #3A2A1E;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* =========================================================
+   APPLICATION
+   ========================================================= */
+
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #F3EEE3;
+  color: #3A2A1E;
+  font-size: 15px;
+}
+

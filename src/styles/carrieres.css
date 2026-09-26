@@ -1,0 +1,250 @@
+/* =========================================================
+   Liste Carrières
+   (extrait automatiquement de l'ancien index.css, lignes 3418-3662)
+   ========================================================= */
+
+/* =========================================================
+   CARRIERES
+   ========================================================= */
+
+.carrieres-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.carrieres-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.carrieres-total {
+  min-width: 130px;
+  padding: 15px 18px;
+  text-align: right;
+  background: #FFFAF4;
+  border: 1px solid #E5D9CA;
+  border-radius: 12px;
+}
+
+.carrieres-total strong {
+  display: block;
+  color: #4B3728;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.carrieres-total span {
+  display: block;
+  margin-top: 5px;
+  color: #928274;
+  font-size: 12px;
+}
+
+.carrieres-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.carrieres-search {
+  position: relative;
+  flex: 1;
+  max-width: 650px;
+  display: flex;
+  align-items: center;
+}
+
+.carrieres-search > svg {
+  position: absolute;
+  left: 15px;
+  color: #9B8A7B;
+  pointer-events: none;
+}
+
+.carrieres-search input {
+  width: 100%;
+  height: 46px;
+  padding: 0 42px 0 44px;
+  color: #463427;
+  background: #FFFDF9;
+  border: 1px solid #DED2C4;
+  border-radius: 11px;
+  outline: none;
+  font-size: 13px;
+}
+
+.carrieres-search input:focus {
+  border-color: #AD8B68;
+  box-shadow: 0 0 0 3px rgba(173, 139, 104, 0.1);
+}
+
+.carrieres-search button {
+  position: absolute;
+  right: 10px;
+  width: 27px;
+  height: 27px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #806E5D;
+  background: #EEE5DB;
+  font-size: 18px;
+}
+
+.carrieres-result-count {
+  color: #8E7E70;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.carrieres-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.career-agent-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #FFFDF9;
+  border: 1px solid #E5DCD1;
+  border-radius: 15px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.career-agent-card:hover {
+  border-color: #D5C3AE;
+  box-shadow: 0 8px 24px rgba(77, 55, 36, 0.07);
+  transform: translateY(-1px);
+}
+
+.career-agent-card-top {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 19px 20px;
+  border-bottom: 1px solid #EEE7DF;
+}
+
+.career-agent-avatar {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #FFFAF4;
+  background: #76563A;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.career-agent-identity {
+  min-width: 0;
+}
+
+.career-agent-identity h2 {
+  margin: 0;
+  overflow: hidden;
+  color: #453326;
+  font-size: 15px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.career-agent-identity span {
+  display: block;
+  margin-top: 4px;
+  color: #9A8A7C;
+  font-size: 11px;
+}
+
+.career-agent-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 17px;
+  padding: 19px 20px;
+}
+
+.career-agent-field {
+  min-width: 0;
+}
+
+.career-agent-field > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  color: #9B8B7D;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+.career-agent-field > strong {
+  display: block;
+  overflow: hidden;
+  color: #574335;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.career-agent-date > strong {
+  color: #755438;
+}
+
+.career-agent-card-footer {
+  margin-top: auto;
+  padding: 13px 20px;
+  background: #FAF6F0;
+  border-top: 1px solid #EEE7DF;
+}
+
+.career-agent-card-footer button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  color: #76563A;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.carrieres-empty {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #958578;
+  background: #FFFDF9;
+  border: 1px solid #E5DCD1;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.carrieres-empty strong {
+  color: #594535;
+  font-size: 14px;
+}
+
+.carrieres-empty span {
+  font-size: 12px;
+}
+

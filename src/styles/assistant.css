@@ -1,0 +1,454 @@
+/* =========================================================
+   Assistant flottant
+   (extrait automatiquement de l'ancien index.css, lignes 6298-6746)
+   ========================================================= */
+
+/* =========================================================
+   ASSISTANT FLOTTANT — bandI'Akama
+   ========================================================= */
+
+.assistant-floating-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 50px;
+  padding: 0 17px;
+
+  border: none;
+  border-radius: 16px;
+
+  background: #2f211b;
+  color: #ffffff;
+
+  box-shadow:
+    0 12px 30px rgba(47, 33, 27, 0.22),
+    0 4px 10px rgba(47, 33, 27, 0.12);
+
+  cursor: pointer;
+
+  font: inherit;
+  font-weight: 600;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.assistant-floating-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 16px 34px rgba(47, 33, 27, 0.28),
+    0 5px 12px rgba(47, 33, 27, 0.15);
+}
+
+.assistant-floating-button-open {
+  width: 50px;
+  height: 50px;
+  min-height: 50px;
+  padding: 0;
+
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.assistant-floating-label {
+  white-space: nowrap;
+}
+
+/* Panneau */
+
+.assistant-floating-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 86px;
+  z-index: 999;
+
+  width: min(390px, calc(100vw - 32px));
+  height: min(610px, calc(100vh - 120px));
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e8dfd8;
+  border-radius: 20px;
+
+  box-shadow:
+    0 24px 70px rgba(47, 33, 27, 0.18),
+    0 8px 24px rgba(47, 33, 27, 0.08);
+
+  animation: assistant-panel-in 0.2s ease-out;
+}
+
+@keyframes assistant-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header */
+
+.assistant-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 17px;
+
+  background: #f8f3ef;
+  border-bottom: 1px solid #ebe2dc;
+}
+
+.assistant-panel-identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.assistant-panel-avatar {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #2f211b;
+  color: #ffffff;
+}
+
+.assistant-panel-identity strong {
+  display: block;
+
+  color: #2f211b;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.assistant-panel-identity span {
+  display: block;
+  margin-top: 3px;
+
+  color: #8a7b72;
+  font-size: 11px;
+}
+
+.assistant-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.assistant-panel-actions button {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+  color: #74675f;
+
+  cursor: pointer;
+}
+
+.assistant-panel-actions button:hover {
+  background: #ece3dd;
+  color: #2f211b;
+}
+
+/* Corps */
+
+.assistant-panel-body {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #fcfaf8;
+}
+
+.assistant-welcome {
+  display: flex;
+  gap: 10px;
+
+  margin: 14px;
+  padding: 13px;
+
+  border: 1px solid #eadfd7;
+  border-radius: 13px;
+
+  background: #ffffff;
+}
+
+.assistant-welcome-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #f0e5dc;
+  color: #6c4936;
+}
+
+.assistant-welcome strong {
+  display: block;
+
+  color: #3b2b24;
+  font-size: 12px;
+}
+
+.assistant-welcome p {
+  margin: 4px 0 0;
+
+  color: #81746c;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.assistant-messages {
+  flex: 1;
+
+  padding: 2px 14px 14px;
+
+  overflow-y: auto;
+}
+
+/* Messages */
+
+.assistant-message {
+  display: flex;
+  gap: 8px;
+
+  margin-bottom: 13px;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.assistant-message-user {
+  justify-content: flex-end;
+}
+
+.assistant-message-bot {
+  justify-content: flex-start;
+}
+
+.assistant-message-avatar {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: #eee4dd;
+  color: #604535;
+}
+
+.assistant-message-content {
+  max-width: 78%;
+
+  padding: 9px 11px;
+
+  border-radius: 12px;
+}
+
+.assistant-message-bot
+  .assistant-message-content {
+  background: #ffffff;
+  border: 1px solid #e8ded7;
+  color: #493a32;
+  border-top-left-radius: 4px;
+}
+
+.assistant-message-user
+  .assistant-message-content {
+  background: #2f211b;
+  color: #ffffff;
+  border-top-right-radius: 4px;
+}
+
+.assistant-message-error {
+  color: #8b3f35 !important;
+  background: #fff2f0 !important;
+  border-color: #efd4d0 !important;
+}
+
+/* Animation réponse */
+
+.assistant-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 42px;
+}
+
+.assistant-typing span {
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #8d7c71;
+
+  animation: assistant-typing 1.2s infinite ease-in-out;
+}
+
+.assistant-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.assistant-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes assistant-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/* Zone de saisie */
+
+.assistant-panel-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  padding: 12px;
+
+  background: #ffffff;
+  border-top: 1px solid #e8dfd8;
+}
+
+.assistant-panel-input textarea {
+  flex: 1;
+
+  min-height: 40px;
+  max-height: 100px;
+
+  padding: 10px 11px;
+
+  resize: none;
+
+  border: 1px solid #ded3cc;
+  border-radius: 11px;
+
+  background: #faf8f6;
+  color: #332720;
+
+  font: inherit;
+  font-size: 12px;
+
+  outline: none;
+}
+
+.assistant-panel-input textarea:focus {
+  border-color: #a78a76;
+  background: #ffffff;
+}
+
+.assistant-panel-input textarea::placeholder {
+  color: #9b8e85;
+}
+
+.assistant-panel-input button {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 11px;
+
+  background: #2f211b;
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+.assistant-panel-input button:hover:not(:disabled) {
+  background: #493329;
+}
+
+.assistant-panel-input button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+  .assistant-floating-button {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .assistant-floating-panel {
+    right: 16px;
+    bottom: 78px;
+
+    width: calc(100vw - 32px);
+    height: min(600px, calc(100vh - 100px));
+
+    border-radius: 18px;
+  }
+
+  .assistant-floating-label {
+    display: none;
+  }
+
+  .assistant-floating-button:not(
+      .assistant-floating-button-open
+    ) {
+    width: 50px;
+    padding: 0;
+
+    justify-content: center;
+    border-radius: 50%;
+  }
+}
+
