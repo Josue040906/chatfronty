@@ -1,4 +1,8 @@
-import { apiGet } from './client';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+} from './client';
 
 function normalizeResponse(response) {
   if (Array.isArray(response)) {
@@ -14,6 +18,7 @@ function normalizeResponse(response) {
 
 export async function getDocuments() {
   const response = await apiGet('/api/documents');
+
   return normalizeResponse(response);
 }
 
@@ -44,37 +49,33 @@ export async function getDocumentsByAgent(agentId) {
 }
 
 export async function getDocumentHistory() {
-  const response = await apiGet('/api/documents/historique');
+  const response = await apiGet(
+    '/api/documents/historique'
+  );
+
   return normalizeResponse(response);
 }
 
 export async function createDocument(documentData) {
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/documents`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(documentData),
-    }
+  return apiPost(
+    '/api/documents',
+    documentData
   );
+}
 
-  if (!response.ok) {
-    let message = `Erreur API ${response.status}: ${response.statusText}`;
+export async function updateDocument(
+  id,
+  documentData
+) {
+  return apiPut(
+    `/api/documents/${id}`,
+    documentData
+  );
+}
 
-    try {
-      const errorData = await response.json();
-
-      if (errorData?.message) {
-        message = errorData.message;
-      }
-    } catch {
-      // La réponse d'erreur peut ne pas être du JSON.
-    }
-
-    throw new Error(message);
-  }
-
-  return response.json();
+export async function archiveDocument(id) {
+  return apiPut(
+    `/api/documents/${id}/archiver`,
+    {}
+  );
 }

@@ -1,43 +1,49 @@
-import {
-  ArrowLeft,
-  FilePlus2,
-  Save,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { createDocument } from '../../api/documents';
+
 import { getAgents } from '../../api/agents';
-
-const initialForm = {
-  type: 'DEMANDE',
-  objet: '',
-  contenu: '',
-  agentId: '',
-  auteur: '',
-  dateDocument: new Date().toISOString().slice(0, 10),
-};
-
-function getAgentName(agent) {
-  return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
-}
+import { createDocument } from '../../api/documents';
 
 export default function NewDocumentPage() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState(initialForm);
   const [agents, setAgents] = useState([]);
   const [loadingAgents, setLoadingAgents] = useState(true);
-  const [saving, setSaving] = useState(false);
+
+  const [formData, setFormData] = useState({
+    type: 'DEMANDE',
+    objet: '',
+    contenu: '',
+    agentId: '',
+    dossierId: null,
+    auteur: '',
+    dateDocument: new Date()
+      .toISOString()
+      .slice(0, 10),
+  });
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadAgents() {
+    async function chargerAgents() {
       try {
+        setLoadingAgents(true);
+        setError('');
+
         const data = await getAgents();
-        setAgents(data);
+
+        setAgents(
+          Array.isArray(data)
+            ? data
+            : []
+        );
       } catch (err) {
         console.error(err);
+
         setError(
+          err.message ||
           'Impossible de charger la liste des agents.'
         );
       } finally {
@@ -45,53 +51,82 @@ export default function NewDocumentPage() {
       }
     }
 
-    loadAgents();
+    chargerAgents();
   }, []);
 
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setForm((current) => ({
-      ...current,
+    setFormData((previous) => ({
+      ...previous,
       [name]: value,
     }));
+
+    if (error) {
+      setError('');
+    }
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!form.objet.trim()) {
-      setError('L’objet du document est obligatoire.');
+    setError('');
+
+    if (!formData.objet.trim()) {
+      setError(
+        "L'objet du document est obligatoire."
+      );
       return;
     }
 
-    if (!form.contenu.trim()) {
-      setError('Le contenu du document est obligatoire.');
+    if (!formData.contenu.trim()) {
+      setError(
+        'Le contenu du document est obligatoire.'
+      );
       return;
     }
 
-    if (!form.agentId) {
-      setError('Veuillez sélectionner l’agent concerné.');
+    if (!formData.agentId) {
+      setError(
+        "L'agent concerné est obligatoire."
+      );
       return;
     }
 
     try {
-      setSaving(true);
-      setError('');
+      setLoading(true);
 
-      const createdDocument = await createDocument({
-        type: form.type,
-        objet: form.objet.trim(),
-        contenu: form.contenu.trim(),
-        agentId: Number(form.agentId),
-        dossierId: null,
-        auteur: form.auteur.trim() || null,
-        dateDocument: form.dateDocument || null,
-      });
+      const documentData = {
+        type: formData.type,
+
+        objet: formData.objet.trim(),
+
+        contenu: formData.contenu.trim(),
+
+        agentId: Number(
+          formData.agentId
+        ),
+
+        dossierId: formData.dossierId
+          ? Number(formData.dossierId)
+          : null,
+
+        auteur:
+          formData.auteur.trim() || null,
+
+        dateDocument:
+          formData.dateDocument || null,
+      };
+
+      const document =
+        await createDocument(
+          documentData
+        );
 
       navigate('/documents', {
         state: {
-          documentCreated: createdDocument,
+          successMessage:
+            `Le document ${document.reference} a été créé avec succès.`,
         },
       });
     } catch (err) {
@@ -99,206 +134,212 @@ export default function NewDocumentPage() {
 
       setError(
         err.message ||
-          'Impossible d’enregistrer le document.'
+        'Une erreur est survenue lors de la création du document.'
       );
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   }
 
   return (
-    <section className="page-section document-form-page">
-      <button
-        type="button"
-        className="page-back-button"
-        onClick={() => navigate('/documents')}
-      >
-        <ArrowLeft size={25} />
-        Retour aux documents
-      </button>
-
-      <div className="page-header">
+    <div className="administration-page">
+      <div className="administration-header">
         <div>
-          <span className="page-eyebrow">
-            GESTION DOCUMENTAIRE
-          </span>
+          <button
+            type="button"
+            className="administration-back-button"
+            onClick={() =>
+              navigate('/documents')
+            }
+          >
+            <ArrowLeft size={18} />
+            Retour aux documents
+          </button>
 
-          <h1>Nouveau document</h1>
+          <h1>
+            Nouveau document
+          </h1>
 
           <p>
-            Enregistrez une demande, un courrier ou un acte
-            administratif RH.
+            Créez un nouveau document RH
+            associé à un agent.
           </p>
         </div>
       </div>
 
+      {error && (
+        <div className="administration-state-error">
+          {error}
+        </div>
+      )}
+
       <form
-        className="document-form-card"
+        className="administration-form"
         onSubmit={handleSubmit}
       >
-        <div className="document-form-heading">
-          <div className="document-coming-icon">
-            <FilePlus2 size={28} />
-          </div>
+        <div className="administration-form-group">
+          <label htmlFor="type">
+            Type de document
+          </label>
 
-          <div>
-            <h2>Informations du document</h2>
+          <select
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            <option value="DEMANDE">
+              Demande
+            </option>
 
-            <p>
-              Le document sera enregistré comme brouillon.
-            </p>
-          </div>
+            <option value="COURRIER">
+              Courrier
+            </option>
+
+            <option value="ACTE">
+              Acte
+            </option>
+          </select>
         </div>
 
-        {error && (
-          <div className="documents-error">
-            {error}
-          </div>
-        )}
+        <div className="administration-form-group">
+          <label htmlFor="objet">
+            Objet <span>*</span>
+          </label>
 
-        <div className="document-form-grid">
-          <div className="form-field">
-            <label htmlFor="type">
-              Type de document
-            </label>
-
-            <select
-              id="type"
-              name="type"
-              value={form.type}
-              onChange={handleChange}
-            >
-              <option value="DEMANDE">
-                Demande administrative
-              </option>
-
-              <option value="COURRIER">
-                Courrier
-              </option>
-
-              <option value="ACTE">
-                Acte administratif
-              </option>
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="dateDocument">
-              Date du document
-            </label>
-
-            <input
-              id="dateDocument"
-              name="dateDocument"
-              type="date"
-              value={form.dateDocument}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-field form-field-full">
-            <label htmlFor="objet">
-              Objet
-            </label>
-
-            <input
-              id="objet"
-              name="objet"
-              type="text"
-              value={form.objet}
-              onChange={handleChange}
-              placeholder="Ex. Demande de congé annuel"
-              maxLength={255}
-              required
-            />
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="agentId">
-              Agent concerné
-            </label>
-
-            <select
-              id="agentId"
-              name="agentId"
-              value={form.agentId}
-              onChange={handleChange}
-              disabled={loadingAgents}
-              required
-            >
-              <option value="">
-                {loadingAgents
-                  ? 'Chargement des agents...'
-                  : 'Sélectionner un agent'}
-              </option>
-
-              {agents.map((agent) => (
-                <option
-                  key={agent.id}
-                  value={agent.id}
-                >
-                  {getAgentName(agent)} — {agent.matricule}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="auteur">
-              Auteur
-            </label>
-
-            <input
-              id="auteur"
-              name="auteur"
-              type="text"
-              value={form.auteur}
-              onChange={handleChange}
-              placeholder="Nom de l’auteur"
-              maxLength={150}
-            />
-          </div>
-
-          <div className="form-field form-field-full">
-            <label htmlFor="contenu">
-              Contenu
-            </label>
-
-            <textarea
-              id="contenu"
-              name="contenu"
-              value={form.contenu}
-              onChange={handleChange}
-              placeholder="Saisissez le contenu du document..."
-              rows={12}
-              required
-            />
-          </div>
+          <input
+            id="objet"
+            name="objet"
+            type="text"
+            value={formData.objet}
+            onChange={handleChange}
+            maxLength={255}
+            placeholder="Ex. Demande de congé annuel"
+          />
         </div>
 
-        <div className="document-form-footer">
+        <div className="administration-form-group">
+          <label htmlFor="agentId">
+            Agent concerné <span>*</span>
+          </label>
+
+          <select
+            id="agentId"
+            name="agentId"
+            value={formData.agentId}
+            onChange={handleChange}
+            disabled={loadingAgents}
+          >
+            <option value="">
+              {loadingAgents
+                ? 'Chargement des agents...'
+                : 'Sélectionner un agent'}
+            </option>
+
+            {agents.map((agent) => (
+              <option
+                key={agent.id}
+                value={agent.id}
+              >
+                {agent.matricule
+                  ? `${agent.matricule} — `
+                  : ''}
+
+                {agent.prenom || ''}{' '}
+
+                {agent.nom || ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="administration-form-group">
+          <label htmlFor="auteur">
+            Auteur
+          </label>
+
+          <input
+            id="auteur"
+            name="auteur"
+            type="text"
+            value={formData.auteur}
+            onChange={handleChange}
+            maxLength={150}
+            placeholder="Nom de l'auteur du document"
+          />
+        </div>
+
+        <div className="administration-form-group">
+          <label htmlFor="dateDocument">
+            Date du document
+          </label>
+
+          <input
+            id="dateDocument"
+            name="dateDocument"
+            type="date"
+            value={formData.dateDocument}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="administration-form-group">
+          <label htmlFor="contenu">
+            Contenu <span>*</span>
+          </label>
+
+          <textarea
+            id="contenu"
+            name="contenu"
+            value={formData.contenu}
+            onChange={handleChange}
+            rows={10}
+            placeholder="Saisissez le contenu du document..."
+          />
+        </div>
+
+        <div className="administration-form-info">
+          <strong>
+            Statut initial :
+          </strong>{' '}
+          Brouillon
+
+          <br />
+
+          Le document sera créé comme
+          brouillon. Vous pourrez ensuite
+          le modifier ou l'archiver depuis
+          son espace de gestion.
+        </div>
+
+        <div className="administration-form-actions">
           <button
             type="button"
-            className="secondary-button"
-            onClick={() => navigate('/documents')}
-            disabled={saving}
+            className="administration-button-secondary"
+            onClick={() =>
+              navigate('/documents')
+            }
+            disabled={loading}
           >
             Annuler
           </button>
 
           <button
             type="submit"
-            className="primary-button"
-            disabled={saving}
+            className="administration-button-primary"
+            disabled={
+              loading ||
+              loadingAgents
+            }
           >
-            <Save size={17} />
+            <Save size={18} />
 
-            {saving
-              ? 'Enregistrement...'
-              : 'Enregistrer le brouillon'}
+            {loading
+              ? 'Création...'
+              : 'Créer le document'}
           </button>
         </div>
       </form>
-    </section>
+    </div>
   );
 }

@@ -1,256 +1,412 @@
-
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
-  History,
+  Eye,
+  FileText,
   Search,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { getDocumentHistory } from '../../api/documents';
-
-function formatDate(value) {
-  if (!value) {
-    return '—';
-  }
-
-  const match = String(value).match(
-    /^(\d{4})-(\d{2})-(\d{2})/
-  );
-
-  if (!match) {
-    return '—';
-  }
-
-  const [, year, month, day] = match;
-
-  return `${day}/${month}/${year}`;
-}
-
-function getDocumentTypeLabel(type) {
-  const labels = {
-    DEMANDE: 'Demande',
-    COURRIER: 'Courrier',
-    ACTE: 'Acte',
-  };
-
-  return labels[type] || type || '—';
-}
-
-function getStatusLabel(status) {
-  const labels = {
-    BROUILLON: 'Brouillon',
-    A_VERIFIER: 'À vérifier',
-    VALIDE: 'Validé',
-    SIGNE: 'Signé',
-    ARCHIVE: 'Archivé',
-  };
-
-  return labels[status] || status || '—';
-}
-
-function getAgentName(document) {
-  if (!document.agent_nom && !document.agent_prenom) {
-    return 'Aucun agent';
-  }
-
-  return `${document.agent_prenom || ''} ${
-    document.agent_nom || ''
-  }`.trim();
-}
 
 export default function DocumentHistoryPage() {
   const navigate = useNavigate();
 
   const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState('');
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadHistory() {
-      try {
-        setLoading(true);
-        setError('');
-
-        const data = await getDocumentHistory();
-
-        setDocuments(data);
-      } catch (err) {
-        console.error(err);
-
-        setError(
-          'Impossible de charger l’historique documentaire.'
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadHistory();
+    chargerHistorique();
   }, []);
 
-  const filteredDocuments = documents.filter((document) => {
-    const value = search.trim().toLowerCase();
+  async function chargerHistorique() {
+    try {
+      setLoading(true);
+      setError('');
 
+      const data =
+        await getDocumentHistory();
+
+      setDocuments(
+        Array.isArray(data)
+          ? data
+          : []
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.message ||
+        "Impossible de charger l'historique des documents."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function formatDate(value) {
     if (!value) {
-      return true;
+      return '—';
     }
 
-    return [
-      document.reference,
-      document.type,
-      document.objet,
-      document.statut,
-      document.auteur,
-      document.agent_nom,
-      document.agent_prenom,
-      document.agent_matricule,
-    ]
-      .filter(Boolean)
-      .some((field) =>
-        String(field).toLowerCase().includes(value)
-      );
-  });
+    if (typeof value !== 'string') {
+      return '—';
+    }
+
+    const date = value.slice(0, 10);
+    const parts = date.split('-');
+
+    if (parts.length !== 3) {
+      return date;
+    }
+
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+
+  function formatDateTime(value) {
+    if (!value) {
+      return '—';
+    }
+
+    if (typeof value !== 'string') {
+      return '—';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return formatDate(value);
+    }
+
+    return date.toLocaleString(
+      'fr-FR',
+      {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }
+    );
+  }
+
+  function getTypeLabel(type) {
+    switch (type) {
+      case 'DEMANDE':
+        return 'Demande';
+
+      case 'COURRIER':
+        return 'Courrier';
+
+      case 'ACTE':
+        return 'Acte';
+
+      default:
+        return type || '—';
+    }
+  }
+
+  function getStatusLabel(status) {
+    switch (status) {
+      case 'BROUILLON':
+        return 'Brouillon';
+
+      case 'A_VERIFIER':
+        return 'À vérifier';
+
+      case 'VALIDE':
+        return 'Validé';
+
+      case 'SIGNE':
+        return 'Signé';
+
+      case 'ARCHIVE':
+        return 'Archivé';
+
+      default:
+        return status || '—';
+    }
+  }
+
+  function getAgentName(documentData) {
+    const prenom =
+      documentData.agent_prenom || '';
+
+    const nom =
+      documentData.agent_nom || '';
+
+    const fullName =
+      `${prenom} ${nom}`.trim();
+
+    if (fullName) {
+      return fullName;
+    }
+
+    return (
+      documentData.agent_matricule ||
+      '—'
+    );
+  }
+
+  const filteredDocuments = useMemo(() => {
+    const value =
+      search.trim().toLowerCase();
+
+    if (!value) {
+      return documents;
+    }
+
+    return documents.filter(
+      (documentData) => {
+        const searchableText = [
+          documentData.reference,
+          documentData.type,
+          documentData.objet,
+          documentData.contenu,
+          documentData.statut,
+          documentData.auteur,
+          documentData.agent_matricule,
+          documentData.agent_nom,
+          documentData.agent_prenom,
+          documentData.agent_service,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        return searchableText.includes(
+          value
+        );
+      }
+    );
+  }, [documents, search]);
 
   return (
-    <section className="page-section document-form-page">
-      <button
-        type="button"
-        className="page-back-button"
-        onClick={() => navigate('/documents')}
-      >
-        <ArrowLeft size={17} />
-        Retour aux documents
-      </button>
-
-      <div className="page-header">
+    <div className="administration-page">
+      <div className="administration-header">
         <div>
-          <span className="page-eyebrow">
-            GESTION DOCUMENTAIRE
-          </span>
+          <button
+            type="button"
+            className="administration-back-button"
+            onClick={() =>
+              navigate('/documents')
+            }
+          >
+            <ArrowLeft size={18} />
+            Retour aux documents
+          </button>
 
-          <h1>Historique</h1>
+          <h1>
+            Historique des documents
+          </h1>
 
           <p>
-            Consultez les documents précédemment enregistrés
-            dans le système RH.
+            Consultez les documents
+            enregistrés dans le système.
           </p>
         </div>
       </div>
 
-      <div className="document-history-card">
-        <div className="document-form-heading">
-          <div className="document-coming-icon">
-            <History size={28} />
-          </div>
-
-          <div>
-            <h2>Historique documentaire</h2>
-
-            <p>
-              {loading
-                ? 'Chargement des documents...'
-                : `${filteredDocuments.length} document${
-                    filteredDocuments.length > 1 ? 's' : ''
-                  } enregistré${
-                    filteredDocuments.length > 1 ? 's' : ''
-                  }`}
-            </p>
-          </div>
+      {error && (
+        <div className="administration-state-error">
+          {error}
         </div>
+      )}
 
-        <div className="documents-search">
+      <div className="administration-toolbar">
+        <div className="administration-search">
           <Search size={18} />
 
           <input
             type="text"
             value={search}
             onChange={(event) =>
-              setSearch(event.target.value)
+              setSearch(
+                event.target.value
+              )
             }
-            placeholder="Rechercher dans l’historique..."
-            aria-label="Rechercher dans l’historique"
+            placeholder="Rechercher dans l'historique..."
           />
         </div>
+      </div>
 
-        {error && (
-          <div className="documents-error">
-            {error}
-          </div>
-        )}
+      <div className="administration-section-header">
+        <div>
+          <h2>
+            Documents enregistrés
+          </h2>
 
-        {!loading && filteredDocuments.length > 0 && (
-          <div className="documents-table-wrapper">
-            <table className="documents-table">
-              <thead>
-                <tr>
-                  <th>Référence</th>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Objet</th>
-                  <th>Agent</th>
-                  <th>Statut</th>
-                  <th>Auteur</th>
-                </tr>
-              </thead>
+          <span>
+            {filteredDocuments.length}{' '}
+            document
+            {filteredDocuments.length !== 1
+              ? 's'
+              : ''}
+          </span>
+        </div>
+      </div>
 
-              <tbody>
-                {filteredDocuments.map((document) => (
-                  <tr key={document.id}>
+      {loading ? (
+        <div className="administration-state">
+          Chargement de l'historique...
+        </div>
+      ) : filteredDocuments.length === 0 ? (
+        <div className="administration-empty">
+          <FileText size={42} />
+
+          <h3>
+            Aucun document trouvé
+          </h3>
+
+          <p>
+            Aucun document ne correspond
+            à votre recherche.
+          </p>
+        </div>
+      ) : (
+        <div className="administration-table-wrapper">
+          <table className="administration-table">
+            <thead>
+              <tr>
+                <th>
+                  Référence
+                </th>
+
+                <th>
+                  Date
+                </th>
+
+                <th>
+                  Type
+                </th>
+
+                <th>
+                  Objet
+                </th>
+
+                <th>
+                  Agent
+                </th>
+
+                <th>
+                  Statut
+                </th>
+
+                <th>
+                  Auteur
+                </th>
+
+                <th>
+                  Action
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredDocuments.map(
+                (documentData) => (
+                  <tr
+                    key={
+                      documentData.id
+                    }
+                  >
                     <td>
-                      <strong>{document.reference}</strong>
+                      <strong>
+                        {
+                          documentData.reference
+                        }
+                      </strong>
                     </td>
 
                     <td>
-                      {formatDate(document.date_document)}
+                      {formatDate(
+                        documentData.date_document
+                      )}
                     </td>
 
                     <td>
-                      <span className="document-type-badge">
-                        {getDocumentTypeLabel(document.type)}
-                      </span>
+                      {getTypeLabel(
+                        documentData.type
+                      )}
                     </td>
 
-                    <td>{document.objet}</td>
+                    <td>
+                      <div className="administration-table-main">
+                        {
+                          documentData.objet
+                        }
+                      </div>
+                    </td>
 
-                    <td>{getAgentName(document)}</td>
+                    <td>
+                      <div>
+                        {getAgentName(
+                          documentData
+                        )}
+                      </div>
+
+                      {documentData.agent_matricule && (
+                        <small>
+                          {
+                            documentData.agent_matricule
+                          }
+                        </small>
+                      )}
+                    </td>
 
                     <td>
                       <span
-                        className={`document-status-badge document-status-${String(
-                          document.statut || ''
+                        className={`administration-status administration-status-${String(
+                          documentData.statut ||
+                            ''
                         ).toLowerCase()}`}
                       >
-                        {getStatusLabel(document.statut)}
+                        {getStatusLabel(
+                          documentData.statut
+                        )}
                       </span>
                     </td>
 
-                    <td>{document.auteur || '—'}</td>
+                    <td>
+                      {documentData.auteur ||
+                        '—'}
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="administration-table-action"
+                        onClick={() =>
+                          navigate(
+                            `/documents/${documentData.id}`
+                          )
+                        }
+                        title="Consulter le document"
+                      >
+                        <Eye size={17} />
+                        Consulter
+                      </button>
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {!loading && filteredDocuments.length === 0 && (
-          <div className="documents-history-empty">
-            <History size={28} />
+      <div className="administration-document-summary">
+        <div>
+          <FileText size={18} />
 
-            <h3>
-              {documents.length === 0
-                ? 'Aucun historique'
-                : 'Aucun résultat'}
-            </h3>
-
-            <p>
-              {documents.length === 0
-                ? 'Les documents enregistrés apparaîtront ici.'
-                : 'Aucun document ne correspond à votre recherche.'}
-            </p>
-          </div>
-        )}
+          <span>
+            Cet écran présente actuellement
+            les documents enregistrés. La
+            gestion des versions successives
+            pourra être ajoutée ultérieurement.
+          </span>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

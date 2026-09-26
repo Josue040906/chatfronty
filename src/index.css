@@ -3221,6 +3221,11 @@ button {
   border-left: none;
 }
 
+.organisation-unattached .organisation-service {
+  width: 100%;
+  margin-left: 0;
+}
+
 .organisation-unattached .organisation-service::before {
   display: none;
 }
@@ -7617,5 +7622,777 @@ select[aria-label] option {
   .administration-icon-button {
     width: 32px;
     height: 32px;
+  }
+}
+/* =========================================================
+   DOCUMENTS RH
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   En-tête des pages Documents
+   --------------------------------------------------------- */
+
+.administration-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.administration-header > div:first-child {
+  min-width: 0;
+}
+
+.administration-header h1 {
+  margin: 0;
+  color: #3a2a1e;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.administration-header p {
+  max-width: 680px;
+  margin: 9px 0 0;
+  color: #88796b;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.administration-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+
+/* ---------------------------------------------------------
+   Boutons principaux
+   --------------------------------------------------------- */
+
+.administration-button-primary,
+.administration-button-secondary,
+.administration-button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 15px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.administration-button-primary {
+  border: 1px solid #5f4635;
+  background: #5f4635;
+  color: #ffffff;
+}
+
+.administration-button-primary:hover {
+  border-color: #4d382b;
+  background: #4d382b;
+  box-shadow: 0 5px 14px rgba(95, 70, 53, 0.18);
+  transform: translateY(-1px);
+}
+
+.administration-button-secondary {
+  border: 1px solid #ded8d2;
+  background: #ffffff;
+  color: #655b54;
+}
+
+.administration-button-secondary:hover {
+  border-color: #cfc2b6;
+  background: #f8f5f2;
+  color: #4f392b;
+}
+
+.administration-button-danger {
+  border: 1px solid #e5caca;
+  background: #ffffff;
+  color: #a33a3a;
+}
+
+.administration-button-danger:hover {
+  border-color: #d9aaaa;
+  background: #fff6f6;
+  color: #922f2f;
+}
+
+.administration-button-primary:disabled,
+.administration-button-secondary:disabled,
+.administration-button-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* ---------------------------------------------------------
+   Message de succès
+   --------------------------------------------------------- */
+
+.administration-success {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #ecfdf3;
+  color: #18794e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   Barre de recherche et filtres
+   --------------------------------------------------------- */
+
+.administration-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.administration-filters select {
+  height: 44px;
+  min-width: 155px;
+  padding: 0 12px;
+  border: 1px solid #e1ddd8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #5f554d;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.administration-filters select:focus {
+  border-color: #bca996;
+  box-shadow:
+    0 0 0 3px rgba(120, 91, 66, 0.08);
+}
+
+
+/* ---------------------------------------------------------
+   En-tête de section
+   --------------------------------------------------------- */
+
+.administration-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 26px 0 14px;
+}
+
+.administration-section-header > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.administration-section-header h2 {
+  margin: 0;
+  color: #49382d;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.administration-section-header span {
+  color: #9a8d81;
+  font-size: 11px;
+}
+
+
+/* ---------------------------------------------------------
+   Tableau
+   --------------------------------------------------------- */
+
+.administration-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e4ddd6;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 2px 7px rgba(45, 34, 27, 0.035);
+}
+
+.administration-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.administration-table thead {
+  background: #faf8f5;
+}
+
+.administration-table th {
+  height: 46px;
+  padding: 0 15px;
+  border-bottom: 1px solid #e7e1db;
+  color: #76685d;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.administration-table td {
+  padding: 13px 15px;
+  border-bottom: 1px solid #eeeae6;
+  color: #514941;
+  vertical-align: middle;
+}
+
+.administration-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.administration-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.administration-table tbody tr:hover {
+  background: #fdfbf9;
+}
+
+.administration-table td strong {
+  color: #49382d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.administration-table td small {
+  display: block;
+  margin-top: 3px;
+  color: #9a9088;
+  font-size: 10px;
+}
+
+.administration-table-main {
+  max-width: 280px;
+  overflow: hidden;
+  color: #403731;
+  font-weight: 500;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   Statuts
+   --------------------------------------------------------- */
+
+.administration-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.administration-status-brouillon {
+  border-color: #e5ddd5;
+  background: #f6f3f0;
+  color: #75685e;
+}
+
+.administration-status-a_verifier {
+  border-color: #ead9b7;
+  background: #fff9ec;
+  color: #936b22;
+}
+
+.administration-status-valide {
+  border-color: #c9e7d5;
+  background: #effaf3;
+  color: #31734d;
+}
+
+.administration-status-signe {
+  border-color: #cbdaf0;
+  background: #f1f6fc;
+  color: #3e6187;
+}
+
+.administration-status-archive {
+  border-color: #ddd9d5;
+  background: #f4f3f2;
+  color: #77716c;
+}
+
+
+/* ---------------------------------------------------------
+   Actions du tableau
+   --------------------------------------------------------- */
+
+.administration-table-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e2dbd4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #66584d;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.administration-table-action:hover {
+  border-color: #cfc1b5;
+  background: #f8f5f2;
+  color: #4f392b;
+  transform: translateY(-1px);
+}
+
+
+/* ---------------------------------------------------------
+   État vide
+   --------------------------------------------------------- */
+
+.administration-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 40px 24px;
+  border: 1px dashed #ddd7d0;
+  border-radius: 14px;
+  background: #faf9f7;
+  text-align: center;
+}
+
+.administration-empty > svg {
+  margin-bottom: 12px;
+  color: #aa9b8c;
+}
+
+.administration-empty h3 {
+  margin: 0;
+  color: #4c3d32;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.administration-empty p {
+  max-width: 420px;
+  margin: 7px 0 18px;
+  color: #8b8178;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+
+/* ---------------------------------------------------------
+   Informations de formulaire
+   --------------------------------------------------------- */
+
+.administration-form-info {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e6ded5;
+  border-radius: 9px;
+  background: #faf7f3;
+  color: #75685d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.administration-form-info strong {
+  color: #554438;
+}
+
+
+/* ---------------------------------------------------------
+   Champs utilisés directement par Documents
+   --------------------------------------------------------- */
+
+.administration-form-group {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.administration-form-group label {
+  color: #4d4037;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.administration-form-group label span {
+  color: #a33a3a;
+}
+
+.administration-form-group input,
+.administration-form-group textarea,
+.administration-form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dfe3e8;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #2f2925;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.administration-form-group input,
+.administration-form-group select {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.administration-form-group textarea {
+  min-height: 180px;
+  padding: 11px 13px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.administration-form-group input:focus,
+.administration-form-group textarea:focus,
+.administration-form-group select:focus {
+  border-color: #bca996;
+  box-shadow:
+    0 0 0 3px rgba(120, 91, 66, 0.08);
+}
+
+.administration-form-group input:disabled,
+.administration-form-group textarea:disabled,
+.administration-form-group select:disabled {
+  background: #f8f7f5;
+  color: #8b837c;
+  cursor: not-allowed;
+}
+
+.administration-form-group input::placeholder,
+.administration-form-group textarea::placeholder {
+  color: #aaa29b;
+}
+
+
+/* ---------------------------------------------------------
+   Page de détails
+   --------------------------------------------------------- */
+
+.administration-details-card {
+  overflow: hidden;
+  border: 1px solid #e3ddd6;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(45, 34, 27, 0.04);
+}
+
+.administration-details-main {
+  padding: 24px;
+}
+
+.administration-details-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 12px;
+  border-radius: 11px;
+  background: #f4ede5;
+  color: #705039;
+}
+
+.administration-details-reference {
+  margin: 0;
+  color: #3a2a1e;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.administration-details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.administration-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 22px;
+  border-top: 1px solid #eee9e4;
+}
+
+.administration-details-section {
+  padding: 20px 0;
+  border-bottom: 1px solid #eee9e4;
+}
+
+.administration-details-section:nth-child(odd) {
+  padding-right: 24px;
+}
+
+.administration-details-section:nth-child(even) {
+  padding-left: 24px;
+  border-left: 1px solid #eee9e4;
+}
+
+.administration-details-section h3 {
+  margin: 0 0 12px;
+  color: #59483b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.administration-details-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 12px;
+  padding: 7px 0;
+}
+
+.administration-details-row span:first-child {
+  color: #968a80;
+  font-size: 11px;
+}
+
+.administration-details-row span:last-child {
+  color: #4d443e;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.administration-details-content {
+  padding: 20px 24px 24px;
+  border-top: 1px solid #eee9e4;
+}
+
+.administration-details-content h3 {
+  margin: 0 0 12px;
+  color: #59483b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.administration-document-content {
+  margin: 0;
+  padding: 18px;
+  border: 1px solid #ebe5df;
+  border-radius: 10px;
+  background: #faf9f7;
+  color: #4b433d;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+
+/* ---------------------------------------------------------
+   Impression
+   --------------------------------------------------------- */
+
+.document-print-sheet {
+  display: none;
+}
+
+
+/* ---------------------------------------------------------
+   Résumé Documents
+   --------------------------------------------------------- */
+
+.administration-document-summary {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.administration-document-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #92877d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.administration-document-summary svg {
+  flex-shrink: 0;
+  color: #aa9b8c;
+}
+
+
+/* ---------------------------------------------------------
+   Responsive Documents
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .administration-header {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .administration-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .administration-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .administration-search {
+    width: 100%;
+  }
+
+  .administration-filters {
+    width: 100%;
+  }
+
+  .administration-filters select {
+    flex: 1;
+  }
+
+  .administration-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .administration-details-section:nth-child(odd),
+  .administration-details-section:nth-child(even) {
+    padding-right: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .administration-header h1 {
+    font-size: 28px;
+  }
+
+  .administration-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .administration-header-actions button {
+    width: 100%;
+  }
+
+  .administration-filters {
+    flex-direction: column;
+  }
+
+  .administration-filters select {
+    width: 100%;
+  }
+
+  .administration-table-wrapper {
+    border-radius: 10px;
+  }
+
+  .administration-details-main {
+    padding: 18px;
+  }
+
+  .administration-details-content {
+    padding: 18px;
+  }
+
+  .administration-details-row {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .administration-details-section {
+    padding: 16px 0;
+  }
+
+  .administration-form {
+    padding: 18px;
+  }
+
+  .administration-form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .administration-form-actions button {
+    width: 100%;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   Impression réelle du document
+   --------------------------------------------------------- */
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .document-print-sheet,
+  .document-print-sheet * {
+    visibility: visible;
+  }
+
+  .document-print-sheet {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 30px;
+    box-sizing: border-box;
+    background: #ffffff;
+    color: #000000;
   }
 }

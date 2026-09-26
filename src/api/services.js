@@ -1,4 +1,9 @@
-import { apiGet } from './client';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+} from './client';
 
 function normalizeResponse(response) {
   if (Array.isArray(response)) {
@@ -14,6 +19,7 @@ function normalizeResponse(response) {
 
 export async function getServices() {
   const response = await apiGet('/api/services');
+
   return normalizeResponse(response);
 }
 
@@ -33,4 +39,16 @@ export async function searchServices(query) {
   );
 
   return normalizeResponse(response);
+}
+
+export async function createService(data) {
+  return apiPost('/api/services', data);
+}
+
+export async function updateService(id, data) {
+  return apiPut(`/api/services/${id}`, data);
+}
+
+export async function deleteService(id) {
+  return apiDelete(`/api/services/${id}`);
 }
