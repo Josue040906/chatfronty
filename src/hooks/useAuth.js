@@ -24,19 +24,29 @@ export function useAuth() {
   const login = async (credentials) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/utilisateurs/par-email?email=${encodeURIComponent(credentials.email)}`
+        `${API_URL}/api/utilisateurs/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        }
       );
 
-      if (response.status === 404) {
+      if (response.status === 401) {
         return {
           success: false,
-          error: 'Utilisateur introuvable.',
+          error: 'Adresse e-mail ou mot de passe incorrect.',
         };
       }
 
       if (!response.ok) {
         throw new Error(
-          'Erreur lors de la récupération de l’utilisateur.'
+          'Erreur lors de la connexion.'
         );
       }
 
