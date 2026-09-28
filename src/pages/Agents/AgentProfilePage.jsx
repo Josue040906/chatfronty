@@ -20,28 +20,12 @@ import {
   updateAgent,
   uploadAgentPhoto,
 } from '../../api/agents';
-
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
-}
-
-function getInitials(agent) {
-  return `${agent.prenom?.charAt(0) || ''}${agent.nom?.charAt(0) || ''}`;
-}
-
-function getPhotoUrl(photo) {
-  if (!photo) {
-    return '';
-  }
-
-  if (
-    photo.startsWith('http://') ||
-    photo.startsWith('https://')
-  ) {
-    return photo;
-  }
-
-  return `http://localhost:8080${photo}`;
 }
 
 function formatDate(value) {
@@ -330,7 +314,7 @@ export default function AgentProfilePage() {
   }
 
   const displayedPhoto =
-    photoPreview || getPhotoUrl(agent.photo);
+    photoPreview || getEmployeePhotoUrl(agent.photo);
 
   return (
     <div className="agent-profile-page">
@@ -349,16 +333,16 @@ export default function AgentProfilePage() {
 
       <section className="agent-profile-hero">
         <div className="agent-profile-identity">
-          <div className="agent-profile-avatar">
-            {getPhotoUrl(agent.photo) ? (
-              <img
-                src={getPhotoUrl(agent.photo)}
-                alt={`Photo de ${formatName(agent)}`}
-              />
-            ) : (
-              getInitials(agent)
-            )}
-          </div>
+        <div className="agent-profile-avatar">
+          {getEmployeePhotoUrl(agent.photo) ? (
+            <img
+              src={getEmployeePhotoUrl(agent.photo)}
+              alt={`Photo de ${formatName(agent)}`}
+            />
+          ) : (
+            getEmployeeInitials(agent)
+          )}
+        </div>
 
           <div>
             <p className="page-eyebrow">
@@ -794,7 +778,7 @@ export default function AgentProfilePage() {
                       />
                     ) : (
                       <span>
-                        {getInitials(agent)}
+                        {getEmployeeInitials(agent)}
                       </span>
                     )}
                   </div>

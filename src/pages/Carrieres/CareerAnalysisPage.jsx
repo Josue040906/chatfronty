@@ -21,13 +21,16 @@ import {
   getCareerHistory,
 } from '../../api/carrieres';
 
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';
+
 function formatName(agent) {
   return `${agent?.prenom || ''} ${agent?.nom || ''}`.trim();
 }
 
-function getInitials(agent) {
-  return `${agent?.prenom?.charAt(0) || ''}${agent?.nom?.charAt(0) || ''}`;
-}
+
 
 function formatDate(value) {
   if (!value) return '—';
@@ -181,9 +184,16 @@ export default function CareerAnalysisPage() {
 
       <section className="career-analysis-hero">
         <div className="career-analysis-identity">
-          <div className="career-analysis-avatar">
-            {getInitials(agent)}
-          </div>
+        <div className="career-analysis-avatar">
+          {getEmployeePhotoUrl(agent.photo) ? (
+            <img
+              src={getEmployeePhotoUrl(agent.photo)}
+              alt={formatName(agent)}
+            />
+          ) : (
+            getEmployeeInitials(agent)
+          )}
+        </div>
 
           <div>
             <p className="page-eyebrow">

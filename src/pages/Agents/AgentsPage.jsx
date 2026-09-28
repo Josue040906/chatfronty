@@ -1,3 +1,8 @@
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';
+
 import { useEffect, useMemo, useState } from 'react';
 import {
   BriefcaseBusiness,
@@ -11,9 +16,6 @@ function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
 
-function getInitials(agent) {
-  return `${agent.prenom?.charAt(0) || ''}${agent.nom?.charAt(0) || ''}`;
-}
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState([]);
@@ -190,7 +192,14 @@ export default function AgentsPage() {
                     <td>
                       <div className="agent-table-person">
                         <div className="agent-table-avatar">
-                          {getInitials(agent)}
+                          {getEmployeePhotoUrl(agent.photo) ? (
+                            <img
+                              src={getEmployeePhotoUrl(agent.photo)}
+                              alt={`Photo de ${formatName(agent)}`}
+                            />
+                          ) : (
+                            getEmployeeInitials(agent)
+                          )}
                         </div>
 
                         <div>

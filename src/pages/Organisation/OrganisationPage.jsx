@@ -10,34 +10,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getOrganisationData } from '../../api/organisation';
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';
 
-const API_URL = 'http://localhost:8080';
 
 /* =========================================================
    HELPERS
    ========================================================= */
 
-function getInitials(agent) {
-  const first = agent?.prenom?.charAt(0) || '';
-  const last = agent?.nom?.charAt(0) || '';
 
-  return `${first}${last}`.toUpperCase();
-}
-
-function getPhotoUrl(photo) {
-  if (!photo) {
-    return '';
-  }
-
-  if (
-    photo.startsWith('http://') ||
-    photo.startsWith('https://')
-  ) {
-    return photo;
-  }
-
-  return `${API_URL}${photo}`;
-}
 
 function getAgentFullName(agent) {
   if (!agent) {
@@ -109,7 +92,7 @@ function AgentMiniCard({
     return null;
   }
 
-  const photoUrl = getPhotoUrl(agent.photo);
+  const photoUrl = getEmployeePhotoUrl(agent.photo);
   const fullName = getAgentFullName(agent);
   const isLead = Boolean(role);
 
@@ -133,7 +116,7 @@ function AgentMiniCard({
             alt={fullName}
           />
         ) : (
-          <span>{getInitials(agent)}</span>
+          <span>{getEmployeeInitials(agent)}</span>
         )}
       </div>
 

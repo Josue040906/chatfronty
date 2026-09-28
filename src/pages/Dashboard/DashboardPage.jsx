@@ -8,6 +8,10 @@ import {
 } from 'lucide-react';
 
 import { getDashboardData } from '../../api/dashboard';
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';  
 
 function formatName(employee) {
   return `${employee.prenom || ''} ${employee.nom || ''}`.trim();
@@ -212,10 +216,16 @@ export default function DashboardPage() {
                 className="dashboard-employee-row"
                 key={employee.id}
               >
-                <div className="dashboard-avatar">
-                  {employee.prenom?.charAt(0)}
-                  {employee.nom?.charAt(0)}
-                </div>
+              <div className="dashboard-avatar">
+                {getEmployeePhotoUrl(employee.photo) ? (
+                  <img
+                    src={getEmployeePhotoUrl(employee.photo)}
+                    alt={formatName(employee)}
+                  />
+                ) : (
+                  getEmployeeInitials(employee)
+                )}
+              </div>
 
                 <div className="dashboard-employee-info">
                   <strong>{formatName(employee)}</strong>

@@ -147,6 +147,14 @@
   font-weight: 700;
 }
 
+.career-agent-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .career-agent-identity {
   min-width: 0;
 }

@@ -8,6 +8,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import {
+  getEmployeePhotoUrl,
+  getEmployeeInitials,
+} from '../../utils/employee';
 
 function formatDate(value) {
   if (!value) {
@@ -25,12 +29,6 @@ function formatDate(value) {
   return `${day}/${month}/${year}`;
 }
 
-function getInitials(agent) {
-  const first = agent.prenom?.charAt(0) || '';
-  const last = agent.nom?.charAt(0) || '';
-
-  return `${first}${last}`.toUpperCase();
-}
 
 export default function CarrieresPage() {
   const navigate = useNavigate();
@@ -177,7 +175,14 @@ export default function CarrieresPage() {
             >
               <div className="career-agent-card-top">
                 <div className="career-agent-avatar">
-                  {getInitials(agent)}
+                  {getEmployeePhotoUrl(agent.photo) ? (
+                    <img
+                      src={getEmployeePhotoUrl(agent.photo)}
+                      alt={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}
+                    />
+                  ) : (
+                    getEmployeeInitials(agent)
+                  )}
                 </div>
 
                 <div className="career-agent-identity">
