@@ -1,10 +1,9 @@
-/* =========================================================
-   Module Documents RH (liste, filtres, détails, impression)
-   (extrait automatiquement de l'ancien index.css, lignes 3663-5795)
+﻿/* =========================================================
+   Module Documents RH (liste, filtres, dÃ©tails, impression)
    ========================================================= */
 
 /* =========================================================
-   DOCUMENTS RH — MODULE FONCTIONNEL
+   DOCUMENTS RH â€” MODULE FONCTIONNEL
    ========================================================= */
 
 .documents-page {
@@ -214,7 +213,9 @@
   background: #60452F;
 }
 
-/* Tableau */
+/* =========================================================
+   TABLEAU
+   ========================================================= */
 
 .documents-table-wrapper {
   width: 100%;
@@ -299,7 +300,9 @@
   white-space: nowrap;
 }
 
-/* Badges */
+/* =========================================================
+   BADGES
+   ========================================================= */
 
 .document-type-badge,
 .document-status-badge {
@@ -353,7 +356,9 @@
   color: #69635D;
 }
 
-/* États */
+/* =========================================================
+   Ã‰TATS
+   ========================================================= */
 
 .documents-empty-state {
   min-height: 220px;
@@ -425,7 +430,9 @@
   font-size: 13px;
 }
 
-/* Boutons */
+/* =========================================================
+   BOUTONS
+   ========================================================= */
 
 .primary-button,
 .secondary-button {
@@ -473,7 +480,9 @@
   opacity: 0.6;
 }
 
-/* Formulaire */
+/* =========================================================
+   FORMULAIRE
+   ========================================================= */
 
 .document-form-page {
   display: flex;
@@ -624,7 +633,9 @@
   border-top: 1px solid #EEE7DF;
 }
 
-/* Historique */
+/* =========================================================
+   HISTORIQUE
+   ========================================================= */
 
 .document-history-card {
   overflow: hidden;
@@ -719,16 +730,6 @@
 /* =========================================================
    RESPONSIVE GLOBAL
    ========================================================= */
-
-@media (max-width: 1000px) {
-  .organisation-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .organisation-agent-list {
-    grid-template-columns: 1fr;
-  }
-}
 
 @media (max-width: 950px) {
   .career-current-grid {
@@ -945,51 +946,6 @@
     margin-left: 16px;
     margin-right: 16px;
   }
-
-  .organisation-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .organisation-tree {
-    padding: 18px 14px;
-  }
-
-  .organisation-direction {
-    padding-left: 18px;
-  }
-
-  .organisation-direction::before {
-    left: 5px;
-  }
-
-  .organisation-direction::after {
-    left: 5px;
-    width: 13px;
-  }
-
-  .organisation-services {
-    margin-left: 20px;
-    padding-left: 18px;
-  }
-
-  .organisation-service::before {
-    left: -19px;
-    width: 18px;
-  }
-
-  .organisation-service-header {
-    align-items: flex-start;
-  }
-
-  .organisation-service-stats {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-  }
-
-  .organisation-agent-matricule {
-    display: none;
-  }
 }
 
 @media (max-width: 600px) {
@@ -1111,8 +1067,9 @@
     grid-template-columns: 1fr;
   }
 }
+
 /* =========================================================
-   DOCUMENTS RH — MENUS DÉROULANTS
+   DOCUMENTS RH â€” MENUS DÃ‰ROULANTS
    ========================================================= */
 
 .documents-filter[aria-label],
@@ -1130,13 +1087,9 @@ select[aria-label] {
   line-height: 1;
   outline: none;
   cursor: pointer;
-
-  /* Apparence du select */
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
-  /* Flèche personnalisée */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2376563A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 11px center;
@@ -1164,7 +1117,6 @@ select[aria-label]:active {
   border-color: #ad8b68;
 }
 
-/* Options à l'intérieur des menus */
 .documents-filter[aria-label] option,
 select[aria-label] option {
   padding: 8px;
@@ -1174,7 +1126,6 @@ select[aria-label] option {
   font-size: 12px;
 }
 
-/* Mobile */
 @media (max-width: 800px) {
   .documents-filter[aria-label],
   select[aria-label] {
@@ -1183,6 +1134,7 @@ select[aria-label] option {
     width: 100%;
   }
 }
+
 /* =========================================================
    BOUTON CONSULTER UN DOCUMENT
    ========================================================= */
@@ -1192,27 +1144,18 @@ select[aria-label] option {
   align-items: center;
   justify-content: center;
   gap: 8px;
-
   min-height: 38px;
   padding: 0 14px;
-
   border: 1px solid #b9966f;
   border-radius: 9px;
-
   background: #f7efe5;
   color: #68492f;
-
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
-
   white-space: nowrap;
-
   cursor: pointer;
-
-  box-shadow:
-    0 1px 2px rgba(58, 42, 30, 0.05);
-
+  box-shadow: 0 1px 2px rgba(58, 42, 30, 0.05);
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1231,25 +1174,19 @@ select[aria-label] option {
   background: #eadbc9;
   border-color: #977653;
   color: #432e20;
-
   transform: translateY(-1px);
-
-  box-shadow:
-    0 4px 10px rgba(58, 42, 30, 0.10);
+  box-shadow: 0 4px 10px rgba(58, 42, 30, 0.10);
 }
 
 .document-view-button:active {
   transform: translateY(0);
-
-  box-shadow:
-    0 1px 3px rgba(58, 42, 30, 0.08);
+  box-shadow: 0 1px 3px rgba(58, 42, 30, 0.08);
 }
 
 .document-view-button:focus-visible {
   outline: 3px solid rgba(184, 135, 74, 0.25);
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    BOUTONS DES CARTES
@@ -1259,22 +1196,16 @@ select[aria-label] option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   min-height: 40px;
   padding: 0 15px;
-
   border: 1px solid #b99b79;
   border-radius: 9px;
-
   background: #f2e7d9;
   color: #5a3e29;
-
   font-family: inherit;
   font-size: 11px;
   font-weight: 700;
-
   cursor: pointer;
-
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1287,13 +1218,9 @@ select[aria-label] option {
   background: #e6d5c1;
   border-color: #977653;
   color: #3f2b1f;
-
   transform: translateY(-1px);
-
-  box-shadow:
-    0 4px 9px rgba(58, 42, 30, 0.08);
+  box-shadow: 0 4px 9px rgba(58, 42, 30, 0.08);
 }
-
 
 /* =========================================================
    BOUTON RETOUR
@@ -1303,27 +1230,18 @@ select[aria-label] option {
   display: inline-flex;
   align-items: center;
   gap: 11px;
-
   min-height: 46px;
   padding: 0 17px 0 10px;
-
   border: 1px solid #c4ad94;
   border-radius: 11px;
-
   background: #f7f0e7;
   color: #4e3828;
-
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-
   text-decoration: none;
-
   cursor: pointer;
-
-  box-shadow:
-    0 2px 5px rgba(58, 42, 30, 0.06);
-
+  box-shadow: 0 2px 5px rgba(58, 42, 30, 0.06);
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1332,29 +1250,16 @@ select[aria-label] option {
     box-shadow 160ms ease;
 }
 
-
-/*
- * La flèche possède maintenant sa propre zone.
- * C'est elle qui donne au bouton son aspect
- * visuellement plus fort.
- */
-
 .page-back-button svg {
   width: 18px;
   height: 18px;
-
   flex-shrink: 0;
-
   padding: 6px;
-
   box-sizing: content-box;
-
   border: 1px solid #c4ad94;
   border-radius: 7px;
-
   background: #eadccc;
   color: #63472f;
-
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1362,57 +1267,30 @@ select[aria-label] option {
     transform 160ms ease;
 }
 
-
-/*
- * Effet au survol du bouton entier.
- */
-
 .page-back-button:hover {
   background: #eee3d5;
   border-color: #a88b6d;
   color: #3e2a1d;
-
   transform: translateX(-2px);
-
-  box-shadow:
-    0 4px 10px rgba(58, 42, 30, 0.10);
+  box-shadow: 0 4px 10px rgba(58, 42, 30, 0.10);
 }
-
-
-/*
- * La zone de la flèche change également.
- */
 
 .page-back-button:hover svg {
   background: #ddc9b0;
   border-color: #a88b6d;
   color: #432e20;
-
   transform: translateX(-2px);
 }
 
-
-/*
- * Clic.
- */
-
 .page-back-button:active {
   transform: translateX(0);
-
-  box-shadow:
-    0 1px 3px rgba(58, 42, 30, 0.08);
+  box-shadow: 0 1px 3px rgba(58, 42, 30, 0.08);
 }
-
-
-/*
- * Navigation clavier.
- */
 
 .page-back-button:focus-visible {
   outline: 3px solid rgba(184, 135, 74, 0.25);
   outline-offset: 3px;
 }
-
 
 /* =========================================================
    FILTRES
@@ -1421,33 +1299,22 @@ select[aria-label] option {
 .documents-filter {
   appearance: none;
   -webkit-appearance: none;
-
   min-width: 160px;
   height: 40px;
-
   padding: 0 36px 0 12px;
-
   border: 1px solid #cfc1b2;
   border-radius: 9px;
-
   background-color: #fffdf9;
-
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23756354' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23756354' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 11px center;
   background-size: 14px;
-
   color: #574538;
-
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
-
   outline: none;
   cursor: pointer;
-
   transition:
     border-color 150ms ease,
     box-shadow 150ms ease,
@@ -1468,6 +1335,7 @@ select[aria-label] option {
   background: #fffdf9;
   color: #49372a;
 }
+
 /* =========================================================
    DOCUMENT DETAILS
    ========================================================= */
@@ -1733,8 +1601,6 @@ select[aria-label] option {
   border-color: #d9c0ae;
 }
 
-/* Responsive */
-
 @media (max-width: 950px) {
   .document-details-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1845,15 +1711,13 @@ select[aria-label] option {
   transform: translateY(0);
 }
 
-
 /* =========================================================
-   DOCUMENT ADMINISTRATIF DESTINÉ À L'IMPRESSION
+   DOCUMENT ADMINISTRATIF DESTINÃ‰ Ã€ L'IMPRESSION
    ========================================================= */
 
 .document-print-sheet {
   display: none;
 }
-
 
 /* =========================================================
    IMPRESSION / PDF
@@ -1877,12 +1741,10 @@ select[aria-label] option {
     print-color-adjust: exact;
   }
 
-  /* Cache toute l'application */
   body * {
     visibility: hidden;
   }
 
-  /* Affiche uniquement la feuille administrative */
   .document-print-sheet,
   .document-print-sheet * {
     visibility: visible;
@@ -1902,10 +1764,6 @@ select[aria-label] option {
   .document-screen-only {
     display: none !important;
   }
-
-  /* ---------------------------------------------------------
-     EN-TÊTE ADMINISTRATIF
-     --------------------------------------------------------- */
 
   .document-print-header {
     display: flex;
@@ -1950,10 +1808,6 @@ select[aria-label] option {
     margin-bottom: 18px;
   }
 
-  /* ---------------------------------------------------------
-     RÉFÉRENCE ET DATE
-     --------------------------------------------------------- */
-
   .document-print-reference {
     display: flex;
     justify-content: space-between;
@@ -1981,10 +1835,6 @@ select[aria-label] option {
     color: #1f1f1f;
   }
 
-  /* ---------------------------------------------------------
-     TITRE
-     --------------------------------------------------------- */
-
   .document-print-title {
     margin-bottom: 24px;
     text-align: center;
@@ -2007,10 +1857,6 @@ select[aria-label] option {
     text-transform: uppercase;
   }
 
-  /* ---------------------------------------------------------
-     INFORMATIONS AGENT
-     --------------------------------------------------------- */
-
   .document-print-information {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2025,10 +1871,6 @@ select[aria-label] option {
     flex-direction: column;
     gap: 4px;
   }
-
-  /* ---------------------------------------------------------
-     CONTENU
-     --------------------------------------------------------- */
 
   .document-print-content {
     margin-top: 10px;
@@ -2057,10 +1899,6 @@ select[aria-label] option {
     margin: 0 0 11px;
     white-space: pre-wrap;
   }
-
-  /* ---------------------------------------------------------
-     SIGNATURES
-     --------------------------------------------------------- */
 
   .document-print-signatures {
     display: grid;
@@ -2094,10 +1932,6 @@ select[aria-label] option {
     margin-bottom: 6px;
   }
 
-  /* ---------------------------------------------------------
-     PIED DE PAGE
-     --------------------------------------------------------- */
-
   .document-print-footer {
     position: fixed;
     left: 0;
@@ -2112,7 +1946,6 @@ select[aria-label] option {
     color: #666666;
   }
 }
-
 
 /* =========================================================
    RESPONSIVE
@@ -2133,6 +1966,634 @@ select[aria-label] option {
 @media (max-width: 640px) {
   .document-print-button {
     width: 100%;
+  }
+}
+
+/* =========================================================
+   ORGANIGRAMME â€” VERSION VERTICALE
+   =========================================================
+   Cette partie remplace le comportement horizontal du nouvel
+   organigramme.
+
+   Objectif :
+   - MinistÃ¨re en haut
+   - Directions empilÃ©es verticalement
+   - Services empilÃ©s verticalement
+   - DÃ©filement vertical naturel de la page
+   - Pas de grande structure horizontale
+   - Photos et matricules conservÃ©s
+   ========================================================= */
+
+.organisation-page {
+  width: 100%;
+}
+
+.organisation-canvas {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 10px 0 30px;
+}
+
+.organisation-tree {
+  width: 100%;
+  min-width: 0;
+  padding: 24px 20px 40px;
+  background:
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(118, 86, 58, 0.08) 1px,
+      transparent 1px
+    );
+  background-size: 22px 22px;
+}
+
+/* ---------------------------------------------------------
+   RACINE MINISTÃˆRE
+   --------------------------------------------------------- */
+
+.organisation-root {
+  position: relative;
+  z-index: 2;
+  width: min(620px, 100%);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #FFFDF9;
+  border: 1px solid #DCCBBB;
+  border-radius: 14px;
+  box-shadow: 0 5px 16px rgba(58, 42, 30, 0.07);
+}
+
+.organisation-root-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #F1E7DB;
+  color: #76563A;
+}
+
+.organisation-root-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.organisation-root-content strong {
+  color: #49372A;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.organisation-root-content span {
+  color: #8F7D6C;
+  font-size: 11px;
+}
+
+/* Ligne verticale sous le ministÃ¨re */
+
+.organisation-root-connector {
+  width: 2px;
+  height: 34px;
+  margin: 0 auto;
+  background: #CDBAA5;
+}
+
+/* ---------------------------------------------------------
+   BRANCHES PRINCIPALES
+   --------------------------------------------------------- */
+
+.organisation-main-branches {
+  width: min(980px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Chaque direction occupe toute la largeur */
+
+.organisation-direction-node {
+  position: relative;
+  width: 100%;
+  padding-left: 30px;
+}
+
+/* Ligne verticale principale Ã  gauche */
+
+.organisation-direction-node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10px;
+  width: 2px;
+  background: #D8C8B7;
+}
+
+/* Petite ligne allant vers la direction */
+
+.organisation-direction-node::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 10px;
+  width: 20px;
+  height: 2px;
+  background: #D8C8B7;
+}
+
+/* ---------------------------------------------------------
+   DIRECTION
+   --------------------------------------------------------- */
+
+.organisation-direction-box {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #FFFDF9;
+  border: 1px solid #DCCBBB;
+  border-radius: 13px;
+  box-shadow: 0 4px 13px rgba(58, 42, 30, 0.05);
+}
+
+.organisation-direction-toggle {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid #DCCBBB;
+  border-radius: 8px;
+  background: #F6EFE7;
+  color: #76563A;
+  cursor: pointer;
+}
+
+.organisation-direction-toggle:hover {
+  background: #EDE1D3;
+}
+
+.organisation-direction-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #F1E7DB;
+  color: #76563A;
+}
+
+.organisation-direction-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.organisation-direction-content strong {
+  color: #49372A;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.organisation-direction-content span {
+  color: #958477;
+  font-size: 10px;
+}
+
+/* Responsable de direction */
+
+.organisation-direction-responsable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.organisation-direction-responsable > span {
+  color: #927B66;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---------------------------------------------------------
+   SERVICES D'UNE DIRECTION
+   --------------------------------------------------------- */
+
+.organisation-direction-children {
+  position: relative;
+  margin: 12px 0 0 42px;
+  padding: 8px 0 4px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ligne verticale des services */
+
+.organisation-direction-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: 2px;
+  background: #E0D2C3;
+}
+
+/* ---------------------------------------------------------
+   SERVICE
+   --------------------------------------------------------- */
+
+.organisation-service-node {
+  position: relative;
+  width: 100%;
+}
+
+/* branche vers chaque service */
+
+.organisation-service-node::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: -17px;
+  width: 17px;
+  height: 2px;
+  background: #D8C8B7;
+}
+
+.organisation-service-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 13px;
+  background: #FFFEFC;
+  border: 1px solid #E1D5C8;
+  border-radius: 11px;
+}
+
+.organisation-service-code {
+  min-width: 70px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  background: #F1E7DB;
+  color: #76563A;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.organisation-service-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.organisation-service-main strong {
+  color: #55402F;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.organisation-service-main span {
+  color: #97897C;
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSABLE SERVICE
+   --------------------------------------------------------- */
+
+.organisation-service-responsable {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 7px 0 0 16px;
+}
+
+.organisation-responsable-label {
+  flex: 0 0 auto;
+  color: #927B66;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------------------------------------------------
+   AGENTS
+   --------------------------------------------------------- */
+
+.organisation-service-agents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 7px 0 0 16px;
+}
+
+.organisation-agent-card {
+  min-width: 205px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 1px solid #E5DCD1;
+  border-radius: 9px;
+  background: #FFFDF9;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.organisation-agent-card:hover {
+  border-color: #CDBBA7;
+  background: #FAF5ED;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 9px rgba(58, 42, 30, 0.07);
+}
+
+.organisation-agent-card--compact {
+  min-width: 190px;
+}
+
+.organisation-agent-photo {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #E8DDD0;
+  color: #6E4B32;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.organisation-agent-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.organisation-agent-details {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.organisation-agent-details strong {
+  overflow: hidden;
+  color: #4D392C;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.organisation-agent-details span {
+  color: #8F7D6C;
+  font-family: monospace;
+  font-size: 9px;
+}
+
+.organisation-agent-details small {
+  color: #9B8D80;
+  font-size: 9px;
+}
+
+/* ---------------------------------------------------------
+   SERVICES SANS DIRECTION
+   --------------------------------------------------------- */
+
+.organisation-direct-services {
+  position: relative;
+  width: 100%;
+  margin-top: 4px;
+  padding: 18px 18px 20px 30px;
+  border: 1px dashed #D4C3B1;
+  border-radius: 13px;
+  background: rgba(255, 253, 249, 0.72);
+}
+
+.organisation-direct-services::before {
+  content: '';
+  position: absolute;
+  top: -28px;
+  left: 10px;
+  width: 2px;
+  height: 28px;
+  background: #D8C8B7;
+}
+
+.organisation-direct-services-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.organisation-direct-services-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: #F1E7DB;
+  color: #76563A;
+}
+
+.organisation-direct-services-title > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.organisation-direct-services-title strong {
+  color: #55402F;
+  font-size: 12px;
+}
+
+.organisation-direct-services-title span {
+  color: #97897C;
+  font-size: 10px;
+}
+
+.organisation-direct-services-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------------------------------------------------------
+   Ã‰TAT VIDE
+   --------------------------------------------------------- */
+
+.organisation-empty {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #98897B;
+  background: #FFFDF9;
+  border: 1px dashed #D9CBBD;
+  border-radius: 13px;
+  text-align: center;
+}
+
+.organisation-empty strong {
+  color: #574232;
+  font-size: 13px;
+}
+
+.organisation-empty span {
+  color: #958477;
+  font-size: 11px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE ORGANIGRAMME
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .organisation-tree {
+    padding: 20px 12px 30px;
+  }
+
+  .organisation-root {
+    width: 100%;
+  }
+
+  .organisation-main-branches {
+    width: 100%;
+  }
+
+  .organisation-direction-box {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .organisation-direction-responsable {
+    width: 100%;
+    margin-left: 80px;
+  }
+}
+
+@media (max-width: 640px) {
+  .organisation-canvas {
+    overflow-x: hidden;
+  }
+
+  .organisation-tree {
+    padding: 16px 8px 25px;
+  }
+
+  .organisation-root {
+    align-items: flex-start;
+    padding: 13px;
+  }
+
+  .organisation-root-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .organisation-root-content strong {
+    font-size: 13px;
+  }
+
+  .organisation-direction-node {
+    padding-left: 22px;
+  }
+
+  .organisation-direction-node::before {
+    left: 7px;
+  }
+
+  .organisation-direction-node::after {
+    left: 7px;
+    width: 15px;
+  }
+
+  .organisation-direction-box {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .organisation-direction-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .organisation-direction-content strong {
+    font-size: 11px;
+  }
+
+  .organisation-direction-content span {
+    font-size: 9px;
+  }
+
+  .organisation-direction-responsable {
+    margin-left: 0;
+  }
+
+  .organisation-direction-children {
+    margin-left: 22px;
+    padding-left: 20px;
+  }
+
+  .organisation-service-box {
+    align-items: flex-start;
+  }
+
+  .organisation-service-code {
+    min-width: 58px;
+  }
+
+  .organisation-service-responsable,
+  .organisation-service-agents {
+    margin-left: 5px;
+  }
+
+  .organisation-agent-card,
+  .organisation-agent-card--compact {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .organisation-direct-services {
+    padding-left: 16px;
   }
 }
 

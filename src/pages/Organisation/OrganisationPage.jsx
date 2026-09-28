@@ -11,12 +11,344 @@ import { useNavigate } from 'react-router-dom';
 
 import { getOrganisationData } from '../../api/organisation';
 
+const API_URL = 'http://localhost:8080';
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
 function getInitials(agent) {
-  const first = agent.prenom?.charAt(0) || '';
-  const last = agent.nom?.charAt(0) || '';
+  const first = agent?.prenom?.charAt(0) || '';
+  const last = agent?.nom?.charAt(0) || '';
 
   return `${first}${last}`.toUpperCase();
 }
+
+function getPhotoUrl(photo) {
+  if (!photo) {
+    return '';
+  }
+
+  if (
+    photo.startsWith('http://') ||
+    photo.startsWith('https://')
+  ) {
+    return photo;
+  }
+
+  return `${API_URL}${photo}`;
+}
+
+function getAgentFullName(agent) {
+  if (!agent) {
+    return '';
+  }
+
+  return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
+}
+
+function getPoste(agent) {
+  return (agent?.poste || '').trim().toLowerCase();
+}
+
+function isDirector(agent) {
+  return getPoste(agent) === 'directeur';
+}
+
+function isServiceResponsible(agent) {
+  const poste = getPoste(agent);
+
+  return (
+    poste === 'chef de service' ||
+    poste === 'chef de cellule'
+  );
+}
+
+/*
+ * Regroupe une liste par code_service, en une seule passe,
+ * pour éviter de refiltrer l'ensemble des agents (ou des
+ * postes) à chaque service et à chaque direction affichés.
+ */
+function groupByServiceCode(items) {
+  const map = new Map();
+
+  items.forEach((item) => {
+    const code = item?.code_service;
+
+    if (!code) {
+      return;
+    }
+
+    if (!map.has(code)) {
+      map.set(code, []);
+    }
+
+    map.get(code).push(item);
+  });
+
+  return map;
+}
+
+/* =========================================================
+   AGENT — MINI CARTE
+   ========================================================= */
+
+/*
+ * `role` distingue visuellement un responsable ("Responsable",
+ * "Directeur") d'un agent ordinaire : avatar teinté, nom en
+ * brun, bordure d'accent, et le rôle affiché directement dans
+ * la carte plutôt que via une colonne d'étiquette séparée.
+ */
+function AgentMiniCard({
+  agent,
+  onClick,
+  compact = false,
+  role,
+}) {
+  if (!agent) {
+    return null;
+  }
+
+  const photoUrl = getPhotoUrl(agent.photo);
+  const fullName = getAgentFullName(agent);
+  const isLead = Boolean(role);
+
+  return (
+    <button
+      type="button"
+      className={`organisation-agent-card ${
+        compact ? 'organisation-agent-card--compact' : ''
+      } ${
+        isLead ? 'organisation-agent-card--lead' : ''
+      }`}
+      onClick={onClick}
+      title={`${fullName}${
+        role ? ` — ${role}` : ''
+      } — ${agent.poste || 'Poste non renseigné'}`}
+    >
+      <div className="organisation-agent-photo">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={fullName}
+          />
+        ) : (
+          <span>{getInitials(agent)}</span>
+        )}
+      </div>
+
+      <div className="organisation-agent-details">
+        <strong>{fullName}</strong>
+
+        <span>
+          {role && (
+            <span className="organisation-agent-role">
+              {role} ·{' '}
+            </span>
+          )}
+          {agent.matricule || 'Matricule non renseigné'}
+        </span>
+
+        {!compact && agent.poste && (
+          <small>{agent.poste}</small>
+        )}
+      </div>
+    </button>
+  );
+}
+
+/* =========================================================
+   SERVICE
+   ========================================================= */
+
+function ServiceNode({
+  service,
+  agents,
+  postes,
+  onAgentClick,
+}) {
+  /*
+   * Le directeur appartient techniquement au service dans la
+   * base de données, mais il doit être affiché au niveau de
+   * la direction et non comme agent du service : on l'exclut
+   * une seule fois, en amont du reste des calculs.
+   */
+  const serviceAgents = useMemo(
+    () => agents.filter((agent) => !isDirector(agent)),
+    [agents]
+  );
+
+  const responsable =
+    serviceAgents.find(isServiceResponsible) || null;
+
+  const autresAgents = useMemo(
+    () =>
+      serviceAgents.filter(
+        (agent) => agent.id !== responsable?.id
+      ),
+    [serviceAgents, responsable]
+  );
+
+  return (
+    <div className="organisation-service-node">
+      <div className="organisation-service-box">
+        <div className="organisation-service-code">
+          {service.code}
+        </div>
+
+        <div className="organisation-service-main">
+          <strong>{service.nom}</strong>
+
+          <span>
+            {serviceAgents.length} agent
+            {serviceAgents.length > 1 ? 's' : ''}
+            {' · '}
+            {postes.length} poste
+            {postes.length > 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
+      {responsable && (
+        <div className="organisation-service-responsable">
+          <AgentMiniCard
+            agent={responsable}
+            role="Responsable"
+            compact
+            onClick={() => onAgentClick(responsable.id)}
+          />
+        </div>
+      )}
+
+      {autresAgents.length > 0 && (
+        <div className="organisation-service-agents">
+          {autresAgents.map((agent) => (
+            <AgentMiniCard
+              key={agent.id}
+              agent={agent}
+              compact
+              onClick={() => onAgentClick(agent.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {agents.length === 0 && (
+        <div className="organisation-service-empty">
+          Aucun agent affecté à ce service.
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   DIRECTION
+   ========================================================= */
+
+function DirectionNode({
+  direction,
+  getAgentsForService,
+  getPostesForService,
+  onAgentClick,
+  isOpen,
+  onToggle,
+}) {
+  /*
+   * Les directeurs sont techniquement rattachés à un service
+   * (SGEAE, SCS...) dans la base, mais leur champ "poste"
+   * permet de les retrouver au bon niveau : celui de la
+   * direction.
+   */
+  const directionAgents = useMemo(
+    () =>
+      direction.services.flatMap((service) =>
+        getAgentsForService(service.code)
+      ),
+    [direction.services, getAgentsForService]
+  );
+
+  const responsable =
+    directionAgents.find(isDirector) || null;
+
+  const totalAgents = useMemo(
+    () =>
+      directionAgents.filter((agent) => !isDirector(agent))
+        .length,
+    [directionAgents]
+  );
+
+  return (
+    <div className="organisation-direction-node">
+      <div className="organisation-direction-box">
+        <button
+          type="button"
+          className="organisation-direction-toggle"
+          onClick={onToggle}
+          aria-label={
+            isOpen
+              ? 'Réduire la direction'
+              : 'Développer la direction'
+          }
+        >
+          {isOpen ? (
+            <ChevronDown size={16} />
+          ) : (
+            <ChevronRight size={16} />
+          )}
+        </button>
+
+        <div className="organisation-direction-icon">
+          <Building2 size={18} />
+        </div>
+
+        <div className="organisation-direction-content">
+          <strong>{direction.name}</strong>
+
+          <span>
+            {direction.services.length} service
+            {direction.services.length > 1 ? 's' : ''}
+            {' · '}
+            {totalAgents} agent
+            {totalAgents > 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {responsable && (
+          <div className="organisation-direction-responsable">
+            <AgentMiniCard
+              agent={responsable}
+              role="Directeur"
+              compact
+              onClick={(event) => {
+                event.stopPropagation();
+                onAgentClick(responsable.id);
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="organisation-direction-children">
+          {direction.services.map((service) => (
+            <ServiceNode
+              key={service.id}
+              service={service}
+              agents={getAgentsForService(service.code)}
+              postes={getPostesForService(service.code)}
+              onAgentClick={onAgentClick}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   PAGE
+   ========================================================= */
 
 export default function OrganisationPage() {
   const navigate = useNavigate();
@@ -29,7 +361,8 @@ export default function OrganisationPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [expandedDirections, setExpandedDirections] = useState({});
+  const [expandedDirections, setExpandedDirections] =
+    useState({});
 
   useEffect(() => {
     async function loadOrganisation() {
@@ -39,7 +372,17 @@ export default function OrganisationPage() {
 
         const result = await getOrganisationData();
 
-        setData(result);
+        setData({
+          services: Array.isArray(result?.services)
+            ? result.services
+            : [],
+          postes: Array.isArray(result?.postes)
+            ? result.postes
+            : [],
+          agents: Array.isArray(result?.agents)
+            ? result.agents
+            : [],
+        });
       } catch (err) {
         console.error(err);
 
@@ -55,42 +398,71 @@ export default function OrganisationPage() {
   }, []);
 
   /*
-   * Les directions sont déduites des services réellement
-   * renseignés dans la base.
-   *
-   * Les services dont direction === null sont regroupés
-   * séparément afin de ne rien inventer.
+   * Construction des directions à partir du champ
+   * service.direction renvoyé par l'API.
    */
   const organisation = useMemo(() => {
     const grouped = {};
     const withoutDirection = [];
 
     data.services.forEach((service) => {
-      if (service.direction) {
-        if (!grouped[service.direction]) {
-          grouped[service.direction] = [];
+      const directionName =
+        service?.direction?.trim() || '';
+
+      if (directionName) {
+        if (!grouped[directionName]) {
+          grouped[directionName] = [];
         }
 
-        grouped[service.direction].push(service);
+        grouped[directionName].push(service);
       } else {
         withoutDirection.push(service);
       }
     });
 
+    const directions = Object.entries(grouped)
+      .map(([name, services]) => ({
+        name,
+        services: services.sort((a, b) =>
+          String(a.code || '').localeCompare(
+            String(b.code || '')
+          )
+        ),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     return {
-      directions: Object.entries(grouped).map(
-        ([name, services]) => ({
-          name,
-          services,
-        })
-      ),
+      directions,
       withoutDirection,
     };
   }, [data.services]);
 
+  /*
+   * Les agents et les postes sont regroupés par service une
+   * seule fois par chargement de données, plutôt que refiltrés
+   * pour chaque service et chaque direction à chaque rendu.
+   */
+  const agentsByService = useMemo(
+    () => groupByServiceCode(data.agents),
+    [data.agents]
+  );
+
+  const postesByService = useMemo(
+    () => groupByServiceCode(data.postes),
+    [data.postes]
+  );
+
   const totalAgents = data.agents.length;
   const totalServices = data.services.length;
   const totalPostes = data.postes.length;
+
+  function getAgentsForService(serviceCode) {
+    return agentsByService.get(serviceCode) || [];
+  }
+
+  function getPostesForService(serviceCode) {
+    return postesByService.get(serviceCode) || [];
+  }
 
   function toggleDirection(directionName) {
     setExpandedDirections((current) => ({
@@ -99,106 +471,8 @@ export default function OrganisationPage() {
     }));
   }
 
-  function getAgentsForService(serviceCode) {
-    return data.agents.filter(
-      (agent) => agent.code_service === serviceCode
-    );
-  }
-
-  function getPostesForService(serviceCode) {
-    return data.postes.filter(
-      (poste) => poste.code_service === serviceCode
-    );
-  }
-
-  function getDirectionAgentCount(services) {
-    return services.reduce(
-      (total, service) =>
-        total + getAgentsForService(service.code).length,
-      0
-    );
-  }
-
-  function renderService(service) {
-    const agents = getAgentsForService(service.code);
-    const postes = getPostesForService(service.code);
-
-    return (
-      <div
-        className="organisation-service"
-        key={service.id}
-      >
-        <div className="organisation-service-header">
-          <div className="organisation-service-marker" />
-
-          <div className="organisation-service-info">
-            <div className="organisation-service-title-row">
-              <strong>{service.nom}</strong>
-
-              <span className="organisation-code">
-                {service.code}
-              </span>
-            </div>
-
-            <p>
-              {service.description ||
-                'Aucune description disponible.'}
-            </p>
-          </div>
-
-          <div className="organisation-service-stats">
-            <span title="Agents">
-              <Users size={15} />
-              {agents.length}
-            </span>
-
-            <span title="Postes">
-              <BriefcaseBusiness size={15} />
-              {postes.length}
-            </span>
-          </div>
-        </div>
-
-        {agents.length > 0 && (
-          <div className="organisation-agent-list">
-            {agents.map((agent) => (
-              <button
-                type="button"
-                key={agent.id}
-                className="organisation-agent"
-                onClick={() =>
-                  navigate(`/agents/${agent.id}`)
-                }
-              >
-                <div className="organisation-agent-avatar">
-                  {getInitials(agent)}
-                </div>
-
-                <div className="organisation-agent-content">
-                  <strong>
-                    {agent.prenom} {agent.nom}
-                  </strong>
-
-                  <span>
-                    {agent.poste || 'Poste non renseigné'}
-                  </span>
-                </div>
-
-                <span className="organisation-agent-matricule">
-                  {agent.matricule}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {agents.length === 0 && (
-          <div className="organisation-empty-service">
-            Aucun agent enregistré dans ce service.
-          </div>
-        )}
-      </div>
-    );
+  function openAgent(id) {
+    navigate(`/agents/${id}`);
   }
 
   if (loading) {
@@ -214,16 +488,13 @@ export default function OrganisationPage() {
   if (error) {
     return (
       <section className="page-section">
-        <div className="page-error">
-          {error}
-        </div>
+        <div className="page-error">{error}</div>
       </section>
     );
   }
 
   return (
     <section className="page-section organisation-page">
-      {/* EN-TÊTE */}
       <div className="page-header">
         <div>
           <span className="page-eyebrow">
@@ -239,7 +510,6 @@ export default function OrganisationPage() {
         </div>
       </div>
 
-      {/* STATISTIQUES */}
       <div className="organisation-stats">
         <div className="organisation-stat-card">
           <div className="organisation-stat-icon">
@@ -289,7 +559,6 @@ export default function OrganisationPage() {
         </div>
       </div>
 
-      {/* ORGANIGRAMME */}
       <div className="organisation-card">
         <div className="organisation-card-header">
           <div>
@@ -300,134 +569,113 @@ export default function OrganisationPage() {
             <h2>Structure administrative</h2>
 
             <p>
-              Les éléments affichés correspondent aux données
-              actuellement disponibles dans le système.
+              Les responsables sont affichés avec leur
+              matricule et leur photo lorsqu'elle est
+              disponible.
             </p>
           </div>
         </div>
 
-        <div className="organisation-tree">
-          {/* RACINE */}
-          <div className="organisation-root">
-            <div className="organisation-root-icon">
-              <Building2 size={22} />
+        <div className="organisation-canvas">
+          <div className="organisation-tree">
+            {/* MINISTÈRE */}
+            <div className="organisation-root">
+              <div className="organisation-root-icon">
+                <Building2 size={23} />
+              </div>
+
+              <div className="organisation-root-content">
+                <strong>
+                  Ministère des Budgets et des Finances
+                </strong>
+
+                <span>Structure administrative</span>
+              </div>
             </div>
 
-            <div>
-              <strong>
-                Ministère des Budgets et des Finances
-              </strong>
+            <div className="organisation-root-connector" />
 
-              <span>
-                Structure administrative
-              </span>
-            </div>
-          </div>
+            {/* DIRECTIONS + SERVICES DIRECTS */}
+            <div className="organisation-main-branches">
+              {organisation.directions.map((direction) => {
+                const isOpen =
+                  expandedDirections[direction.name] ??
+                  true;
 
-          <div className="organisation-tree-line" />
+                return (
+                  <DirectionNode
+                    key={direction.name}
+                    direction={direction}
+                    getAgentsForService={
+                      getAgentsForService
+                    }
+                    getPostesForService={
+                      getPostesForService
+                    }
+                    onAgentClick={openAgent}
+                    isOpen={isOpen}
+                    onToggle={() =>
+                      toggleDirection(direction.name)
+                    }
+                  />
+                );
+              })}
 
-          {/* DIRECTIONS */}
-          {organisation.directions.map((direction) => {
-            const isOpen =
-              expandedDirections[direction.name] ?? true;
+              {organisation.withoutDirection.length > 0 && (
+                <div className="organisation-direct-services">
+                  <div className="organisation-direct-services-title">
+                    <div className="organisation-direct-services-icon">
+                      <BriefcaseBusiness size={18} />
+                    </div>
 
-            const agentCount =
-              getDirectionAgentCount(direction.services);
+                    <div>
+                      <strong>
+                        Services sans direction
+                      </strong>
 
-            return (
-              <div
-                className="organisation-direction"
-                key={direction.name}
-              >
-                <button
-                  type="button"
-                  className="organisation-direction-header"
-                  onClick={() =>
-                    toggleDirection(direction.name)
-                  }
-                >
-                  <span className="organisation-expand">
-                    {isOpen ? (
-                      <ChevronDown size={18} />
-                    ) : (
-                      <ChevronRight size={18} />
-                    )}
-                  </span>
-
-                  <span className="organisation-direction-icon">
-                    <Building2 size={19} />
-                  </span>
-
-                  <span className="organisation-direction-info">
-                    <strong>{direction.name}</strong>
-
-                    <small>
-                      {direction.services.length}{' '}
-                      service
-                      {direction.services.length > 1
-                        ? 's'
-                        : ''}{' '}
-                      · {agentCount} agent
-                      {agentCount > 1 ? 's' : ''}
-                    </small>
-                  </span>
-                </button>
-
-                {isOpen && (
-                  <div className="organisation-services">
-                    {direction.services.map(renderService)}
+                      <span>
+                        Services directement rattachés au
+                        ministère
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
 
-          {/* SERVICES SANS DIRECTION */}
-          {organisation.withoutDirection.length > 0 && (
-            <div className="organisation-unattached">
-              <div className="organisation-unattached-header">
-                <div className="organisation-unattached-icon">
-                  <BriefcaseBusiness size={19} />
+                  <div className="organisation-direct-services-grid">
+                    {organisation.withoutDirection.map(
+                      (service) => (
+                        <ServiceNode
+                          key={service.id}
+                          service={service}
+                          agents={getAgentsForService(
+                            service.code
+                          )}
+                          postes={getPostesForService(
+                            service.code
+                          )}
+                          onAgentClick={openAgent}
+                        />
+                      )
+                    )}
+                  </div>
                 </div>
-
-                <div>
-                  <strong>
-                    Services sans direction renseignée
-                  </strong>
-
-                  <span>
-                    {organisation.withoutDirection.length}{' '}
-                    service
-                    {organisation.withoutDirection.length > 1
-                      ? 's'
-                      : ''}{' '}
-                    actuellement sans rattachement
-                  </span>
-                </div>
-              </div>
-
-              <div className="organisation-services">
-                {organisation.withoutDirection.map(
-                  renderService
-                )}
-              </div>
+              )}
             </div>
-          )}
 
-          {/* AUCUNE DONNÉE */}
-          {data.services.length === 0 && (
-            <div className="organisation-empty">
-              <UserRound size={24} />
+            {data.services.length === 0 && (
+              <div className="organisation-empty">
+                <UserRound size={24} />
 
-              <strong>
-                Aucune structure disponible
-              </strong>
+                <strong>
+                  Aucune structure disponible
+                </strong>
 
-              <span>
-                Aucun service n'est actuellement enregistré.
-              </span>
-            </div>
-          )}
+                <span>
+                  Aucun service n'est actuellement
+                  enregistré.
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>

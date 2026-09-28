@@ -1,5 +1,6 @@
 /* =========================================================
    Liste Agents + Profil Agent
+
    (extrait automatiquement de l'ancien index.css, lignes 1395-1930)
    ========================================================= */
 
@@ -170,11 +171,19 @@
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  overflow: hidden;
   border-radius: 9px;
   background: #E8DDD0;
   color: #6E4B32;
   font-size: 11px;
   font-weight: 700;
+}
+
+.agent-table-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .agent-table-person > div:last-child {
@@ -342,14 +351,22 @@
   width: 76px;
   height: 76px;
   flex-shrink: 0;
-  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border-radius: 20px;
   background: #6E4B32;
   color: #FFFAF3;
   font-size: 24px;
   font-weight: 700;
+}
+
+.agent-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .agent-profile-hero h1 {
@@ -539,3 +556,436 @@
   font-size: 14px;
 }
 
+/* =========================================================
+   PHOTO AGENT — UPLOAD
+   ========================================================= */
+
+.agent-photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #E1D8CB;
+  border-radius: 12px;
+  background: #FFFCF8;
+}
+
+.agent-photo-preview {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #E8DDD0;
+  color: #6E4B32;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.agent-photo-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.agent-photo-upload-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.agent-photo-upload-content > div:first-child {
+  min-width: 0;
+}
+
+.agent-photo-upload-content strong {
+  display: block;
+  overflow: hidden;
+  color: #45352A;
+  font-size: 13px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-photo-upload-content p {
+  margin: 5px 0 0;
+  color: #92867B;
+  font-size: 11px;
+}
+
+.agent-photo-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #D8CEC1;
+  border-radius: 8px;
+  background: #FBF8F2;
+  color: #6E4B32;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 100ms ease;
+}
+
+.agent-photo-upload-button:hover {
+  background: #EFE6DA;
+  border-color: #CDBEAD;
+  color: #3A2A1E;
+}
+
+.agent-photo-upload-button:active {
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   MODAL — MODIFICATION DU PROFIL AGENT
+   ========================================================= */
+
+.agent-profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(58, 42, 30, 0.42);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.agent-profile-modal {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: #FBF8F2;
+  border: 1px solid #E1D8CB;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(58, 42, 30, 0.22);
+  animation: agentModalAppear 160ms ease-out;
+}
+
+@keyframes agentModalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.agent-profile-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #E8E0D5;
+}
+
+.agent-profile-modal-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.agent-profile-modal-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #EFE6DA;
+  color: #6E4B32;
+}
+
+.agent-profile-modal-title h2 {
+  margin: 1px 0 4px;
+  color: #3A2A1E;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.agent-profile-modal-title p {
+  margin: 0;
+  color: #83776C;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.agent-profile-modal-close {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #81756B;
+  cursor: pointer;
+}
+
+.agent-profile-modal-close:hover {
+  background: #EFE6DA;
+  color: #3A2A1E;
+}
+
+.agent-profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 22px 24px;
+}
+
+.agent-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.agent-form-field-full {
+  grid-column: 1 / -1;
+}
+
+.agent-form-field label {
+  color: #5F544B;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.agent-form-field input,
+.agent-form-field select {
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1px solid #D8CEC1;
+  border-radius: 8px;
+  outline: none;
+  background: #FFFCF8;
+  color: #3A2A1E;
+  font-family: inherit;
+  font-size: 13px;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.agent-form-field input:focus,
+.agent-form-field select:focus {
+  border-color: #9A7657;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(154, 118, 87, 0.10);
+}
+
+.agent-form-field input::placeholder {
+  color: #9B9086;
+}
+
+.agent-profile-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #E8E0D5;
+}
+
+.agent-profile-cancel-button,
+.agent-profile-save-button,
+.agent-profile-edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 100ms ease;
+}
+
+.agent-profile-edit-button {
+  border: 1px solid #D8CEC1;
+  background: #FBF8F2;
+  color: #6E4B32;
+}
+
+.agent-profile-edit-button:hover {
+  background: #EFE6DA;
+  border-color: #CDBEAD;
+}
+
+.agent-profile-cancel-button {
+  border: 1px solid #D8CEC1;
+  background: #FFFFFF;
+  color: #6F6258;
+}
+
+.agent-profile-cancel-button:hover {
+  background: #F3EEE7;
+  color: #3A2A1E;
+}
+
+.agent-profile-save-button {
+  border: 1px solid #6E4B32;
+  background: #6E4B32;
+  color: #FFFAF3;
+}
+
+.agent-profile-save-button:hover:not(:disabled) {
+  background: #573A27;
+  border-color: #573A27;
+}
+
+.agent-profile-cancel-button:active,
+.agent-profile-save-button:active,
+.agent-profile-edit-button:active {
+  transform: translateY(1px);
+}
+
+.agent-profile-cancel-button:disabled,
+.agent-profile-save-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.agent-profile-message {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.agent-profile-message-error {
+  border: 1px solid #E2CACA;
+  background: #FFF8F7;
+  color: #8B4545;
+}
+
+.agent-profile-message-success {
+  border: 1px solid #C9D8C5;
+  background: #F4F8F2;
+  color: #466044;
+}
+
+/* =========================================================
+   RESPONSIVE — PROFIL
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .agent-profile-page {
+    padding: 24px;
+  }
+
+  .agent-profile-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .agent-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — MODAL
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .agent-profile-modal-overlay {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .agent-profile-modal {
+    max-height: calc(100vh - 32px);
+    border-radius: 14px;
+  }
+
+  .agent-profile-modal-header {
+    padding: 18px;
+  }
+
+  .agent-profile-form {
+    grid-template-columns: 1fr;
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .agent-form-field-full {
+    grid-column: auto;
+  }
+
+  .agent-profile-modal-footer {
+    padding: 14px 18px 18px;
+  }
+
+  .agent-photo-upload-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .agent-photo-upload-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .agent-profile-modal-overlay {
+    padding: 10px;
+  }
+
+  .agent-profile-modal {
+    max-height: calc(100vh - 20px);
+  }
+
+  .agent-profile-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .agent-profile-modal-footer button {
+    width: 100%;
+  }
+
+  .agent-photo-upload {
+    align-items: flex-start;
+  }
+
+  .agent-photo-preview {
+    width: 60px;
+    height: 60px;
+  }
+}

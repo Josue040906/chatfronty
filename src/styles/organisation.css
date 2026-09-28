@@ -1,16 +1,25 @@
 /* =========================================================
-   Organigramme
-   (extrait automatiquement de l'ancien index.css, lignes 2485-3417)
-   ========================================================= */
-
-/* =========================================================
-   ORGANISATION
+   ORGANISATION RH
+   ORGANIGRAMME ADMINISTRATIF
    ========================================================= */
 
 .organisation-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
+
+  /*
+   * Jetons de couleur locaux : chacun regroupe une valeur
+   * réellement répétée à l'identique ailleurs dans ce fichier.
+   */
+  --org-trunk: #b99b79;
+  --org-accent: #9d7b5a;
+  --org-brown: #76563a;
+  --org-surface: #fffdf9;
+  --org-border: #e5dcd1;
+  --org-label: #947b65;
+  --org-connector-thin: #c7ad92;
+  --org-shadow-rgb: 58, 42, 30;
 }
 
 /* =========================================================
@@ -20,919 +29,1356 @@
 .organisation-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .organisation-stat-card {
   display: flex;
   align-items: center;
-  gap: 13px;
-  min-width: 0;
-  padding: 16px;
-  background: #FFFDF9;
-  border: 1px solid #E8DFD2;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(61, 43, 31, 0.035);
+  gap: 12px;
+  min-height: 82px;
+  padding: 15px 16px;
+
+  background: var(--org-surface);
+  border: 1px solid var(--org-border);
+  border-radius: 13px;
 }
 
 .organisation-stat-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #755438;
-  background: #F2EADF;
-  border: 1px solid #E5D8C8;
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  color: var(--org-brown);
+  background: #f1e7db;
   border-radius: 10px;
 }
 
-.organisation-stat-card > div:last-child {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
 .organisation-stat-card strong {
-  font-size: 21px;
+  display: block;
+
+  color: #4d392a;
+  font-size: 19px;
   line-height: 1;
-  color: #3D2B1F;
 }
 
 .organisation-stat-card span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  color: #8B7A6B;
+  display: block;
+  margin-top: 5px;
+
+  color: #8f7d6c;
+  font-size: 10px;
 }
 
-
 /* =========================================================
-   CONTENEUR PRINCIPAL DE L'ORGANIGRAMME
+   CARTE PRINCIPALE
    ========================================================= */
 
 .organisation-card {
   overflow: hidden;
-  background: #F8F3EB;
-  border: 1px solid #E4D9CB;
-  border-radius: 18px;
-  box-shadow: 0 5px 20px rgba(61, 43, 31, 0.045);
+
+  background: var(--org-surface);
+  border: 1px solid var(--org-border);
+  border-radius: 15px;
 }
 
 .organisation-card-header {
-  padding: 22px 24px;
-  background: #FFFDF9;
-  border-bottom: 1px solid #E8DFD2;
+  padding: 20px 22px;
+  border-bottom: 1px solid #eee7df;
 }
 
 .organisation-card-header h2 {
-  margin: 5px 0 6px;
-  color: #3D2B1F;
-  font-size: 19px;
+  margin: 4px 0 5px;
+
+  color: #49372a;
+  font-size: 17px;
 }
 
 .organisation-card-header p {
   margin: 0;
-  color: #8B7A6B;
-  font-size: 13px;
+
+  color: #8c7c6e;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-
 /* =========================================================
-   ZONE ARBRE
+   CANVAS
    ========================================================= */
 
-.organisation-tree {
-  position: relative;
+.organisation-canvas {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
 
-  width: min(100%, 1080px);
-  margin: 22px auto 12px;
-  padding: 34px 30px 40px;
+  padding: 30px 24px 44px;
 
   background:
-    radial-gradient(#E4D8C7 1px, transparent 1.6px) 0 0/22px 22px,
-    #FBF8F2;
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(118, 86, 58, 0.045) 1px,
+      transparent 1px
+    );
 
-  border-radius: 16px;
-  box-shadow: inset 0 0 0 1px #ECE1D2;
+  background-size: 18px 18px;
+}
 
-  /*
-   * Disposition "peigne" : la racine reste alignée en haut de
-   * la colonne de gauche, les directions s'empilent dans la
-   * colonne de droite. Le tronc vertical (colonne du milieu)
-   * et les branches horizontales (::before / ::after) relient
-   * la racine et chaque direction.
-   */
-  display: grid;
-  grid-template-columns: minmax(200px, 260px) 2px 1fr;
-  column-gap: 24px;
-  row-gap: 16px;
-  align-items: start;
+.organisation-tree {
+  width: 100%;
+  min-width: 820px;
+  max-width: 1180px;
+
+  margin: 0 auto;
 }
 
 /* =========================================================
-   RACINE — MINISTÈRE
+   MINISTÈRE
    ========================================================= */
 
 .organisation-root {
   position: relative;
-  z-index: 2;
+  z-index: 5;
 
-  grid-column: 1;
-  grid-row: 1;
-  align-self: start;
-
-  width: 100%;
-  margin: 0;
-  padding: 15px 18px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
 
-  background: #FFFDF9;
-  border: 1px solid #D8C8B6;
-  border-radius: 14px;
+  width: fit-content;
+  min-width: 330px;
+  max-width: calc(100% - 40px);
+
+  margin: 0 auto;
+  padding: 13px 18px;
+
+  color: #fffaf4;
+
+  background: var(--org-brown);
+  border: 1px solid #63472f;
+  border-radius: 12px;
 
   box-shadow:
-    0 8px 20px rgba(61, 43, 31, 0.09),
-    0 2px 5px rgba(61, 43, 31, 0.04);
-}
-
-/*
- * Branche reliant la racine au tronc vertical, symétrique à
- * celle des directions (.organisation-direction-header::before).
- */
-.organisation-root::after {
-  content: '';
-
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  right: -24px;
-
-  width: 24px;
-  height: 3px;
-
-  background: #B8874A;
-
-  transform: translateY(-50%);
+    0 5px 14px rgba(var(--org-shadow-rgb), 0.13);
 }
 
 .organisation-root-icon {
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
 
-  color: #FFFAF4;
-  background: #60452F;
-  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 
-  box-shadow: 0 3px 7px rgba(61, 43, 31, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 9px;
 }
 
-.organisation-root div:last-child {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.organisation-root-content {
   min-width: 0;
 }
 
-.organisation-root strong {
-  color: #3D2B1F;
-  font-size: 14px;
+.organisation-root-content strong {
+  display: block;
+
+  color: #fffaf4;
+  font-size: 13px;
   line-height: 1.35;
 }
 
-.organisation-root span {
-  color: #8B7A6B;
-  font-size: 11px;
+.organisation-root-content span {
+  display: block;
+  margin-top: 3px;
+
+  color: rgba(255, 250, 244, 0.72);
+  font-size: 10px;
 }
 
+/* =========================================================
+   CONNECTEUR MINISTÈRE → STRUCTURES
+   ========================================================= */
+
+.organisation-root-connector {
+  width: 2px;
+  height: 34px;
+
+  margin: 0 auto;
+
+  background: var(--org-trunk);
+}
 
 /* =========================================================
-   LIAISON RACINE — TRONC VERTICAL
+   BRANCHE PRINCIPALE
    ========================================================= */
+
+.organisation-main-branches {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+
+  width: 100%;
+}
 
 /*
- * .organisation-tree-line devient le tronc vertical du
- * "peigne" : il traverse toute la hauteur de la zone des
- * directions, dans l'espace entre la colonne racine et la
- * colonne des directions. Chaque direction vient s'y greffer
- * via une branche horizontale (voir .organisation-direction-header::before).
+ * Tronc vertical principal.
  */
-.organisation-tree-line {
-  position: relative;
-  z-index: 1;
 
-  grid-column: 2;
-  grid-row: 1 / -1;
+.organisation-main-branches::before {
+  content: "";
 
-  width: 3px;
-  height: 100%;
-  min-height: 100%;
+  position: absolute;
 
-  background: #B8874A;
-  border-radius: 2px;
+  top: -34px;
+  bottom: 28px;
+  left: 18px;
+
+  width: 2px;
+
+  background: var(--org-trunk);
 }
 
-
 /* =========================================================
-   DIRECTIONS
+   DIRECTION
    ========================================================= */
 
-.organisation-direction {
-  position: relative;
-  z-index: 1;
-
-  grid-column: 3;
-
-  margin-bottom: 0;
-  padding-left: 0;
-}
-
-
-/* =========================================================
-   EN-TÊTE DIRECTION
-   ========================================================= */
-
-.organisation-direction-header {
+.organisation-direction-node {
   position: relative;
   z-index: 2;
 
   width: 100%;
-  max-width: 560px;
-  margin: 0;
-  min-height: 70px;
+}
+
+/*
+ * Tronc principal → direction.
+ */
+
+.organisation-direction-node::before {
+  content: "";
+
+  position: absolute;
+
+  top: 31px;
+  left: 18px;
+
+  width: 42px;
+  height: 2px;
+
+  background: var(--org-trunk);
+}
+
+/*
+ * Point de connexion.
+ */
+
+.organisation-direction-node::after {
+  content: "";
+
+  position: absolute;
+
+  top: 27px;
+  left: 14px;
+
+  width: 8px;
+  height: 8px;
+
+  background: var(--org-surface);
+  border: 2px solid var(--org-accent);
+  border-radius: 50%;
+}
+
+/* =========================================================
+   BOÎTE DIRECTION
+   ========================================================= */
+
+.organisation-direction-box {
+  position: relative;
+  z-index: 4;
 
   display: flex;
   align-items: center;
   gap: 10px;
 
-  padding: 12px 14px;
+  width: calc(100% - 70px);
+  min-height: 66px;
 
-  text-align: left;
-  cursor: pointer;
-  color: inherit;
+  margin-left: 60px;
+  padding: 10px 13px;
 
-  background: #FFFDF9;
-  border: 1px solid #DCCDBC;
-  border-radius: 13px;
-
-  box-shadow:
-    0 7px 17px rgba(61, 43, 31, 0.08),
-    0 2px 5px rgba(61, 43, 31, 0.035);
-
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-/*
- * Branche horizontale reliant la carte de la direction au
- * tronc vertical (.organisation-tree-line), comme dans un
- * organigramme classique en peigne.
- */
-.organisation-direction-header::before {
-  content: '';
-
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: -24px;
-
-  width: 24px;
-  height: 3px;
-
-  background: #B8874A;
-
-  transform: translateY(-50%);
-}
-
-.organisation-direction-header:hover {
-  transform: translateY(-2px);
-
-  background: #FFFEFC;
-  border-color: #CDB99F;
-
-  box-shadow:
-    0 11px 24px rgba(61, 43, 31, 0.11),
-    0 3px 7px rgba(61, 43, 31, 0.05);
-}
-
-.organisation-direction-header:active {
-  transform: translateY(0);
-}
-
-
-/* =========================================================
-   BOUTON OUVERTURE
-   ========================================================= */
-
-.organisation-expand {
-  width: 23px;
-  height: 23px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  color: #806247;
-  background: #F3EBE0;
-  border: 1px solid #E1D3C3;
-  border-radius: 7px;
-}
-
-
-/* =========================================================
-   ICÔNE DIRECTION
-   ========================================================= */
-
-.organisation-direction-icon {
-  width: 37px;
-  height: 37px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  color: #755438;
-  background: #EEE2D2;
-  border: 1px solid #E1D2C0;
-  border-radius: 10px;
-}
-
-
-/* =========================================================
-   TEXTE DIRECTION
-   ========================================================= */
-
-.organisation-direction-info {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.organisation-direction-info strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  color: #3D2B1F;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.organisation-direction-info small {
-  color: #8B7A6B;
-  font-size: 10px;
-}
-
-
-/* =========================================================
-   SERVICES SOUS UNE DIRECTION
-   ========================================================= */
-
-.organisation-services {
-  position: relative;
-
-  margin: 14px 0 0;
-  padding: 0;
-}
-
-.organisation-services::before {
-  content: '';
-
-  position: absolute;
-  top: -14px;
-  left: 50%;
-
-  width: 2px;
-  height: 14px;
-
-  background: #B8874A;
-
-  transform: translateX(-50%);
-}
-
-/*
- * Trait de connexion entre deux services consécutifs.
- */
-.organisation-service:not(:first-child)::before {
-  content: '';
-
-  position: absolute;
-  top: -9px;
-  left: 50%;
-
-  width: 2px;
-  height: 9px;
-
-  background: #B8874A;
-
-  transform: translateX(-50%);
-}
-
-
-/* =========================================================
-   CARTE SERVICE
-   ========================================================= */
-
-.organisation-service {
-  position: relative;
-
-  max-width: 480px;
-  margin: 0 auto 9px;
-  padding: 12px 13px;
-
-  background: rgba(255, 253, 249, 0.96);
-  border: 1px solid #E3D8CC;
+  background: var(--org-surface);
+  border: 1px solid #d8c7b5;
+  border-left: 4px solid var(--org-brown);
   border-radius: 11px;
 
   box-shadow:
-    0 4px 11px rgba(61, 43, 31, 0.045);
+    0 2px 7px rgba(var(--org-shadow-rgb), 0.055);
+}
+
+.organisation-direction-toggle {
+  width: 28px;
+  height: 28px;
+
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  padding: 0;
+
+  color: var(--org-brown);
+  background: #f1e7db;
+
+  border: 1px solid #e2d4c5;
+  border-radius: 7px;
+
+  cursor: pointer;
 
   transition:
-    transform 0.16s ease,
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
+    background 140ms ease,
+    transform 140ms ease;
 }
 
-.organisation-service:last-child {
-  margin-bottom: 0;
+.organisation-direction-toggle:hover {
+  background: #e6d7c6;
 }
 
-.organisation-service:hover {
-  transform: translateX(2px);
+.organisation-direction-icon {
+  width: 36px;
+  height: 36px;
 
-  border-color: #D4C2AD;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 
-  box-shadow:
-    0 6px 14px rgba(61, 43, 31, 0.07);
+  color: var(--org-brown);
+  background: #f5eee6;
+
+  border: 1px solid #e5d8ca;
+  border-radius: 9px;
 }
-/* =========================================================
-   EN-TÊTE SERVICE
-   ========================================================= */
 
-.organisation-service-header {
-  display: flex;
-  align-items: center;
-  gap: 9px;
+.organisation-direction-content {
   min-width: 0;
-}
-
-.organisation-service-marker {
-  width: 7px;
-  height: 7px;
-  flex-shrink: 0;
-
-  background: #9B7650;
-  border-radius: 50%;
-
-  box-shadow: 0 0 0 3px #F2EADF;
-}
-
-.organisation-service-info {
   flex: 1;
-  min-width: 0;
 }
 
-.organisation-service-title-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
+.organisation-direction-content strong {
+  display: block;
 
-.organisation-service-title-row strong {
-  color: #453326;
+  color: #49372a;
   font-size: 12px;
   line-height: 1.35;
 }
 
-.organisation-service-info p {
-  max-width: 650px;
-
-  margin: 4px 0 0;
+.organisation-direction-content span {
+  display: block;
+  margin-top: 3px;
 
   color: #948477;
   font-size: 10px;
-  line-height: 1.45;
 }
-
-.organisation-code {
-  padding: 2px 6px;
-
-  color: #755438;
-  background: #F1E8DC;
-  border: 1px solid #E5D7C6;
-  border-radius: 5px;
-
-  font-size: 9px;
-  font-weight: 700;
-}
-
 
 /* =========================================================
-   STATISTIQUES SERVICE
+   DIRECTEUR — carte de tête, intégrée dans la boîte direction
    ========================================================= */
 
-.organisation-service-stats {
+.organisation-direction-responsable {
   display: flex;
   align-items: center;
-  gap: 8px;
 
-  flex-shrink: 0;
+  flex: 0 0 auto;
 
-  color: #8B7A6B;
+  min-width: 176px;
+  padding-left: 13px;
+
+  border-left: 1px solid #e7ddd2;
+}
+
+/* =========================================================
+   DIRECTION → SERVICES
+   ========================================================= */
+
+.organisation-direction-children {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+
+  margin-left: 91px;
+  padding: 18px 0 6px 31px;
+}
+
+/*
+ * Ligne verticale reliant les services.
+ */
+
+.organisation-direction-children::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 17px;
+  left: 14px;
+
+  width: 2px;
+
+  background: var(--org-trunk);
+}
+
+/* =========================================================
+   SERVICE
+   ========================================================= */
+
+.organisation-service-node {
+  position: relative;
+
+  display: grid;
+
+  /*
+   * Service | responsable | agents
+   */
+
+  grid-template-columns: 310px 195px minmax(0, 1fr);
+
+  align-items: center;
+
+  column-gap: 10px;
+
+  width: 100%;
+}
+
+/*
+ * Ligne verticale → service.
+ */
+
+.organisation-service-node::before {
+  content: "";
+
+  position: absolute;
+
+  top: 50%;
+  left: -31px;
+
+  width: 31px;
+  height: 2px;
+
+  background: var(--org-trunk);
+}
+
+/*
+ * Point de connexion du service.
+ */
+
+.organisation-service-node::after {
+  content: "";
+
+  position: absolute;
+
+  top: calc(50% - 4px);
+  left: -35px;
+
+  width: 8px;
+  height: 8px;
+
+  background: var(--org-surface);
+  border: 2px solid var(--org-accent);
+  border-radius: 50%;
+}
+
+/* =========================================================
+   BOÎTE SERVICE
+   ========================================================= */
+
+.organisation-service-box {
+  position: relative;
+  z-index: 3;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-height: 58px;
+  padding: 9px 11px;
+
+  background: #fdfaf5;
+
+  border: 1px solid #dccdbd;
+  border-left: 3px solid var(--org-accent);
+  border-radius: 10px;
+
+  box-shadow:
+    0 1px 4px rgba(var(--org-shadow-rgb), 0.035);
+}
+
+.organisation-service-code {
+  width: 52px;
+  min-width: 52px;
+
+  padding: 7px 5px;
+
+  color: var(--org-brown);
+  background: #f0e4d6;
+
+  border: 1px solid #dfcfbd;
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.organisation-service-main {
+  min-width: 0;
+}
+
+.organisation-service-main strong {
+  display: block;
+
+  color: #503b2c;
   font-size: 10px;
+  line-height: 1.4;
 }
 
-.organisation-service-stats span {
+.organisation-service-main span {
+  display: block;
+  margin-top: 3px;
+
+  color: #968576;
+  font-size: 8px;
+}
+
+/* =========================================================
+   RESPONSABLE DU SERVICE — carte de tête
+   ========================================================= */
+
+.organisation-service-responsable {
+  position: relative;
+
   display: flex;
   align-items: center;
-  gap: 3px;
 
-  padding: 4px 6px;
+  min-width: 0;
+  min-height: 50px;
 
-  background: #F8F2EA;
-  border: 1px solid #EAE0D5;
-  border-radius: 6px;
+  padding: 6px 8px;
+
+  background: #faf5ed;
+
+  border: 1px solid #e1d4c5;
+  border-radius: 8px;
 }
 
+/*
+ * Service → responsable.
+ */
+
+.organisation-service-responsable::before {
+  content: "";
+
+  position: absolute;
+
+  left: -10px;
+  top: 50%;
+
+  width: 10px;
+  height: 1px;
+
+  background: var(--org-connector-thin);
+}
 
 /* =========================================================
    AGENTS
    ========================================================= */
 
-.organisation-agent-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.organisation-service-agents {
+  position: relative;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
   gap: 6px;
 
-  margin-top: 11px;
-  padding-top: 10px;
+  min-width: 0;
+  min-height: 50px;
 
-  border-top: 1px solid #EEE7DE;
+  padding: 7px 8px 7px 12px;
+
+  background: rgba(255, 253, 249, 0.82);
+
+  border: 1px dashed #d4c3b1;
+  border-radius: 9px;
 }
 
-.organisation-agent {
+/*
+ * Service → zone des agents.
+ */
+
+.organisation-service-agents::before {
+  content: "";
+
+  position: absolute;
+
+  left: -10px;
+  top: 50%;
+
+  width: 10px;
+  height: 1px;
+
+  background: var(--org-connector-thin);
+}
+
+.organisation-service-agents .organisation-agent-card {
+  background: var(--org-surface);
+}
+
+/* =========================================================
+   CARTE AGENT
+   ========================================================= */
+
+.organisation-agent-card {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
   min-width: 0;
 
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding: 5px 7px;
 
-  padding: 7px 8px;
+  color: inherit;
+  background: #faf6f0;
 
-  text-align: left;
-  cursor: pointer;
-
-  background: #FAF7F2;
-  border: 1px solid #EEE5DA;
+  border: 1px solid var(--org-border);
   border-radius: 8px;
 
+  text-align: left;
+
+  cursor: pointer;
+
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    background 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
-.organisation-agent:hover {
+.organisation-agent-card:hover {
+  background: #f3e9dd;
+  border-color: #cdbba7;
+
   transform: translateY(-1px);
 
-  background: #F4EADF;
-  border-color: #DFCDB9;
+  box-shadow:
+    0 3px 8px rgba(var(--org-shadow-rgb), 0.08);
 }
 
-.organisation-agent-avatar {
-  width: 29px;
-  height: 29px;
+.organisation-agent-card--compact {
+  max-width: 220px;
+}
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/*
+ * Carte "de tête" : responsable de service ou directeur.
+ * Se distingue d'un agent ordinaire par l'avatar teinté, la
+ * bordure d'accent et le nom en brun — le rôle ("Responsable",
+ * "Directeur") est affiché dans la carte elle-même, voir
+ * .organisation-agent-role.
+ */
 
-  flex-shrink: 0;
+.organisation-agent-card--lead {
+  width: 100%;
 
-  color: #FFFAF4;
-  background: #76563A;
-  border-radius: 50%;
+  background: #ffffff;
+  border-color: var(--org-accent);
+  border-left: 3px solid var(--org-brown);
 
-  font-size: 9px;
+  box-shadow:
+    0 1px 3px rgba(var(--org-shadow-rgb), 0.05);
+}
+
+.organisation-agent-card--lead:hover {
+  background: #faf5ed;
+  border-color: var(--org-brown);
+}
+
+.organisation-agent-card--lead .organisation-agent-photo {
+  color: #fffaf4;
+  background: var(--org-brown);
+}
+
+.organisation-agent-card--lead
+  .organisation-agent-details
+  strong {
+  max-width: none;
+
+  color: var(--org-brown);
+
+  /*
+   * Le nom d'un responsable n'est jamais tronqué : il passe
+   * à la ligne plutôt que de déborder de la carte.
+   */
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.organisation-agent-role {
+  color: var(--org-brown);
   font-weight: 700;
 }
 
-.organisation-agent-content {
-  min-width: 0;
+.organisation-agent-photo {
+  width: 31px;
+  height: 31px;
 
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+
+  overflow: hidden;
+
+  background: #e8ddd0;
+  color: #6e4b32;
+
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 800;
 }
 
-.organisation-agent-content strong,
-.organisation-agent-content span {
+.organisation-agent-photo img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+.organisation-agent-details {
+  min-width: 0;
+}
+
+.organisation-agent-details strong {
+  display: block;
+
+  max-width: 145px;
+
   overflow: hidden;
+
+  color: #4d392c;
+
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.organisation-agent-content strong {
-  color: #49372A;
-  font-size: 10px;
-}
+.organisation-agent-details span {
+  display: block;
+  margin-top: 2px;
 
-.organisation-agent-content span {
-  color: #938476;
-  font-size: 9px;
-}
+  color: #907f70;
 
-.organisation-agent-matricule {
-  margin-left: auto;
-
-  color: #A08F80;
+  font-family: monospace;
   font-size: 8px;
-  white-space: nowrap;
 }
-
-
-/* =========================================================
-   SERVICE SANS AGENT
-   ========================================================= */
-
-.organisation-empty-service {
-  margin-top: 9px;
-  padding: 8px 9px;
-
-  color: #978879;
-  background: #FAF7F2;
-  border: 1px dashed #E2D7CA;
-  border-radius: 7px;
-
-  font-size: 10px;
-}
-
 
 /* =========================================================
    SERVICES SANS DIRECTION
    ========================================================= */
 
-.organisation-unattached {
-  margin-top: 22px;
-  padding: 15px;
+.organisation-direct-services {
+  position: relative;
 
-  background: rgba(250, 247, 242, 0.9);
-  border: 1px dashed #D5C5B2;
-  border-radius: 13px;
+  margin-top: 2px;
+  padding: 24px 0 5px 60px;
 
-  box-shadow: 0 4px 12px rgba(61, 43, 31, 0.035);
+  border-top: 1px solid #dfd3c6;
 }
 
-.organisation-unattached-header {
+/*
+ * Connexion directe au Ministère.
+ */
+
+.organisation-direct-services::before {
+  content: "";
+
+  position: absolute;
+
+  top: -30px;
+  left: 18px;
+
+  width: 2px;
+  height: 54px;
+
+  background: var(--org-trunk);
+}
+
+.organisation-direct-services-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 3px;
+
+  margin-bottom: 13px;
+  padding: 10px 13px;
+
+  background: #f7f0e7;
+
+  border: 1px dashed #cdbba7;
+  border-radius: 10px;
 }
 
-.organisation-unattached-icon {
-  width: 34px;
-  height: 34px;
+.organisation-direct-services-icon {
+  width: 31px;
+  height: 31px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
 
-  color: #80664E;
-  background: #EEE4D8;
-  border: 1px solid #E0D3C4;
-  border-radius: 9px;
+  color: var(--org-brown);
+  background: #eadccc;
+
+  border-radius: 8px;
 }
 
-.organisation-unattached-header div:last-child {
+.organisation-direct-services-title strong {
+  display: block;
+
+  color: #574232;
+  font-size: 11px;
+}
+
+.organisation-direct-services-title span {
+  display: block;
+  margin-top: 2px;
+
+  color: #948477;
+  font-size: 9px;
+}
+
+.organisation-direct-services-grid {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
+  gap: 11px;
 
-.organisation-unattached-header strong {
-  color: #574434;
-  font-size: 12px;
-}
+  margin-left: 30px;
+  padding-left: 31px;
 
-.organisation-unattached-header span {
-  color: #958679;
-  font-size: 10px;
+  border-left: 2px solid var(--org-trunk);
 }
-
-.organisation-unattached .organisation-services {
-  margin-left: 0;
-  padding-left: 0;
-  border-left: none;
-}
-
-.organisation-unattached .organisation-service {
-  width: 100%;
-  margin-left: 0;
-}
-
-.organisation-unattached .organisation-service::before {
-  display: none;
-}
-
 
 /* =========================================================
-   AUCUNE DONNÉE
+   ÉTAT VIDE
    ========================================================= */
 
 .organisation-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
 
-  padding: 50px 20px;
+  min-height: 220px;
+  padding: 30px;
 
-  color: #918274;
+  color: #98897b;
+
+  background: var(--org-surface);
+
+  border: 1px dashed #d9cbbd;
+  border-radius: 13px;
+
   text-align: center;
 }
 
 .organisation-empty strong {
-  color: #5C4939;
-  font-size: 14px;
+  margin-top: 10px;
+
+  color: #574232;
+  font-size: 13px;
 }
 
 .organisation-empty span {
-  font-size: 12px;
-}
+  margin-top: 5px;
 
+  color: #958477;
+  font-size: 11px;
+}
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
+
+@media (max-width: 1100px) {
+  .organisation-tree {
+    min-width: 780px;
+  }
+
+  .organisation-service-node {
+    grid-template-columns: 290px 188px minmax(0, 1fr);
+  }
+}
 
 @media (max-width: 1000px) {
   .organisation-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .organisation-tree {
-    width: 100%;
-    padding: 28px 22px 34px;
+  .organisation-direction-responsable {
+    min-width: 160px;
+  }
+
+  .organisation-service-node {
+    grid-template-columns: 270px 178px minmax(0, 1fr);
   }
 }
 
+@media (max-width: 850px) {
+  .organisation-service-node {
+    grid-template-columns: 260px minmax(0, 1fr);
+    row-gap: 7px;
+  }
+
+  .organisation-service-responsable {
+    min-width: 0;
+  }
+
+  .organisation-service-agents {
+    grid-column: 1 / -1;
+  }
+
+  .organisation-service-agents::before {
+    display: none;
+  }
+}
 
 @media (max-width: 700px) {
-  .organisation-page {
-    gap: 18px;
+  .organisation-direction-box {
+    width: calc(100% - 55px);
+    margin-left: 45px;
   }
 
+  .organisation-direction-node::before {
+    left: 18px;
+    width: 27px;
+  }
+
+  .organisation-direction-children {
+    margin-left: 65px;
+  }
+
+  .organisation-direction-responsable {
+    max-width: 210px;
+  }
+}
+
+@media (max-width: 650px) {
   .organisation-stats {
     grid-template-columns: 1fr;
-    gap: 10px;
   }
 
-  .organisation-stat-card {
-    padding: 13px;
-  }
-
-  .organisation-card-header {
-    padding: 18px;
+  .organisation-canvas {
+    padding: 20px 12px 30px;
   }
 
   .organisation-tree {
-    padding: 22px 14px 28px;
-    grid-template-columns: 1fr;
-    row-gap: 18px;
-  }
-
-  /*
-   * Sous 700px, le peigne horizontal (tronc + branches) laisse
-   * la place à un empilement vertical simple, plus lisible sur
-   * mobile.
-   */
-  .organisation-tree-line {
-    display: none;
+    min-width: 650px;
   }
 
   .organisation-root {
-    grid-column: 1;
-    grid-row: auto;
+    min-width: 280px;
+  }
+
+  .organisation-direct-services {
+    padding-left: 45px;
+  }
+}
+
+/* =========================================================
+   AMÉLIORATION ORGANIGRAMME
+   PHOTOS + AGENTS INTÉGRÉS AUX SERVICES
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   SERVICE : zone plus clairement structurée
+   --------------------------------------------------------- */
+
+.organisation-service-node {
+  align-items: stretch;
+}
+
+/*
+ * La zone des agents devient une véritable partie
+ * visuelle du service.
+ */
+.organisation-service-agents {
+  align-content: flex-start;
+  min-height: 54px;
+  box-sizing: border-box;
+}
+
+/*
+ * Petit titre visuel au-dessus des agents.
+ * On utilise un pseudo-element pour ne pas modifier le JSX.
+ */
+.organisation-service-agents::after {
+  content: "Agents du service";
+
+  position: absolute;
+  top: 5px;
+  left: 15px;
+
+  color: #9a8877;
+  font-size: 8px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  pointer-events: none;
+}
+
+/*
+ * On réserve de l'espace en haut pour le libellé.
+ */
+.organisation-service-agents {
+  padding-top: 22px;
+}
+
+/* ---------------------------------------------------------
+   CARTES AGENTS
+   --------------------------------------------------------- */
+
+.organisation-agent-card {
+  position: relative;
+
+  min-height: 43px;
+
+  box-sizing: border-box;
+
+  background: #fffdf9;
+
+  border-color: #ded1c3;
+}
+
+.organisation-agent-card--compact {
+  min-width: 150px;
+}
+
+/*
+ * Photo plus visible dans l'organigramme.
+ */
+.organisation-agent-photo {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #eadccc,
+      #d8c5b0
+    );
+
+  border: 2px solid #fffdf9;
+
+  box-shadow:
+    0 0 0 1px #d5c2ae;
+
+  overflow: hidden;
+}
+
+/*
+ * Image réelle.
+ */
+.organisation-agent-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  display: block;
+}
+
+/*
+ * Initiales lorsqu'il n'y a pas de photo.
+ */
+.organisation-agent-photo span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: #6e4b32;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* ---------------------------------------------------------
+   INFORMATIONS AGENT
+   --------------------------------------------------------- */
+
+.organisation-agent-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-width: 0;
+}
+
+.organisation-agent-details strong {
+  max-width: 150px;
+
+  color: #49372a;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  line-height: 1.25;
+}
+
+.organisation-agent-details span {
+  margin-top: 3px;
+
+  color: #907f70;
+
+  font-size: 7.5px;
+}
+
+/*
+ * Poste affiché lorsqu'une carte non compacte est utilisée.
+ */
+.organisation-agent-details small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #a08d7c;
+
+  font-size: 7.5px;
+
+  line-height: 1.2;
+}
+
+/* ---------------------------------------------------------
+   RÔLE : DIRECTEUR / RESPONSABLE
+   --------------------------------------------------------- */
+
+.organisation-agent-role {
+  color: #76563a !important;
+
+  font-family: inherit !important;
+
+  font-size: 7.5px !important;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+/*
+ * Les responsables ont une apparence légèrement différente
+ * tout en restant dans la même logique visuelle.
+ */
+.organisation-agent-card--lead {
+  background: #f7eee4;
+
+  border-color: #cdb69d;
+
+  box-shadow:
+    0 1px 4px rgba(118, 86, 58, 0.08);
+}
+
+.organisation-agent-card--lead .organisation-agent-photo {
+  border-color: #f7eee4;
+
+  box-shadow:
+    0 0 0 1px #b99b79;
+}
+
+/* ---------------------------------------------------------
+   RESPONSABLE DU SERVICE
+   --------------------------------------------------------- */
+
+.organisation-service-responsable {
+  min-width: 165px;
+
+  background: #f8f1e8;
+
+  border-color: #d9c8b6;
+}
+
+/*
+ * On conserve la liaison visuelle avec le service.
+ */
+.organisation-service-responsable::after {
+  content: "";
+
+  position: absolute;
+
+  right: -6px;
+  top: 50%;
+
+  width: 6px;
+  height: 6px;
+
+  transform: translateY(-50%);
+
+  background: #fffdf9;
+
+  border: 1px solid #b99b79;
+
+  border-radius: 50%;
+}
+
+/* ---------------------------------------------------------
+   SERVICE SANS AGENT
+   --------------------------------------------------------- */
+
+.organisation-service-empty {
+  display: flex;
+  align-items: center;
+
+  min-height: 43px;
+
+  padding: 8px 12px;
+
+  color: #9a8877;
+
+  background: #faf6f0;
+
+  border: 1px dashed #d9c9b9;
+  border-radius: 8px;
+
+  font-size: 8px;
+}
+
+/* ---------------------------------------------------------
+   DIRECTION : PHOTO DU DIRECTEUR
+   --------------------------------------------------------- */
+
+.organisation-direction-responsable {
+  min-width: 180px;
+}
+
+.organisation-direction-responsable
+.organisation-agent-card {
+  max-width: 210px;
+
+  padding: 5px 8px;
+}
+
+/* ---------------------------------------------------------
+   HOVER PHOTO
+   --------------------------------------------------------- */
+
+.organisation-agent-card:hover
+.organisation-agent-photo {
+  transform: scale(1.04);
+}
+
+.organisation-agent-photo {
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+/* ---------------------------------------------------------
+   ORGANIGRAMME : MEILLEURE LARGEUR POUR LES AGENTS
+   --------------------------------------------------------- */
+
+.organisation-service-node {
+  grid-template-columns:
+    minmax(260px, 300px)
+    minmax(165px, 190px)
+    minmax(260px, 1fr);
+}
+
+/*
+ * Les agents restent à l'intérieur de la zone du service,
+ * même lorsqu'ils sont nombreux.
+ */
+.organisation-service-agents {
+  overflow: visible;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+  align-content: flex-start;
+
+  gap: 6px;
+}
+
+/* ---------------------------------------------------------
+   PETITS ÉCRANS
+   --------------------------------------------------------- */
+
+@media (max-width: 1000px) {
+  .organisation-service-node {
+    grid-template-columns:
+      minmax(240px, 270px)
+      minmax(155px, 180px)
+      minmax(230px, 1fr);
+  }
+
+  .organisation-agent-card--compact {
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 850px) {
+  .organisation-service-node {
+    grid-template-columns: 260px 1fr;
+  }
+
+  .organisation-service-responsable {
+    min-width: 0;
+  }
+
+  .organisation-service-agents {
+    grid-column: 1 / -1;
+
     width: 100%;
-    margin: 0 auto;
-  }
 
-  .organisation-root::after {
-    display: none;
+    margin-left: 0;
   }
+}
 
-  .organisation-direction {
-    grid-column: 1;
-  }
-
-  .organisation-direction-header {
-    padding: 11px;
-    margin: 0 auto;
-  }
-
-  .organisation-direction-header::before {
-    display: none;
-  }
-
-  .organisation-direction-icon {
-    width: 34px;
-    height: 34px;
-  }
-
-  .organisation-direction-info strong {
-    font-size: 12px;
-  }
-
-  .organisation-services {
-    margin-left: 13px;
-    padding-left: 16px;
-  }
-
-  .organisation-service::before {
-    left: -17px;
-    width: 16px;
-  }
-
-  .organisation-service-header {
-    align-items: flex-start;
-  }
-
-  .organisation-service-stats {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-  }
-
-  .organisation-agent-list {
+@media (max-width: 650px) {
+  .organisation-service-node {
     grid-template-columns: 1fr;
   }
 
-  .organisation-agent-matricule {
-    display: none;
+  .organisation-service-box {
+    width: 100%;
+  }
+
+  .organisation-service-responsable {
+    width: 100%;
+  }
+
+  .organisation-service-agents {
+    grid-column: auto;
+
+    width: 100%;
+  }
+
+  .organisation-agent-card--compact {
+    min-width: 145px;
   }
 }
-
-
-@media (max-width: 480px) {
-  .organisation-root {
-    padding: 12px;
-  }
-
-  .organisation-root-icon {
-    width: 37px;
-    height: 37px;
-  }
-
-  .organisation-root strong {
-    font-size: 12px;
-  }
-
-  .organisation-root span {
-    font-size: 10px;
-  }
-
-  .organisation-direction-header {
-    gap: 7px;
-  }
-
-  .organisation-expand {
-    width: 21px;
-    height: 21px;
-  }
-
-  .organisation-direction-icon {
-    width: 31px;
-    height: 31px;
-  }
-
-  .organisation-direction-info small {
-    font-size: 9px;
-  }
-
-  .organisation-service {
-    padding: 10px;
-  }
-
-  .organisation-service-info p {
-    display: none;
-  }
-}
-
-

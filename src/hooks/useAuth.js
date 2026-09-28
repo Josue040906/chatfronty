@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const API_URL = 'http://localhost:8080';
+
 const getStoredUser = () => {
   const savedUser = localStorage.getItem('user');
 
@@ -20,19 +22,50 @@ export function useAuth() {
   const [user, setUser] = useState(getStoredUser);
 
   const login = async (credentials) => {
-    // Logique de connexion existante à conserver ici.
-    // Cette fonction sera reliée à l'API d'authentification plus tard.
-    const mockUser = {
-      email: credentials.email,
-    };
+    try {
+      const response = await fetch(
+        `${API_URL}/api/utilisateurs/par-email?email=${encodeURIComponent(credentials.email)}`
+      );
 
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    setUser(mockUser);
+      if (response.status === 404) {
+        return {
+          success: false,
+          error: 'Utilisateur introuvable.',
+        };
+      }
 
-    return {
-      success: true,
-      user: mockUser,
-    };
+      if (!response.ok) {
+        throw new Error(
+          'Erreur lors de la récupération de l’utilisateur.'
+        );
+      }
+
+      const utilisateur = await response.json();
+
+      const connectedUser = {
+        id: utilisateur.id,
+        email: utilisateur.email,
+      };
+
+      localStorage.setItem(
+        'user',
+        JSON.stringify(connectedUser)
+      );
+
+      setUser(connectedUser);
+
+      return {
+        success: true,
+        user: connectedUser,
+      };
+    } catch (error) {
+      console.error('Erreur de connexion', error);
+
+      return {
+        success: false,
+        error: 'Impossible de se connecter au serveur.',
+      };
+    }
   };
 
   const logout = () => {
