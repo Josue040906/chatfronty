@@ -17,8 +17,9 @@ export function getEmployeePhotoUrl(photo) {
 }
 
 export function getEmployeeInitials(agent) {
-  const first = agent?.prenom?.charAt(0) || '';
-  const last = agent?.nom?.charAt(0) || '';
+  const first = agent?.nom?.charAt(0) || '';
+  const last = agent?.prenom?.charAt(0) || '';
+  
 
   return `${first}${last}`.toUpperCase();
 }

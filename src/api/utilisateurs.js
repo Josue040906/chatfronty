@@ -1,4 +1,20 @@
-import { apiPut } from './client';
+import { apiPost, apiPut } from './client';
+
+export async function inscrireUtilisateur(
+  matricule,
+  email,
+  password
+) {
+  if (!matricule || !email || !password) {
+    throw new Error('Tous les champs sont obligatoires.');
+  }
+
+  return apiPost('/api/utilisateurs/inscription', {
+    matricule,
+    email,
+    password,
+  });
+}
 
 export async function changerMotDePasse(
   userId,

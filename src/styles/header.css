@@ -1,0 +1,781 @@
+﻿/* =========================================================
+   HEADER SYGPERS
+   ========================================================= */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+  padding: 0 30px;
+
+  border-bottom: 1px solid #ddd4c9;
+
+  background: rgba(251, 248, 242, 0.96);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+
+/* ---------------------------------------------------------
+   Partie gauche
+   --------------------------------------------------------- */
+
+.header-left {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+
+/* Nom SYGPERS visible principalement sur mobile */
+
+.header-brand-mobile {
+  display: none;
+
+  align-items: center;
+
+  line-height: 1;
+}
+
+.header-brand-mobile strong {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #3a2a1e;
+
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+
+  white-space: nowrap;
+}
+
+/* Petit repÃ¨re dorÃ©, comme l'indicateur du menu actif */
+
+.header-brand-mobile strong::before {
+  content: '';
+
+  width: 3px;
+  height: 18px;
+
+  flex-shrink: 0;
+
+  border-radius: 2px;
+
+  background: linear-gradient(180deg, #d6b06d 0%, #b8874a 100%);
+}
+
+/* Fin filet dorÃ© sous le mot */
+
+.header-brand-mobile strong::after {
+  content: '';
+
+  position: absolute;
+  left: 12px;
+  right: 0;
+  bottom: -6px;
+
+  height: 1px;
+
+  background: linear-gradient(90deg, #b8874a 0%, rgba(184, 135, 74, 0) 100%);
+}
+
+
+/* ---------------------------------------------------------
+   Bouton menu mobile
+   --------------------------------------------------------- */
+
+.header-menu-button {
+  width: 38px;
+  height: 38px;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+
+  border: 1px solid #ddd4c9;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #49382d;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.header-menu-button:hover {
+  background: #f7f2ec;
+  border-color: #cfc2b5;
+}
+
+
+/* ---------------------------------------------------------
+   Partie droite
+   --------------------------------------------------------- */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+
+/* ---------------------------------------------------------
+   Notifications
+   --------------------------------------------------------- */
+
+.header-icon-button {
+  position: relative;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #ddd4c9;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #716257;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.header-icon-button:hover {
+  background: #f7f2ec;
+  border-color: #cfc2b5;
+  color: #3a2a1e;
+}
+
+
+/* Petit indicateur */
+
+.notification-dot {
+  position: absolute;
+
+  top: 7px;
+  right: 7px;
+
+  width: 6px;
+  height: 6px;
+
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+
+  background: #a6432e;
+}
+/* =========================================================
+   PANNEAU DES NOTIFICATIONS
+   ========================================================= */
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+
+  min-width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 5px;
+
+  border: 2px solid #FBF8F2;
+  border-radius: 999px;
+
+  background: #A6432E;
+  color: #FFFFFF;
+
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.notification-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+
+  width: 380px;
+  max-width: calc(100vw - 28px);
+  max-height: 520px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #ddd4c9;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 45px rgba(58, 42, 30, 0.16),
+    0 4px 12px rgba(58, 42, 30, 0.08);
+
+  z-index: 200;
+}
+
+.notification-panel-header {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 16px 17px;
+
+  border-bottom: 1px solid #eee7df;
+
+  background: #FBF8F2;
+}
+
+.notification-panel-header > div {
+  min-width: 0;
+}
+
+.notification-panel-header strong {
+  display: block;
+
+  color: #3A2A1E;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.notification-panel-header span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #95887a;
+
+  font-size: 10px;
+}
+
+.notification-read-all {
+  flex-shrink: 0;
+
+  padding: 6px 9px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #8B633F;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.notification-read-all:hover {
+  background: #eee5d9;
+  color: #5F412A;
+}
+
+.notification-list {
+  flex: 1;
+
+  overflow-y: auto;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #d8cdc0;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-item {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  padding: 14px 16px;
+
+  border: 0;
+  border-bottom: 1px solid #f0ebe5;
+
+  text-align: left;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease;
+}
+
+.notification-item:last-child {
+  border-bottom: 0;
+}
+
+.notification-item:hover {
+  background: #F8F4EE;
+}
+
+.notification-unread {
+  background: #FFFDF9;
+}
+
+.notification-read {
+  background: #FFFFFF;
+}
+
+.notification-item-icon {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+
+  border-radius: 9px;
+
+  background: #F1E7D9;
+  color: #8B633F;
+}
+
+.notification-unread .notification-item-icon {
+  background: #EBD7B8;
+  color: #6D4E35;
+}
+
+.notification-item-content {
+  min-width: 0;
+  flex: 1;
+
+  padding-right: 5px;
+}
+
+.notification-item-content strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #3A2A1E;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-read .notification-item-content strong {
+  color: #66584D;
+  font-weight: 600;
+}
+
+.notification-item-content p {
+  margin: 4px 0 0;
+
+  color: #74675C;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.notification-item-content > span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #A0958A;
+
+  font-size: 9px;
+}
+
+.notification-unread-dot {
+  width: 7px;
+  height: 7px;
+
+  flex-shrink: 0;
+
+  margin-top: 7px;
+
+  border-radius: 50%;
+
+  background: #A6432E;
+}
+
+.notification-empty {
+  min-height: 180px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 30px 20px;
+
+  color: #A0958A;
+
+  text-align: center;
+}
+
+.notification-empty svg {
+  color: #C7B9AA;
+}
+
+.notification-empty p {
+  margin: 0;
+
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------
+   SÃ©parateur
+   --------------------------------------------------------- */
+
+.header-divider {
+  width: 1px;
+  height: 30px;
+
+  background: #ddd4c9;
+}
+
+
+/* =========================================================
+   UTILISATEUR
+   ========================================================= */
+
+.header-user {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+
+/* Avatar */
+
+.header-avatar {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e8dccb;
+  color: #6d4e35;
+}
+
+
+/* Informations */
+
+.header-user-info {
+  min-width: 105px;
+}
+
+.header-user-info strong,
+.header-user-info span {
+  display: block;
+}
+
+.header-user-info strong {
+  overflow: hidden;
+
+  color: #3a2a1e;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-user-info span {
+  margin-top: 3px;
+
+  color: #95887a;
+
+  font-size: 10px;
+  font-weight: 400;
+}
+
+
+/* Bouton profil / dÃ©connexion */
+
+.header-user-menu {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #8a7c6e;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.header-user-menu:hover {
+  background: #eee7df;
+  color: #49382d;
+}
+/* =========================================================
+   ÉLÉMENTS COMPLÉMENTAIRES DU HEADER
+   ========================================================= */
+
+.header-avatar img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+}
+
+.header-chevron-open {
+  transform: rotate(180deg);
+}
+
+
+
+/* =========================================================
+   MENU UTILISATEUR
+   ========================================================= */
+
+.header-user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+
+  width: 190px;
+
+  padding: 6px;
+
+  border: 1px solid #ddd4c9;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 16px 35px rgba(58, 42, 30, 0.14),
+    0 4px 10px rgba(58, 42, 30, 0.07);
+
+  z-index: 200;
+}
+
+.header-user-dropdown button {
+  width: 100%;
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 10px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #49382d;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+
+  text-align: left;
+}
+
+.header-user-dropdown button:hover {
+  background: #f7f2ec;
+}
+
+.header-user-dropdown button svg {
+  flex-shrink: 0;
+  color: #8a7c6e;
+}
+
+.header-user-dropdown-divider {
+  height: 1px;
+
+  margin: 5px 4px;
+
+  background: #eee7df;
+}
+
+.header-user-dropdown button:last-child {
+  color: #a6432e;
+}
+
+.header-user-dropdown button:last-child:hover {
+  background: #fbefeb;
+}
+
+
+/* =========================================================
+   RESPONSIVE HEADER
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .app-header {
+    padding: 0 22px;
+  }
+
+  .header-user-info {
+    min-width: 85px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-header {
+    padding: 0 18px;
+  }
+
+  .header-menu-button {
+    display: flex;
+  }
+
+  .header-brand-mobile {
+    display: flex;
+  }
+
+  .header-right {
+    gap: 9px;
+  }
+
+  .header-divider {
+    display: none;
+  }
+
+  .header-user-info {
+    display: none;
+  }
+
+  .header-user-menu {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header {
+    min-height: 64px;
+    padding: 0 14px;
+  }
+
+  .header-menu-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-brand-mobile strong {
+    font-size: 15px;
+    letter-spacing: 0.13em;
+  }
+
+  .header-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .header-icon-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notification-panel {
+    position: fixed;
+    top: 68px;
+    right: 12px;
+    left: 12px;
+
+    width: auto;
+    max-width: none;
+
+    max-height: calc(100vh - 82px);
+  }
+
+  .header-user-dropdown {
+    right: -4px;
+  }
+}
+
+
+
