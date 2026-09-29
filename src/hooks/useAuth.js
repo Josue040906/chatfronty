@@ -45,16 +45,28 @@ export function useAuth() {
       }
 
       if (!response.ok) {
-        throw new Error(
-          'Erreur lors de la connexion.'
-        );
+        throw new Error('Erreur lors de la connexion.');
       }
 
       const utilisateur = await response.json();
 
       const connectedUser = {
-        id: utilisateur.id,
+        userId: utilisateur.userId,
+        employeId: utilisateur.employeId,
         email: utilisateur.email,
+
+        matricule: utilisateur.matricule,
+        nom: utilisateur.nom,
+        prenom: utilisateur.prenom,
+
+        photo: utilisateur.photo,
+        poste: utilisateur.poste,
+
+        codeService: utilisateur.codeService,
+        service: utilisateur.service,
+
+        directionId: utilisateur.directionId,
+        direction: utilisateur.direction,
       };
 
       localStorage.setItem(

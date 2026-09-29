@@ -25,6 +25,7 @@ import PostesPage from '../../pages/Administration/PostesPage';
 import GradesPage from '../../pages/Administration/GradesPage';
 import StatutsPage from '../../pages/Administration/StatutsPage';
 import ReglesRhPage from '../../pages/Administration/ReglesRhPage';
+import ProfilPage from '../../pages/Profil/ProfilPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -135,6 +136,11 @@ export default function AppRouter({
         />
 
         <Route
+          path="/profil"
+          element={<ProfilPage user={user} />}
+        />
+
+        <Route
           path="/organisation"
           element={<OrganisationPage />}
         />
@@ -211,12 +217,11 @@ export default function AppRouter({
           path="/administration/statuts"
           element={<StatutsPage />}
         />
-<Route
-path="/administration/regles-rh"
-element={<ReglesRhPage />}
-/>
+        <Route
+        path="/administration/regles-rh"
+        element={<ReglesRhPage />}
+        />
 
-        
         <Route
           path="/administration"
           element={<AdministrationPage />}
