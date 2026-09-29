@@ -13,6 +13,7 @@ import {
 
 import { getProfil, updateProfil } from '../../api/profil';
 import { getEmployeePhotoUrl } from '../../utils/employee';
+import { changerMotDePasse } from '../../api/utilisateurs';
 
 function formatDate(value) {
   if (!value) {
@@ -72,6 +73,13 @@ export default function ProfilPage({ user }) {
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
     const [saveError, setSaveError] = useState('');
+
+    const [ancienMotDePasse, setAncienMotDePasse] = useState('');
+    const [nouveauMotDePasse, setNouveauMotDePasse] = useState('');
+    const [confirmationMotDePasse, setConfirmationMotDePasse] = useState('');
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [passwordMessage, setPasswordMessage] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +155,53 @@ export default function ProfilPage({ user }) {
     }
     }
 
+    async function handleChangePassword() {
+  setPasswordSaving(true);
+  setPasswordMessage('');
+  setPasswordError('');
+
+  if (!ancienMotDePasse || !nouveauMotDePasse || !confirmationMotDePasse) {
+    setPasswordError(
+      'Tous les champs du mot de passe sont obligatoires.'
+    );
+    setPasswordSaving(false);
+    return;
+  }
+
+  if (nouveauMotDePasse !== confirmationMotDePasse) {
+    setPasswordError(
+      'La confirmation du nouveau mot de passe ne correspond pas.'
+    );
+    setPasswordSaving(false);
+    return;
+  }
+
+  try {
+    const result = await changerMotDePasse(
+      user?.userId,
+      ancienMotDePasse,
+      nouveauMotDePasse
+    );
+
+    setPasswordMessage(
+      result?.message ||
+      'Mot de passe modifié avec succès.'
+    );
+
+    setAncienMotDePasse('');
+    setNouveauMotDePasse('');
+    setConfirmationMotDePasse('');
+  } catch (err) {
+    console.error(err);
+
+    setPasswordError(
+      err?.message ||
+      'Impossible de modifier votre mot de passe.'
+    );
+  } finally {
+    setPasswordSaving(false);
+  }
+}
     function handleCancelEdit() {
     setAdresse(profil?.adresse || '');
     setTelephone(profil?.telephone || '');
@@ -500,19 +555,94 @@ export default function ProfilPage({ user }) {
 
         </div>
 
-        <div className="profil-security-note">
-          <ShieldCheck size={18} />
+<div className="profil-password-section">
 
-          <div>
-            <strong>Sécurité du compte</strong>
+  <div className="profil-password-heading">
+    <div>
+      <strong>Modifier mon mot de passe</strong>
 
-            <p>
-              La modification du mot de passe et des
-              informations de connexion sera disponible
-              dans les paramètres de sécurité du compte.
-            </p>
-          </div>
-        </div>
+      <p>
+        Utilisez votre mot de passe actuel pour définir
+        un nouveau mot de passe.
+      </p>
+    </div>
+  </div>
+
+  <div className="profil-password-form">
+
+    <div className="profil-password-field">
+      <label htmlFor="ancien-mot-de-passe">
+        Mot de passe actuel
+      </label>
+
+      <input
+        id="ancien-mot-de-passe"
+        type="password"
+        value={ancienMotDePasse}
+        onChange={(event) => setAncienMotDePasse(event.target.value)}
+        autoComplete="current-password"
+        disabled={passwordSaving}
+      />
+    </div>
+
+    <div className="profil-password-field">
+      <label htmlFor="nouveau-mot-de-passe">
+        Nouveau mot de passe
+      </label>
+
+      <input
+        id="nouveau-mot-de-passe"
+        type="password"
+        value={nouveauMotDePasse}
+        onChange={(event) => setNouveauMotDePasse(event.target.value)}
+        autoComplete="new-password"
+        disabled={passwordSaving}
+      />
+    </div>
+
+    <div className="profil-password-field">
+      <label htmlFor="confirmation-mot-de-passe">
+        Confirmer le nouveau mot de passe
+      </label>
+
+      <input
+        id="confirmation-mot-de-passe"
+        type="password"
+        value={confirmationMotDePasse}
+        onChange={(event) => setConfirmationMotDePasse(event.target.value)}
+        autoComplete="new-password"
+        disabled={passwordSaving}
+      />
+    </div>
+
+  </div>
+
+  {passwordMessage && (
+    <div className="profil-save-message">
+      {passwordMessage}
+    </div>
+  )}
+
+  {passwordError && (
+    <div className="profil-save-error">
+      {passwordError}
+    </div>
+  )}
+
+  <div className="profil-password-actions">
+    <button
+      type="button"
+      className="profil-save-button"
+      onClick={handleChangePassword}
+      disabled={passwordSaving}
+    >
+      {passwordSaving
+        ? 'Modification...'
+        : 'Modifier le mot de passe'}
+    </button>
+  </div>
+
+</div>
 
       </section>
 

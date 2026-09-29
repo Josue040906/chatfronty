@@ -411,6 +411,85 @@
   line-height: 1.6;
 }
 
+/* =========================================================
+   MODIFICATION DU MOT DE PASSE
+   ========================================================= */
+
+.profil-password-section {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #E5DDD3;
+  border-radius: 9px;
+  background: #F8F5EF;
+}
+
+.profil-password-heading strong {
+  display: block;
+  color: #5F4938;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.profil-password-heading p {
+  margin: 4px 0 0;
+  color: #8A7C6E;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.profil-password-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.profil-password-field {
+  min-width: 0;
+}
+
+.profil-password-field label {
+  display: block;
+  margin-bottom: 6px;
+  color: #6F5E50;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.profil-password-field input {
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid #D8CDC0;
+  border-radius: 7px;
+  outline: none;
+  background: #FFFFFF;
+  color: #3A2A1E;
+  font-family: inherit;
+  font-size: 12px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.profil-password-field input:focus {
+  border-color: #B49A82;
+  box-shadow:
+    0 0 0 3px rgba(180, 154, 130, 0.12);
+}
+
+.profil-password-field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #F5F1EC;
+}
+
+.profil-password-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
 
 /* =========================================================
    ÉTATS DE CHARGEMENT / ERREUR
