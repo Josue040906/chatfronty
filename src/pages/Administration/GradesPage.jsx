@@ -18,28 +18,9 @@ import {
   updateGrade,
 } from '../../api/grades';
 
-const TYPE_EMPLOI = [
-  {
-    id: 1,
-    nom: 'Fonctionnaire',
-  },
-  {
-    id: 2,
-    nom: 'Agent contractuel',
-  },
-  {
-    id: 3,
-    nom: 'Agent temporaire',
-  },
-  {
-    id: 4,
-    nom: "Personnel d'appui",
-  },
-];
-
 const EMPTY_FORM = {
-  codeGrade: '',
-  typeEmploiId: '',
+  code: '',
+  libelle: '',
 };
 
 export default function GradesPage() {
@@ -83,7 +64,33 @@ export default function GradesPage() {
   }
 
   useEffect(() => {
-    loadGrades();
+    let isActive = true;
+
+    getGrades()
+      .then((data) => {
+        if (isActive) {
+          setGrades(data);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+
+        if (isActive) {
+          setError(
+            err?.message ||
+              'Impossible de charger les grades.'
+          );
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   function resetForm() {
@@ -108,10 +115,8 @@ export default function GradesPage() {
     setEditingGrade(grade);
 
     setForm({
-      codeGrade: grade.code_grade || '',
-      typeEmploiId: grade.type_emploi_id
-        ? String(grade.type_emploi_id)
-        : '',
+      code: grade.code || '',
+      libelle: grade.libelle || '',
     });
 
     setShowForm(true);
@@ -142,31 +147,25 @@ export default function GradesPage() {
     setSuccess('');
     setError('');
 
-    const codeGrade = form.codeGrade.trim();
-    const typeEmploiId = Number(form.typeEmploiId);
+    const code = form.code.trim();
+    const libelle = form.libelle.trim();
 
-    if (!codeGrade) {
+    if (!code) {
       setFormError(
         'Le code du grade est obligatoire.'
       );
       return;
     }
 
-    if (codeGrade.length > 100) {
+    if (code.length > 100) {
       setFormError(
         'Le code du grade ne doit pas dépasser 100 caractères.'
       );
       return;
     }
 
-    if (
-      !form.typeEmploiId ||
-      !Number.isInteger(typeEmploiId) ||
-      typeEmploiId <= 0
-    ) {
-      setFormError(
-        "Veuillez sélectionner un type d'emploi."
-      );
+    if (!libelle) {
+      setFormError('Le libellé du grade est obligatoire.');
       return;
     }
 
@@ -175,8 +174,8 @@ export default function GradesPage() {
 
       if (editingGrade) {
         await updateGrade(editingGrade.id, {
-          codeGrade,
-          typeEmploiId,
+          code,
+          libelle,
         });
 
         setSuccess(
@@ -184,8 +183,8 @@ export default function GradesPage() {
         );
       } else {
         await createGrade({
-          codeGrade,
-          typeEmploiId,
+          code,
+          libelle,
         });
 
         setSuccess(
@@ -211,7 +210,7 @@ export default function GradesPage() {
 
   async function handleDelete(grade) {
     const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer le grade « ${grade.code_grade} » ?`
+      `Voulez-vous vraiment supprimer le grade « ${grade.code || grade.libelle || ''} » ?`
     );
 
     if (!confirmed) {
@@ -250,10 +249,13 @@ export default function GradesPage() {
     }
 
     return (
-      grade.code_grade
+      grade.code
         ?.toLowerCase()
         .includes(value) ||
-      grade.type_emploi
+      grade.libelle
+        ?.toLowerCase()
+        .includes(value) ||
+      grade.description
         ?.toLowerCase()
         .includes(value)
     );
@@ -380,13 +382,13 @@ export default function GradesPage() {
 
                 <div className="administration-list-content">
                   <h2>
-                    {grade.code_grade ||
+                    {grade.code ||
                       'Grade sans code'}
                   </h2>
 
                   <p>
-                    {grade.type_emploi ||
-                      "Type d'emploi non renseigné."}
+                    {grade.libelle ||
+                      'Aucun libellé renseigné.'}
                   </p>
                 </div>
 
@@ -605,11 +607,11 @@ export default function GradesPage() {
 
                   <input
                     type="text"
-                    name="codeGrade"
-                    value={form.codeGrade}
+                    name="code"
+                    value={form.code}
                     onChange={handleChange}
                     maxLength={100}
-                    placeholder="Ex. GRADE-01"
+                    placeholder="Ex. 3C2E"
                     required
                     style={{
                       width: '100%',
@@ -631,7 +633,7 @@ export default function GradesPage() {
                       color: '#9ca3af',
                     }}
                   >
-                    {form.codeGrade.length}/100
+                    {form.code.length}/100
                   </span>
                 </label>
 
@@ -648,40 +650,27 @@ export default function GradesPage() {
                       color: '#374151',
                     }}
                   >
-                    Type d'emploi
+                    Libellé du grade
                   </span>
 
-                  <select
-                    name="typeEmploiId"
-                    value={form.typeEmploiId}
+                  <input
+                    type="text"
+                    name="libelle"
+                    value={form.libelle}
                     onChange={handleChange}
                     required
+                    placeholder="Ex. Grade 3C2E"
                     style={{
                       width: '100%',
                       boxSizing: 'border-box',
                       padding: '11px 13px',
-                      border:
-                        '1px solid #dfe3e8',
+                      border: '1px solid #dfe3e8',
                       borderRadius: '9px',
                       outline: 'none',
-                      background: '#fff',
                       fontSize: '14px',
                       color: '#172033',
                     }}
-                  >
-                    <option value="">
-                      Sélectionner un type d'emploi
-                    </option>
-
-                    {TYPE_EMPLOI.map((type) => (
-                      <option
-                        key={type.id}
-                        value={type.id}
-                      >
-                        {type.nom}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </label>
               </div>
 

@@ -42,25 +42,25 @@ export async function searchGrades(query) {
 }
 
 export async function createGrade({
-  codeGrade,
-  typeEmploiId,
+  code,
+  libelle,
 }) {
   return apiPost('/api/grades', {
-    codeGrade,
-    typeEmploiId,
+    code,
+    libelle,
   });
 }
 
 export async function updateGrade(
   id,
   {
-    codeGrade,
-    typeEmploiId,
+    code,
+    libelle,
   }
 ) {
   return apiPut(`/api/grades/${id}`, {
-    codeGrade,
-    typeEmploiId,
+    code,
+    libelle,
   });
 }
 
