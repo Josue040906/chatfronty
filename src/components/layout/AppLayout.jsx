@@ -3,7 +3,11 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import AssistantFloating from '../assistant/AssistantFloating';
 
-export default function AppLayout({ user, onLogout, children }) {
+export default function AppLayout({
+  user,
+  onLogout,
+  children,
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

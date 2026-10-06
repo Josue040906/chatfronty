@@ -1,5 +1,6 @@
 import {
   apiGet,
+  apiGetBlob,
   apiPost,
   apiPut,
 } from './client';
@@ -20,6 +21,28 @@ export async function getDocuments() {
   const response = await apiGet('/api/documents');
 
   return normalizeResponse(response);
+}
+
+export async function getDocumentTypes() {
+  return normalizeResponse(
+    await apiGet('/api/documents/types')
+  );
+}
+
+export async function getDocumentRequests() {
+  return normalizeResponse(
+    await apiGet('/api/documents/demandes')
+  );
+}
+
+export async function createDocumentRequest(documentData) {
+  return apiPost('/api/documents/demandes', documentData);
+}
+
+export async function getDocumentRequestPdf(id) {
+  return apiGetBlob(
+    `/api/documents/demandes/${encodeURIComponent(id)}/pdf`
+  );
 }
 
 export async function getDocumentById(id) {

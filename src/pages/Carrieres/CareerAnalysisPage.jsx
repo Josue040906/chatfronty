@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
-  Award,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
@@ -16,10 +15,7 @@ import {
 } from 'lucide-react';
 
 import { getAgentById } from '../../api/agents';
-import {
-  getCareerAnalysis,
-  getCareerHistory,
-} from '../../api/carrieres';
+import { analyserCarriere } from '../../api/carrieres';
 
 import {
   getEmployeePhotoUrl,
@@ -66,7 +62,7 @@ function formatMonths(months) {
 }
 
 function getHistoryDate(item) {
-  return formatDate(item.date_debut);
+  return formatDate(item.dateDebut);
 }
 
 export default function CareerAnalysisPage() {
@@ -88,24 +84,20 @@ export default function CareerAnalysisPage() {
       setError('');
 
       try {
-        const [agentResult, analysisResult, historyResult] =
+        const [agentResult, analysisResult] =
           await Promise.all([
             getAgentById(id),
-            getCareerAnalysis(id),
-            getCareerHistory(id),
+            analyserCarriere(id),
           ]);
 
         if (cancelled) return;
 
         setAgent(agentResult);
         setAnalysis(analysisResult);
-
         setHistory(
-          Array.isArray(historyResult)
-            ? historyResult
-            : historyResult
-              ? [historyResult]
-              : []
+          Array.isArray(analysisResult?.historique)
+            ? analysisResult.historique
+            : []
         );
       } catch (err) {
         console.error(err);
@@ -166,10 +158,47 @@ export default function CareerAnalysisPage() {
     );
   }
 
-  const situation = analysis.situation_actuelle;
-  const rule = analysis.regle_appliquee;
-  const seniority = analysis.anciennete;
-  const nextClass = analysis.classe_suivante;
+  const situation = analysis.situationActuelle || {};
+  const seniority = analysis.ancienneteActuelle || {};
+  const condition = analysis.ancienneteRequise || {};
+  const evolution = analysis.evolution || {};
+  const nextSituation = analysis.situationSuivante;
+  const agentName = formatName(agent);
+  const photoUrl = getEmployeePhotoUrl(agent.photo);
+  const profileDetails = [
+    {
+      label: 'Adresse',
+      value: agent.adresse || '—',
+    },
+    {
+      label: 'Téléphone',
+      value: agent.telephone || '—',
+    },
+    {
+      label: 'Email',
+      value: agent.email || '—',
+    },
+    {
+      label: 'Date de naissance',
+      value: formatDate(agent.date_naissance),
+    },
+    {
+      label: 'Lieu de naissance',
+      value: agent.lieu_naissance || '—',
+    },
+    {
+      label: 'Date d’embauche',
+      value: formatDate(agent.date_embauche),
+    },
+    {
+      label: 'Service',
+      value: agent.service || '—',
+    },
+    {
+      label: 'Direction',
+      value: agent.direction || '—',
+    },
+  ];
 
   return (
     <div className="career-analysis-page">
@@ -185,10 +214,10 @@ export default function CareerAnalysisPage() {
       <section className="career-analysis-hero">
         <div className="career-analysis-identity">
         <div className="career-analysis-avatar">
-          {getEmployeePhotoUrl(agent.photo) ? (
+          {photoUrl ? (
             <img
-              src={getEmployeePhotoUrl(agent.photo)}
-              alt={formatName(agent)}
+              src={photoUrl}
+              alt={agentName ? `Photo de ${agentName}` : "Photo de l'agent"}
             />
           ) : (
             getEmployeeInitials(agent)
@@ -216,7 +245,7 @@ export default function CareerAnalysisPage() {
           </div>
         </div>
 
-        {analysis.situation_disponible ? (
+        {analysis.situationActuelle ? (
           <div className="career-availability available">
             <CheckCircle2 size={16} />
             Situation disponible
@@ -229,7 +258,7 @@ export default function CareerAnalysisPage() {
         )}
       </section>
 
-      {!analysis.situation_disponible ? (
+      {!analysis.situationActuelle ? (
         <section className="career-empty-analysis">
           <div className="career-empty-icon">
             <History size={24} />
@@ -237,7 +266,7 @@ export default function CareerAnalysisPage() {
 
           <h2>Aucune situation de carrière enregistrée</h2>
 
-          <p>{analysis.conclusion}</p>
+          <p>Aucune situation de carrière actuelle n’est enregistrée pour cet agent.</p>
 
           <button
             type="button"
@@ -248,6 +277,30 @@ export default function CareerAnalysisPage() {
         </section>
       ) : (
         <>
+          <section className="career-panel">
+            <div className="career-panel-header">
+              <div className="career-panel-icon">
+                <UserRound size={19} />
+              </div>
+
+              <div>
+                <h2>Profil du collaborateur</h2>
+                <p>
+                  Informations personnelles et professionnelles synchronisées depuis le backend.
+                </p>
+              </div>
+            </div>
+
+            <div className="career-profile-grid">
+              {profileDetails.map((detail) => (
+                <div key={detail.label} className="career-profile-item">
+                  <span>{detail.label}</span>
+                  <strong>{detail.value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="career-section">
             <div className="career-section-heading">
               <div>
@@ -261,12 +314,20 @@ export default function CareerAnalysisPage() {
             <div className="career-current-grid">
               <div className="career-current-card">
                 <div className="career-current-icon">
-                  <Award size={19} />
+                  <UserRound size={19} />
                 </div>
 
-                <span>Grade</span>
-                <strong>{situation.grade || '—'}</strong>
-                <small>{situation.grade_libelle || '—'}</small>
+                <span>Catégorie</span>
+                <strong>{agent.categorie || '—'}</strong>
+              </div>
+
+              <div className="career-current-card">
+                <div className="career-current-icon">
+                  <BriefcaseBusiness size={19} />
+                </div>
+
+                <span>Corps</span>
+                <strong>{agent.corps_libelle || agent.corps || '—'}</strong>
               </div>
 
               <div className="career-current-card">
@@ -275,8 +336,7 @@ export default function CareerAnalysisPage() {
                 </div>
 
                 <span>Classe</span>
-                <strong>{situation.classe || '—'}</strong>
-                <small>{situation.classe_libelle || '—'}</small>
+                <strong>{situation.classeLibelle || '—'}</strong>
               </div>
 
               <div className="career-current-card">
@@ -285,180 +345,79 @@ export default function CareerAnalysisPage() {
                 </div>
 
                 <span>Échelon</span>
-                <strong>{situation.echelon || '—'}</strong>
-                <small>
-                  {situation.echelon_libelle || '—'}
-                </small>
+                <strong>{situation.echelonOrdre ?? '—'}</strong>
               </div>
 
               <div className="career-current-card">
                 <div className="career-current-icon">
-                  <TrendingUp size={19} />
+                  <CalendarDays size={19} />
                 </div>
 
-                <span>Indice</span>
-                <strong>{situation.indice || '—'}</strong>
-                <small>Indice actuel</small>
-              </div>
-            </div>
-
-            <div className="career-information-card">
-              <div className="career-information-row">
-                <span>Statut</span>
-                <strong>
-                  {situation.statut_agent || '—'}
-                </strong>
-              </div>
-
-              <div className="career-information-row">
-                <span>Cadre</span>
-                <strong>
-                  {situation.cadre || '—'}
-                  {situation.cadre_code
-                    ? ` — ${situation.cadre_code}`
-                    : ''}
-                </strong>
-              </div>
-
-              <div className="career-information-row">
-                <span>Échelle</span>
-                <strong>
-                  {situation.echelle || '—'}
-                </strong>
-              </div>
-
-              <div className="career-information-row">
-                <span>Corps</span>
-                <strong>
-                  {situation.corps || '—'}
-                </strong>
-              </div>
-
-              <div className="career-information-row">
                 <span>Depuis</span>
-                <strong>
-                  {formatDate(situation.date_debut)}
-                </strong>
+                <strong>{formatDate(situation.dateDebut)}</strong>
               </div>
             </div>
           </section>
 
-          <section className="career-analysis-grid">
-            <div className="career-panel">
-              <div className="career-panel-header">
-                <div className="career-panel-icon">
-                  <Clock3 size={19} />
-                </div>
-
-                <div>
-                  <h2>Ancienneté</h2>
-                  <p>
-                    Calcul effectué par le moteur RH.
-                  </p>
-                </div>
+          <section className="career-panel">
+            <div className="career-panel-header">
+              <div className="career-panel-icon">
+                <Clock3 size={19} />
               </div>
 
-              <div className="career-seniority-value">
-                {formatMonths(seniority?.nombre_mois)}
+              <div>
+                <h2>Ancienneté</h2>
+                <p>Calcul effectué par le backend.</p>
+              </div>
+            </div>
+
+            <div className="career-seniority-value">
+              {formatMonths(seniority.moisTotal)}
+            </div>
+
+            <div className="career-seniority-details">
+              <div>
+                <span>Depuis</span>
+                <strong>{formatDate(seniority.dateDebut)}</strong>
               </div>
 
-              <div className="career-seniority-details">
-                <div>
-                  <span>Depuis</span>
-                  <strong>
-                    {formatDate(seniority?.date_debut)}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Calcul au</span>
-                  <strong>
-                    {formatDate(seniority?.date_calcul)}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>Condition requise</span>
-                  <strong>
-                    {seniority?.condition_requise_mois ?? '—'} mois
-                  </strong>
-                </div>
+              <div>
+                <span>Calcul au</span>
+                <strong>{formatDate(seniority.dateCalcul)}</strong>
               </div>
 
-              <div
-                className={`career-condition ${
-                  seniority?.condition_satisfaite
-                    ? 'satisfied'
-                    : 'not-satisfied'
-                }`}
-              >
-                {seniority?.condition_satisfaite ? (
-                  <CheckCircle2 size={18} />
-                ) : (
-                  <XCircle size={18} />
-                )}
-
+              <div>
+                <span>Condition requise</span>
                 <strong>
-                  {seniority?.condition_satisfaite
-                    ? 'Condition d’ancienneté satisfaite'
-                    : 'Condition d’ancienneté non satisfaite'}
+                  {condition.dureeMinMois == null
+                    ? 'Non renseignée'
+                    : `${condition.dureeMinMois} mois`}
                 </strong>
               </div>
             </div>
 
-            <div className="career-panel">
-              <div className="career-panel-header">
-                <div className="career-panel-icon">
-                  <FileText size={19} />
-                </div>
-
-                <div>
-                  <h2>Règle applicable</h2>
-                  <p>
-                    Règle identifiée par le moteur RH.
-                  </p>
-                </div>
-              </div>
-
-              {analysis.regle_applicable && rule ? (
-                <>
-                  <h3 className="career-rule-title">
-                    {rule.libelle || rule.code || 'Règle RH'}
-                  </h3>
-
-                  <p className="career-rule-description">
-                    {rule.description || '—'}
-                  </p>
-
-                  <div className="career-rule-meta">
-                    <div>
-                      <span>Type</span>
-                      <strong>
-                        {rule.type_regle_libelle || '—'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Référence</span>
-                      <strong>
-                        {rule.reference_juridique || '—'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Article</span>
-                      <strong>
-                        {rule.article || '—'}
-                      </strong>
-                    </div>
-                  </div>
-                </>
+            <div
+              className={`career-condition ${
+                analysis.eligible === true
+                  ? 'satisfied'
+                  : analysis.eligible === false
+                    ? 'not-satisfied'
+                    : 'undetermined'
+              }`}
+            >
+              {analysis.eligible === true ? (
+                <CheckCircle2 size={18} />
               ) : (
-                <div className="career-rule-empty">
-                  <XCircle size={18} />
-                  <span>Aucune règle applicable identifiée.</span>
-                </div>
+                <XCircle size={18} />
               )}
+
+              <strong>
+                {analysis.eligible === true
+                  ? 'Condition d’ancienneté satisfaite'
+                  : analysis.eligible === false
+                    ? 'Condition d’ancienneté non satisfaite'
+                    : 'Éligibilité non déterminée'}
+              </strong>
             </div>
           </section>
 
@@ -476,33 +435,34 @@ export default function CareerAnalysisPage() {
               </div>
             </div>
 
-            {analysis.echelon_suivant_existe ? (
+            {evolution.type === 'ECHELON' && nextSituation ? (
               <div className="career-next-result">
                 <CheckCircle2 size={20} />
 
                 <div>
-                  <span>Échelon suivant</span>
+                  <span>Évolution d’échelon</span>
                   <strong>
-                    {analysis.echelon_suivant?.echelon_libelle ||
-                      analysis.echelon_suivant?.libelle ||
-                      'Échelon suivant disponible'}
+                    {situation.classeLibelle} — échelon {situation.echelonOrdre}
+                    {' → échelon '}
+                    {nextSituation.echelonOrdre}
                   </strong>
                 </div>
               </div>
-            ) : analysis.classe_suivante_existe ? (
+            ) : evolution.type === 'CLASSE' && nextSituation ? (
               <div className="career-next-result">
                 <CheckCircle2 size={20} />
 
                 <div>
-                  <span>Classe suivante</span>
+                  <span>Évolution de classe</span>
                   <strong>
-                    {nextClass?.libelle || 'Classe suivante disponible'}
+                    {situation.classeLibelle}
+                    {' → '}
+                    {nextSituation.classeLibelle}
                   </strong>
-
                   <p>
-                    Aucun échelon suivant n'existe dans la classe
-                    actuelle. Le passage à la classe suivante doit
-                    être examiné selon les règles applicables.
+                    Échelon {situation.echelonOrdre}
+                    {' → '}
+                    échelon {nextSituation.echelonOrdre}
                   </p>
                 </div>
               </div>
@@ -513,11 +473,27 @@ export default function CareerAnalysisPage() {
                 <div>
                   <span>Évolution identifiée</span>
                   <strong>
-                    Aucune évolution suivante identifiée
+                    Aucune évolution suivante identifiée.
                   </strong>
                 </div>
               </div>
             )}
+
+            <div className="career-evolution-condition">
+              <span>
+                Condition :{' '}
+                {condition.dureeMinMois == null
+                  ? 'durée minimale non renseignée'
+                  : `${condition.dureeMinMois} mois d’ancienneté`}
+              </span>
+              <strong>
+                {analysis.eligible === true
+                  ? 'Condition satisfaite'
+                  : analysis.eligible === false
+                    ? 'Condition non satisfaite'
+                    : 'Condition non déterminée'}
+              </strong>
+            </div>
           </section>
 
           <section className="career-panel">
@@ -543,18 +519,16 @@ export default function CareerAnalysisPage() {
                 {history.map((item) => (
                   <div
                     className="career-timeline-item"
-                    key={item.id}
+                    key={item.historiqueId}
                   >
                     <div className="career-timeline-marker" />
 
                     <div className="career-timeline-content">
                       <div className="career-timeline-top">
                         <strong>
-                          {item.classe_libelle || item.classe || '—'}
+                          {item.classeLibelle || '—'}
                           {' · '}
-                          {item.echelon_libelle ||
-                            item.echelon ||
-                            '—'}
+                          {item.echelonOrdre ?? '—'}
                         </strong>
 
                         <span>
@@ -562,31 +536,11 @@ export default function CareerAnalysisPage() {
                         </span>
                       </div>
 
-                      <p>
-                        {item.grade_libelle ||
-                          item.grade ||
-                          'Grade non renseigné'}
-                        {' · '}
-                        {item.corps_libelle ||
-                          item.corps ||
-                          'Corps non renseigné'}
-                      </p>
-
-                      <div className="career-timeline-details">
-                        <span>
-                          Indice : {item.indice ?? '—'}
-                        </span>
-
-                        <span>
-                          Statut : {item.statut_libelle || '—'}
-                        </span>
-
-                        {item.date_fin && (
-                          <span>
-                            Fin : {formatDate(item.date_fin)}
-                          </span>
-                        )}
-                      </div>
+                      {item.dateFin && (
+                        <div className="career-timeline-details">
+                          <span>Fin : {formatDate(item.dateFin)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -594,19 +548,6 @@ export default function CareerAnalysisPage() {
             )}
           </section>
 
-          <section className="career-conclusion">
-            <div className="career-conclusion-icon">
-              <UserRound size={20} />
-            </div>
-
-            <div>
-              <p className="page-eyebrow">
-                CONCLUSION DU MOTEUR RH
-              </p>
-
-              <p>{analysis.conclusion}</p>
-            </div>
-          </section>
         </>
       )}
     </div>

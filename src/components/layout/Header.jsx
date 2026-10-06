@@ -6,8 +6,8 @@ Menu,
 UserRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const API_URL = 'http://localhost:8080';
+import { getEmployeePhotoUrl } from '../../utils/employee';
+import { API_BASE_URL } from '../../api/client';
 
 export default function Header({
 user,
@@ -20,6 +20,7 @@ const [notifications, setNotifications] = useState([]);
 const [unreadCount, setUnreadCount] = useState(0);
 const [notificationsOpen, setNotificationsOpen] = useState(false);
 const [userMenuOpen, setUserMenuOpen] = useState(false);
+const [failedAvatarUrl, setFailedAvatarUrl] = useState('');
 
 const notificationsRef = useRef(null);
 const userMenuRef = useRef(null);
@@ -36,9 +37,7 @@ user?.email ||
 
 const userId = user?.userId;
 
-const avatarUrl = user?.photo
-? `${API_URL}${user.photo}`
-: null;
+const avatarUrl = getEmployeePhotoUrl(user?.photo);
 
 const chargerNotifications = async () => {
 if (!userId) {
@@ -49,7 +48,7 @@ return;
 
 try {
   const response = await fetch(
-    `${API_URL}/api/notifications?userId=${userId}`
+    `${API_BASE_URL}/api/notifications?userId=${userId}`
   );
 
   if (!response.ok) {
@@ -77,7 +76,7 @@ return;
 
 try {
   const response = await fetch(
-    `${API_URL}/api/notifications/non-lues?userId=${userId}`
+    `${API_BASE_URL}/api/notifications/non-lues?userId=${userId}`
   );
 
   if (!response.ok) {
@@ -160,7 +159,7 @@ return;
 
 try {
   const response = await fetch(
-    `${API_URL}/api/notifications/${notificationId}/lue?userId=${userId}`,
+    `${API_BASE_URL}/api/notifications/${notificationId}/lue?userId=${userId}`,
     {
       method: 'PUT',
     }
@@ -199,7 +198,7 @@ return;
 
 try {
   const response = await fetch(
-    `${API_URL}/api/notifications/lues?userId=${userId}`,
+    `${API_BASE_URL}/api/notifications/lues?userId=${userId}`,
     {
       method: 'PUT',
     }
@@ -383,27 +382,9 @@ return ( <header className="app-header"> <div className="header-left"> <button
       className="header-user"
       ref={userMenuRef}
     >
-      <div className="header-avatar">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={`Photo de ${displayName}`}
-          />
-        ) : (
-          <UserRound size={17} />
-        )}
-      </div>
-
-      <div className="header-user-info">
-        <strong>{displayName}</strong>
-        <span>
-          {user?.poste || 'Agent'}
-        </span>
-      </div>
-
       <button
         type="button"
-        className="header-user-menu"
+        className="header-user-trigger"
         onClick={() =>
           setUserMenuOpen((current) => !current)
         }
@@ -411,13 +392,26 @@ return ( <header className="app-header"> <div className="header-left"> <button
         aria-label="Ouvrir le menu utilisateur"
         aria-expanded={userMenuOpen}
       >
+        <span className="header-avatar">
+          {avatarUrl && failedAvatarUrl !== avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              onError={() => setFailedAvatarUrl(avatarUrl)}
+            />
+          ) : (
+            <UserRound size={17} />
+          )}
+        </span>
+
+        <span className="header-user-info">
+          <strong>{displayName}</strong>
+          <span>{user?.poste || 'Agent'}</span>
+        </span>
+
         <ChevronDown
           size={16}
-          className={
-            userMenuOpen
-              ? 'header-chevron-open'
-              : ''
-          }
+          className={userMenuOpen ? 'header-chevron-open' : ''}
         />
       </button>
 

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-
-const API_URL = 'http://localhost:8080';
+import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../api/client';
+import { getProfil } from '../api/profil';
 
 const getStoredUser = () => {
   const savedUser = localStorage.getItem('user');
@@ -21,10 +21,50 @@ const getStoredUser = () => {
 export function useAuth() {
   const [user, setUser] = useState(getStoredUser);
 
+  useEffect(() => {
+    if (!user?.userId) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    async function refreshUserPhoto() {
+      try {
+        const profile = await getProfil(user.userId);
+
+        if (cancelled) {
+          return;
+        }
+
+        setUser((currentUser) => {
+          if (!currentUser || currentUser.userId !== user.userId) {
+            return currentUser;
+          }
+
+          const updatedUser = {
+            ...currentUser,
+            photo: profile.photo || '',
+          };
+
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+      } catch (error) {
+        console.error('Impossible de synchroniser la photo utilisateur.', error);
+      }
+    }
+
+    refreshUserPhoto();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.userId]);
+
   const login = async (credentials) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/utilisateurs/login`,
+        `${API_BASE_URL}/api/utilisateurs/login`,
         {
           method: 'POST',
           headers: {
@@ -90,6 +130,20 @@ export function useAuth() {
     }
   };
 
+  const updateUser = (updates) => {
+    if (!user) {
+      return;
+    }
+
+    const updatedUser = {
+      ...user,
+      ...updates,
+    };
+
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
@@ -99,6 +153,7 @@ export function useAuth() {
     user,
     loading: false,
     login,
+    updateUser,
     logout,
   };
 }

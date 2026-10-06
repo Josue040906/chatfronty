@@ -12,12 +12,16 @@ function normalizeResponse(response) {
   return response;
 }
 
-export async function getCareerAnalysis(employeId) {
+export async function analyserCarriere(employeId) {
   const response = await apiGet(
-    `/api/carriere/analyse?employeId=${employeId}`
+    `/api/carrieres/employes/${employeId}/analyse`
   );
 
   return normalizeResponse(response);
+}
+
+export async function getCareerAnalysis(employeId) {
+  return analyserCarriere(employeId);
 }
 
 export async function getCurrentCareerSituation(employeId) {

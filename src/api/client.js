@@ -1,5 +1,6 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
 
 async function parseResponse(response) {
   const contentType = response.headers.get('content-type') || '';
@@ -31,6 +32,14 @@ export async function apiGet(path) {
   return handleResponse(response);
 }
 
+export async function apiGetBlob(path) {
+  const response = await fetch(`${API_BASE_URL}${path}`);
+
+  await handleResponse(response);
+
+  return response.blob();
+}
+
 export async function apiPost(path, body) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
@@ -38,6 +47,15 @@ export async function apiPost(path, body) {
       'Content-Type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify(body),
+  });
+
+  return handleResponse(response);
+}
+
+export async function apiPostFormData(path, formData) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    body: formData,
   });
 
   return handleResponse(response);

@@ -7,6 +7,7 @@ export default function App() {
     user,
     loading,
     login,
+    updateUser,
     logout,
   } = useAuth();
 
@@ -16,6 +17,7 @@ export default function App() {
         user={user}
         loading={loading}
         login={login}
+        updateUser={updateUser}
         logout={logout}
       />
     </BrowserRouter>

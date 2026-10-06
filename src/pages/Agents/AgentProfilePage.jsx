@@ -40,7 +40,7 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('fr-FR').format(date);
 }
 
-export default function AgentProfilePage() {
+export default function AgentProfilePage({ user }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -226,6 +226,7 @@ export default function AgentProfilePage() {
        * La photo actuelle reste inchangée dans cette requête.
        */
       await updateAgent(id, {
+         acteurId: user?.userId,
         ...form,
         photo: agent.photo || '',
       });
@@ -235,7 +236,7 @@ export default function AgentProfilePage() {
        * on l'envoie séparément au backend.
        */
       if (photoFile) {
-        await uploadAgentPhoto(id, photoFile);
+         await uploadAgentPhoto(id, photoFile, user?.userId);
       }
 
       /*

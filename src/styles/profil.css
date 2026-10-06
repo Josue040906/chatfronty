@@ -602,3 +602,98 @@
     flex: 1;
   }
 }
+
+/* =========================================================
+   PHOTO DE PROFIL
+   ========================================================= */
+
+.profil-avatar-wrapper {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profil-photo-button {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #FBF8F2;
+  border-radius: 50%;
+  background: #8B633F;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profil-photo-button:hover {
+  background: #765332;
+  transform: scale(1.05);
+}
+
+.profil-photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.profil-photo-pending {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: -12px 0 24px;
+  padding: 11px 14px;
+  border: 1px solid #E5DDD3;
+  border-radius: 9px;
+  background: #FFFFFF;
+  color: #6F5E50;
+  font-size: 11px;
+}
+
+.profil-photo-pending > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profil-photo-pending > div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.profil-photo-pending button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.profil-info-value .profil-edit-input {
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 560px) {
+  .profil-photo-pending {
+    align-items: stretch;
+    flex-direction: column;
+    margin-top: -12px;
+  }
+
+  .profil-photo-pending > div {
+    width: 100%;
+  }
+
+  .profil-photo-pending button {
+    flex: 1;
+  }
+}

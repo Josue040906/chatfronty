@@ -3,15 +3,21 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarDays,
+  Camera,
   Lock,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
+  Upload,
   UserRound,
 } from 'lucide-react';
 
-import { getProfil, updateProfil } from '../../api/profil';
+import {
+  getProfil,
+  updateProfil,
+  uploadProfilPhoto,
+} from '../../api/profil';
 import { getEmployeePhotoUrl } from '../../utils/employee';
 import { changerMotDePasse } from '../../api/utilisateurs';
 
@@ -34,11 +40,41 @@ function formatName(profil) {
   return `${profil?.prenom || ''} ${profil?.nom || ''}`.trim();
 }
 
+function formatSex(value) {
+  if (value === 'F') return 'Féminin';
+  if (value === 'M') return 'Masculin';
+  return value;
+}
+
+function toDateInput(value) {
+  return value ? String(value).slice(0, 10) : '';
+}
+
+function toPersonalForm(profil = {}) {
+  return {
+    nom: profil.nom || '',
+    prenom: profil.prenom || '',
+    sexe: profil.sexe || '',
+    cin: profil.cin || '',
+    dateNaissance: toDateInput(profil.date_naissance),
+    lieuNaissance: profil.lieu_naissance || '',
+    adresse: profil.adresse || '',
+    telephone: profil.telephone || '',
+  };
+}
+
 function InfoItem({
   label,
   value,
   locked = false,
   icon: Icon,
+  editing = false,
+  name,
+  editValue = '',
+  type = 'text',
+  maxLength,
+  onChange,
+  disabled = false,
 }) {
   return (
     <div className="profil-info-item">
@@ -56,30 +92,60 @@ function InfoItem({
       </div>
 
       <div className="profil-info-value">
-        {value || '—'}
+        {editing ? (
+          type === 'select' ? (
+            <select
+              className="profil-edit-input"
+              name={name}
+              value={editValue}
+              onChange={onChange}
+              disabled={disabled}
+            >
+              <option value="">Sélectionner</option>
+              <option value="F">Féminin</option>
+              <option value="M">Masculin</option>
+            </select>
+          ) : (
+            <input
+              className="profil-edit-input"
+              name={name}
+              type={type}
+              value={editValue}
+              maxLength={maxLength}
+              onChange={onChange}
+              disabled={disabled}
+            />
+          )
+        ) : (
+          value || '—'
+        )}
       </div>
     </div>
   );
 }
 
-export default function ProfilPage({ user }) {
+export default function ProfilPage({ user, onUserUpdated }) {
   const [profil, setProfil] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(Boolean(user?.userId));
+  const [error, setError] = useState(
+    user?.userId ? '' : 'Utilisateur non identifié.'
+  );
 
-    const [editing, setEditing] = useState(false);
-    const [adresse, setAdresse] = useState('');
-    const [telephone, setTelephone] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [saveMessage, setSaveMessage] = useState('');
-    const [saveError, setSaveError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(toPersonalForm);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoSaving, setPhotoSaving] = useState(false);
 
-    const [ancienMotDePasse, setAncienMotDePasse] = useState('');
-    const [nouveauMotDePasse, setNouveauMotDePasse] = useState('');
-    const [confirmationMotDePasse, setConfirmationMotDePasse] = useState('');
-    const [passwordSaving, setPasswordSaving] = useState(false);
-    const [passwordMessage, setPasswordMessage] = useState('');
-    const [passwordError, setPasswordError] = useState('');
+  const [ancienMotDePasse, setAncienMotDePasse] = useState('');
+  const [nouveauMotDePasse, setNouveauMotDePasse] = useState('');
+  const [confirmationMotDePasse, setConfirmationMotDePasse] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -92,9 +158,8 @@ export default function ProfilPage({ user }) {
         const result = await getProfil(user?.userId);
 
         if (!cancelled) {
-        setProfil(result);
-        setAdresse(result.adresse || '');
-        setTelephone(result.telephone || '');
+          setProfil(result);
+          setForm(toPersonalForm(result));
         }
       } catch (err) {
         console.error(err);
@@ -114,9 +179,6 @@ export default function ProfilPage({ user }) {
 
     if (user?.userId) {
       loadProfil();
-    } else {
-      setLoading(false);
-      setError('Utilisateur non identifié.');
     }
 
     return () => {
@@ -124,36 +186,109 @@ export default function ProfilPage({ user }) {
     };
   }, [user?.userId]);
 
-    async function handleSaveProfil() {
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  function handlePersonalChange(event) {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  function handlePhotoChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      setSaveError('Format non autorisé. Utilisez JPG, PNG ou WEBP.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setSaveError('La photo ne doit pas dépasser 5 Mo.');
+      event.target.value = '';
+      return;
+    }
+
+    setSaveError('');
+    setSaveMessage('');
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    event.target.value = '';
+  }
+
+  async function handleSaveProfil() {
     setSaving(true);
     setSaveMessage('');
     setSaveError('');
 
     try {
-        await updateProfil(user?.userId, {
-        adresse,
-        telephone,
-        });
+      await updateProfil(user?.userId, form);
+      const refreshedProfil = await getProfil(user?.userId);
 
-        setProfil((current) => ({
-        ...current,
-        adresse,
-        telephone,
-        }));
-
-        setEditing(false);
-        setSaveMessage('Vos coordonnées ont été mises à jour.');
+      setProfil(refreshedProfil);
+      setForm(toPersonalForm(refreshedProfil));
+      setEditing(false);
+      setSaveMessage('Vos informations personnelles ont été mises à jour.');
     } catch (err) {
-        console.error(err);
+      console.error(err);
 
-        setSaveError(
+      setSaveError(
         err?.message ||
-        'Impossible de modifier vos coordonnées.'
-        );
+        'Impossible de modifier vos informations personnelles.'
+      );
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
+  }
+
+  async function handleSavePhoto() {
+    if (!photoFile) {
+      return;
     }
+
+    setPhotoSaving(true);
+    setSaveMessage('');
+    setSaveError('');
+
+    try {
+      const result = await uploadProfilPhoto(user?.userId, photoFile);
+
+      setProfil((current) => ({
+        ...current,
+        photo: result?.photo || current.photo,
+      }));
+      if (result?.photo) {
+        onUserUpdated?.({ photo: result.photo });
+      }
+      setPhotoFile(null);
+      setPhotoPreview('');
+      setSaveMessage('Votre photo de profil a été mise à jour.');
+    } catch (err) {
+      console.error(err);
+
+      setSaveError(
+        err?.message ||
+        'Impossible de modifier votre photo de profil.'
+      );
+    } finally {
+      setPhotoSaving(false);
+    }
+  }
 
     async function handleChangePassword() {
   setPasswordSaving(true);
@@ -202,14 +337,12 @@ export default function ProfilPage({ user }) {
     setPasswordSaving(false);
   }
 }
-    function handleCancelEdit() {
-    setAdresse(profil?.adresse || '');
-    setTelephone(profil?.telephone || '');
-
+  function handleCancelEdit() {
+    setForm(toPersonalForm(profil));
     setEditing(false);
     setSaveMessage('');
     setSaveError('');
-    }
+  }
   if (loading) {
     return (
       <div className="profil-page">
@@ -240,6 +373,7 @@ export default function ProfilPage({ user }) {
   }
 
   const photoUrl = getEmployeePhotoUrl(profil.photo);
+  const displayedPhoto = photoPreview || photoUrl;
   const nomComplet = formatName(profil);
 
   return (
@@ -262,15 +396,35 @@ export default function ProfilPage({ user }) {
 
       <section className="profil-identity-card">
 
-        <div className="profil-avatar">
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt={`Photo de ${nomComplet}`}
-            />
-          ) : (
-            <UserRound size={38} />
-          )}
+        <div className="profil-avatar-wrapper">
+          <div className="profil-avatar">
+            {displayedPhoto ? (
+              <img
+                src={displayedPhoto}
+                alt={`Photo de ${nomComplet}`}
+              />
+            ) : (
+              <UserRound size={38} />
+            )}
+          </div>
+
+          <label
+            htmlFor="profil-photo-input"
+            className="profil-photo-button"
+            aria-label="Choisir une photo de profil"
+            title="Choisir une photo de profil"
+          >
+            <Camera size={15} />
+          </label>
+
+          <input
+            id="profil-photo-input"
+            className="profil-photo-input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handlePhotoChange}
+            disabled={photoSaving || saving}
+          />
         </div>
 
         <div className="profil-identity-content">
@@ -293,10 +447,39 @@ export default function ProfilPage({ user }) {
 
         <div className="profil-account-status">
           <ShieldCheck size={17} />
-          <span>Compte actif</span>
+          <span>Compte lié</span>
         </div>
 
       </section>
+
+      {photoFile && (
+        <div className="profil-photo-pending">
+          <span>{photoFile.name}</span>
+          <div>
+            <button
+              type="button"
+              className="profil-cancel-button"
+              onClick={() => {
+                setPhotoFile(null);
+                setPhotoPreview('');
+                setSaveError('');
+              }}
+              disabled={photoSaving}
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              className="profil-save-button"
+              onClick={handleSavePhoto}
+              disabled={photoSaving}
+            >
+              <Upload size={14} />
+              {photoSaving ? 'Envoi...' : 'Enregistrer la photo'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <section className="profil-section">
 
@@ -320,7 +503,7 @@ export default function ProfilPage({ user }) {
                 setSaveError('');
                 }}
             >
-                Modifier mes coordonnées
+                Modifier mes informations
             </button>
             ) : (
             <>
@@ -361,84 +544,97 @@ export default function ProfilPage({ user }) {
           <InfoItem
             label="Nom"
             value={profil.nom}
-            locked
             icon={UserRound}
+            editing={editing}
+            name="nom"
+            editValue={form.nom}
+            maxLength={100}
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
           <InfoItem
             label="Prénom"
             value={profil.prenom}
-            locked
             icon={UserRound}
+            editing={editing}
+            name="prenom"
+            editValue={form.prenom}
+            maxLength={100}
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
           <InfoItem
             label="Sexe"
-            value={profil.sexe}
-            locked
+            value={formatSex(profil.sexe)}
+            editing={editing}
+            name="sexe"
+            editValue={form.sexe}
+            type="select"
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
           <InfoItem
             label="CIN"
             value={profil.cin}
-            locked
+            editing={editing}
+            name="cin"
+            editValue={form.cin}
+            maxLength={30}
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
           <InfoItem
             label="Date de naissance"
             value={formatDate(profil.date_naissance)}
-            locked
             icon={CalendarDays}
+            editing={editing}
+            name="dateNaissance"
+            editValue={form.dateNaissance}
+            type="date"
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
           <InfoItem
             label="Lieu de naissance"
             value={profil.lieu_naissance}
-            locked
             icon={MapPin}
+            editing={editing}
+            name="lieuNaissance"
+            editValue={form.lieuNaissance}
+            maxLength={150}
+            onChange={handlePersonalChange}
+            disabled={saving}
           />
 
-        <div className="profil-editable-item">
-        <div className="profil-info-label">
-            <MapPin size={15} />
-            <span>Adresse</span>
-        </div>
-
-        {editing ? (
-            <input
-            type="text"
-            value={adresse}
-            onChange={(event) => setAdresse(event.target.value)}
-            className="profil-edit-input"
+          <InfoItem
+            label="Adresse"
+            value={profil.adresse}
+            icon={MapPin}
+            editing={editing}
+            name="adresse"
+            editValue={form.adresse}
             maxLength={255}
-            />
-        ) : (
-            <div className="profil-info-value">
-            {profil.adresse || '—'}
-            </div>
-        )}
-        </div>
+            onChange={handlePersonalChange}
+            disabled={saving}
+          />
 
-        <div className="profil-editable-item">
-        <div className="profil-info-label">
-            <Phone size={15} />
-            <span>Téléphone</span>
-        </div>
-
-        {editing ? (
-            <input
+          <InfoItem
+            label="Téléphone"
+            value={profil.telephone}
+            icon={Phone}
+            editing={editing}
+            name="telephone"
+            editValue={form.telephone}
             type="tel"
-            value={telephone}
-            onChange={(event) => setTelephone(event.target.value)}
-            className="profil-edit-input"
-            maxLength={50}
-            />
-        ) : (
-            <div className="profil-info-value">
-            {profil.telephone || '—'}
-            </div>
-        )}
-        </div>
+            maxLength={30}
+            onChange={handlePersonalChange}
+            disabled={saving}
+          />
 
         </div>
 
@@ -504,14 +700,26 @@ export default function ProfilPage({ user }) {
           />
 
           <InfoItem
-            label="Diplôme"
-            value={profil.diplome}
+            label="Grade"
+            value={profil.grade}
             locked
           />
 
           <InfoItem
-            label="Grade"
-            value={profil.grade}
+            label="Corps"
+            value={profil.corps}
+            locked
+          />
+
+          <InfoItem
+            label="Classe"
+            value={profil.classe}
+            locked
+          />
+
+          <InfoItem
+            label="Échelon"
+            value={profil.echelon}
             locked
           />
 

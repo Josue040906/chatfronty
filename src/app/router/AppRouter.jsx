@@ -89,6 +89,7 @@ export default function AppRouter({
   user,
   loading,
   login,
+  updateUser,
   logout,
 }) {
   if (loading) {
@@ -137,7 +138,12 @@ export default function AppRouter({
 
         <Route
           path="/profil"
-          element={<ProfilPage user={user} />}
+          element={
+            <ProfilPage
+              user={user}
+              onUserUpdated={updateUser}
+            />
+          }
         />
 
         <Route
@@ -152,7 +158,7 @@ export default function AppRouter({
 
         <Route 
           path="/agents/:id" 
-          element={<AgentProfilePage />}
+          element={<AgentProfilePage user={user} />}
         />
         <Route
           path="/carrieres/:id/analyse"

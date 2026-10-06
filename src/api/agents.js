@@ -1,4 +1,8 @@
-import { apiGet, apiPut } from './client';
+import {
+  apiGet,
+  apiPostFormData,
+  apiPut,
+} from './client';
 
 export async function getAgents() {
   const response = await apiGet('/api/employes');
@@ -13,39 +17,46 @@ export async function getAgentById(id) {
 }
 
 export async function updateAgent(id, data) {
-  return apiPut(`/api/employes/${id}`, data);
+  if (!data?.acteurId) {
+    throw new Error(
+      "L'identifiant de l'acteur connecté est obligatoire."
+    );
+  }
+
+  return apiPut(
+    `/api/employes/${encodeURIComponent(id)}`,
+    {
+      acteurId: data.acteurId,
+      nom: data.nom,
+      prenom: data.prenom,
+      sexe: data.sexe,
+      adresse: data.adresse,
+      cin: data.cin,
+      telephone: data.telephone,
+      dateNaissance: data.dateNaissance || null,
+      lieuNaissance: data.lieuNaissance,
+      dateEmbauche: data.dateEmbauche || null,
+      lieuTravail: data.lieuTravail,
+      photo: data.photo || '',
+    }
+  );
 }
 
-export async function uploadAgentPhoto(id, file) {
+export async function uploadAgentPhoto(id, file, acteurId) {
+  if (!acteurId) {
+    throw new Error(
+      "L'identifiant de l'acteur connecté est obligatoire."
+    );
+  }
+
   const formData = new FormData();
 
   formData.append('file', file);
 
-  const response = await fetch(
-    `http://localhost:8080/api/employes/${id}/photo`,
-    {
-      method: 'POST',
-      body: formData,
-    }
+  return apiPostFormData(
+    `/api/employes/${encodeURIComponent(id)}/photo?acteurId=${encodeURIComponent(acteurId)}`,
+    formData
   );
-
-  if (!response.ok) {
-    let message = 'Erreur lors de l’envoi de la photo.';
-
-    try {
-      const data = await response.json();
-
-      if (data?.message) {
-        message = data.message;
-      }
-    } catch {
-      // La réponse n'est pas forcément au format JSON.
-    }
-
-    throw new Error(message);
-  }
-
-  return response.json();
 }
 
 export async function searchAgents(query) {

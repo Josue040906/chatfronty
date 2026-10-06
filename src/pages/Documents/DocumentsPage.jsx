@@ -1,258 +1,190 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Archive,
-  Clock3,
   Eye,
   FileText,
   Plus,
   Search,
+  X,
 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+import { getAgents } from '../../api/agents';
 import {
-  getDocuments,
-  searchDocuments,
+  getDocumentRequestPdf,
+  getDocumentRequests,
+  getDocumentTypes,
 } from '../../api/documents';
+
+function formatDate(value) {
+  if (!value) return '—';
+
+  const dateText = String(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateText)) {
+    const [year, month, day] = dateText.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return dateText.slice(0, 10);
+
+  return date.toLocaleDateString('fr-FR');
+}
+
+function formatStatus(status) {
+  if (!status) return '—';
+  return status
+    .toLowerCase()
+    .replaceAll('_', ' ')
+    .replace(/^\p{L}/u, (letter) => letter.toUpperCase());
+}
+
+function openPdfTab(popup, blob) {
+  const url = URL.createObjectURL(blob);
+
+  if (popup) {
+    popup.opener = null;
+    popup.location = url;
+  } else {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.click();
+  }
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
 
 export default function DocumentsPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-
   const [documents, setDocuments] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState('');
+  const [pdfError, setPdfError] = useState('');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('TOUS');
-  const [statusFilter, setStatusFilter] = useState('TOUS');
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [openingPdfId, setOpeningPdfId] = useState(null);
 
   useEffect(() => {
-    chargerDocuments();
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    const message =
-      location.state?.successMessage;
-
-    if (message) {
-      setSuccess(message);
-
-      navigate(location.pathname, {
-        replace: true,
-        state: {},
-      });
-
-      const timer = setTimeout(() => {
-        setSuccess('');
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [location, navigate]);
-
-  async function chargerDocuments() {
-    try {
-      setLoading(true);
-      setError('');
-
-      const data = await getDocuments();
-
-      setDocuments(
-        Array.isArray(data)
-          ? data
-          : []
-      );
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        err.message ||
-        'Impossible de charger les documents.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSearch(event) {
-    const value = event.target.value;
-
-    setSearch(value);
-    setError('');
-
-    if (!value.trim()) {
+    async function loadDocuments() {
       try {
-        const data = await getDocuments();
+        const [documentRows, documentTypes, employees] = await Promise.all([
+          getDocumentRequests(),
+          getDocumentTypes(),
+          getAgents(),
+        ]);
 
-        setDocuments(
-          Array.isArray(data)
-            ? data
-            : []
-        );
+        if (cancelled) return;
+        setDocuments(documentRows);
+        setTypes(documentTypes);
+        setAgents(employees);
       } catch (err) {
         console.error(err);
-
-        setError(
-          err.message ||
-          'Impossible de charger les documents.'
-        );
+        if (!cancelled) {
+          setError(
+            err?.message || 'Impossible de charger les documents RH.'
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    }
 
+    loadDocuments();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const typeById = useMemo(
+    () => new Map(types.map((type) => [String(type.id), type])),
+    [types]
+  );
+  const agentById = useMemo(
+    () => new Map(agents.map((agent) => [String(agent.id), agent])),
+    [agents]
+  );
+
+  const filteredDocuments = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('fr');
+
+    return documents.filter((item) => {
+      const typeMatches =
+        typeFilter === 'TOUS' || String(item.typeDocumentId) === typeFilter;
+      if (!typeMatches) return false;
+      if (!query) return true;
+
+      const type = typeById.get(String(item.typeDocumentId));
+      const agent = agentById.get(String(item.employeId));
+      const searchable = [
+        item.referenceDocument,
+        item.destinataire,
+        item.objet,
+        type?.libelle,
+        agent?.matricule,
+        agent?.nom,
+        agent?.prenom,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase('fr');
+
+      return searchable.includes(query);
+    });
+  }, [agentById, documents, search, typeById, typeFilter]);
+
+  async function handleOpenPdf(documentData) {
+    const type = typeById.get(String(documentData.typeDocumentId));
+    if (type?.code !== 'CONGE') {
+      setPdfError(
+        'Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.'
+      );
       return;
     }
 
-    try {
-      const data =
-        await searchDocuments(value);
+    const popup = window.open('', '_blank');
+    setOpeningPdfId(documentData.id);
+    setPdfError('');
 
-      setDocuments(
-        Array.isArray(data)
-          ? data
-          : []
-      );
+    try {
+      const pdf = await getDocumentRequestPdf(documentData.id);
+      openPdfTab(popup, pdf);
     } catch (err) {
       console.error(err);
-
-      setError(
-        err.message ||
-        'La recherche des documents a échoué.'
+      popup?.close();
+      setPdfError(
+        err?.message || 'Le PDF de ce document ne peut pas être ouvert.'
       );
-    }
-  }
-
-  function formatDate(value) {
-    if (!value) {
-      return '—';
-    }
-
-    if (typeof value !== 'string') {
-      return '—';
-    }
-
-    const date = value.slice(0, 10);
-
-    const parts = date.split('-');
-
-    if (parts.length !== 3) {
-      return date;
-    }
-
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-
-  function getTypeLabel(type) {
-    switch (type) {
-      case 'DEMANDE':
-        return 'Demande';
-
-      case 'COURRIER':
-        return 'Courrier';
-
-      case 'ACTE':
-        return 'Acte';
-
-      default:
-        return type || '—';
-    }
-  }
-
-  function getStatusLabel(status) {
-    switch (status) {
-      case 'BROUILLON':
-        return 'Brouillon';
-
-      case 'A_VERIFIER':
-        return 'À vérifier';
-
-      case 'VALIDE':
-        return 'Validé';
-
-      case 'SIGNE':
-        return 'Signé';
-
-      case 'ARCHIVE':
-        return 'Archivé';
-
-      default:
-        return status || '—';
+    } finally {
+      setOpeningPdfId(null);
     }
   }
 
   function getAgentName(documentData) {
-    const prenom =
-      documentData.agent_prenom || '';
+    const agent = agentById.get(String(documentData.employeId));
+    if (!agent) return 'Agent non retrouvé';
 
-    const nom =
-      documentData.agent_nom || '';
-
-    const fullName =
-      `${prenom} ${nom}`.trim();
-
-    if (fullName) {
-      return fullName;
-    }
-
-    return (
-      documentData.agent_matricule ||
-      '—'
-    );
+    const fullName = `${agent.prenom || ''} ${agent.nom || ''}`.trim();
+    return fullName || agent.matricule || '—';
   }
 
-  const filteredDocuments = useMemo(() => {
-    return documents.filter((documentData) => {
-      const typeMatches =
-        typeFilter === 'TOUS' ||
-        documentData.type === typeFilter;
-
-      const statusMatches =
-        statusFilter === 'TOUS' ||
-        documentData.statut === statusFilter;
-
-      return (
-        typeMatches &&
-        statusMatches
-      );
-    });
-  }, [
-    documents,
-    typeFilter,
-    statusFilter,
-  ]);
-
   return (
-    <div className="administration-page">
+    <div className="administration-page documents-page">
       <div className="administration-header">
         <div>
-          <h1>
-            Documents RH
-          </h1>
-
-          <p>
-            Consultez et gérez les documents
-            administratifs liés aux agents.
-          </p>
+          <h1>Documents administratifs</h1>
+          <p>Créez et consultez les documents RH des agents.</p>
         </div>
-
         <div className="administration-header-actions">
           <button
             type="button"
-            className="administration-button-secondary"
-            onClick={() =>
-              navigate('/documents/historique')
-            }
-          >
-            <Clock3 size={18} />
-            Historique
-          </button>
-
-          <button
-            type="button"
             className="administration-button-primary"
-            onClick={() =>
-              navigate('/documents/nouveau')
-            }
+            onClick={() => navigate('/documents/nouveau')}
           >
             <Plus size={18} />
             Nouveau document
@@ -260,132 +192,72 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      {success && (
-        <div className="administration-success">
-          <span>
-            {success}
-          </span>
+      {error && (
+        <div className="administration-state administration-state-error" role="alert">
+          {error}
         </div>
       )}
-
-      {error && (
-        <div className="administration-state-error">
-          {error}
+      {pdfError && (
+        <div className="administration-state administration-state-error" role="alert">
+          {pdfError}
         </div>
       )}
 
       <div className="administration-toolbar">
         <div className="administration-search">
           <Search size={18} />
-
           <input
-            type="text"
+            type="search"
             value={search}
-            onChange={handleSearch}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Rechercher un document, un agent, une référence..."
           />
         </div>
-
         <div className="administration-filters">
           <select
             value={typeFilter}
-            onChange={(event) =>
-              setTypeFilter(
-                event.target.value
-              )
-            }
+            onChange={(event) => setTypeFilter(event.target.value)}
+            aria-label="Filtrer par type de document"
           >
-            <option value="TOUS">
-              Tous les types
-            </option>
-
-            <option value="DEMANDE">
-              Demandes
-            </option>
-
-            <option value="COURRIER">
-              Courriers
-            </option>
-
-            <option value="ACTE">
-              Actes
-            </option>
-          </select>
-
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value
-              )
-            }
-          >
-            <option value="TOUS">
-              Tous les statuts
-            </option>
-
-            <option value="BROUILLON">
-              Brouillons
-            </option>
-
-            <option value="A_VERIFIER">
-              À vérifier
-            </option>
-
-            <option value="VALIDE">
-              Validés
-            </option>
-
-            <option value="SIGNE">
-              Signés
-            </option>
-
-            <option value="ARCHIVE">
-              Archivés
-            </option>
+            <option value="TOUS">Tous les types</option>
+            {types.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.libelle}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       <div className="administration-section-header">
         <div>
-          <h2>
-            Documents
-          </h2>
-
+          <h2>Documents récents</h2>
           <span>
             {filteredDocuments.length}{' '}
-            document
-            {filteredDocuments.length !== 1
-              ? 's'
-              : ''}
+            {filteredDocuments.length === 1 ? 'document' : 'documents'}
           </span>
         </div>
       </div>
 
       {loading ? (
-        <div className="administration-state">
-          Chargement des documents...
-        </div>
+        <div className="administration-state">Chargement des documents...</div>
       ) : filteredDocuments.length === 0 ? (
         <div className="administration-empty">
           <FileText size={42} />
-
           <h3>
-            Aucun document trouvé
+            {documents.length === 0
+              ? 'Aucun document créé'
+              : 'Aucun document trouvé'}
           </h3>
-
           <p>
-            Aucun document ne correspond
-            aux critères sélectionnés.
+            {documents.length === 0
+              ? 'Les documents créés apparaîtront ici.'
+              : 'Modifiez votre recherche ou le filtre de type.'}
           </p>
-
           <button
             type="button"
             className="administration-button-primary"
-            onClick={() =>
-              navigate('/documents/nouveau')
-            }
+            onClick={() => navigate('/documents/nouveau')}
           >
             <Plus size={18} />
             Créer un document
@@ -396,134 +268,160 @@ export default function DocumentsPage() {
           <table className="administration-table">
             <thead>
               <tr>
-                <th>
-                  Référence
-                </th>
-
-                <th>
-                  Type
-                </th>
-
-                <th>
-                  Objet
-                </th>
-
-                <th>
-                  Agent
-                </th>
-
-                <th>
-                  Date
-                </th>
-
-                <th>
-                  Statut
-                </th>
-
-                <th>
-                  Actions
-                </th>
+                <th>Type</th>
+                <th>Agent</th>
+                <th>Référence</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
-              {filteredDocuments.map(
-                (documentData) => (
-                  <tr
-                    key={
-                      documentData.id
-                    }
-                  >
+              {filteredDocuments.map((item) => {
+                const type = typeById.get(String(item.typeDocumentId));
+                const pdfUnavailable = type?.code !== 'CONGE';
+
+                return (
+                  <tr key={item.id}>
+                    <td>{type?.libelle || 'Type supprimé'}</td>
+                    <td>{getAgentName(item)}</td>
                     <td>
-                      <strong>
-                        {
-                          documentData.reference
-                        }
-                      </strong>
+                      <strong>{item.referenceDocument || '—'}</strong>
                     </td>
-
-                    <td>
-                      {getTypeLabel(
-                        documentData.type
-                      )}
-                    </td>
-
-                    <td>
-                      <div className="administration-table-main">
-                        {
-                          documentData.objet
-                        }
-                      </div>
-                    </td>
-
-                    <td>
-                      <div>
-                        {getAgentName(
-                          documentData
-                        )}
-                      </div>
-
-                      {documentData.agent_matricule && (
-                        <small>
-                          {
-                            documentData.agent_matricule
-                          }
-                        </small>
-                      )}
-                    </td>
-
-                    <td>
-                      {formatDate(
-                        documentData.date_document
-                      )}
-                    </td>
-
+                    <td>{formatDate(item.dateCreation || item.dateDocument)}</td>
                     <td>
                       <span
                         className={`administration-status administration-status-${String(
-                          documentData.statut ||
-                            ''
+                          item.statut || ''
                         ).toLowerCase()}`}
                       >
-                        {getStatusLabel(
-                          documentData.statut
-                        )}
+                        {formatStatus(item.statut)}
                       </span>
                     </td>
-
                     <td>
-                      <button
-                        type="button"
-                        className="administration-table-action"
-                        onClick={() =>
-                          navigate(
-                            `/documents/${documentData.id}`
-                          )
-                        }
-                        title="Consulter"
-                      >
-                        <Eye size={17} />
-                        Consulter
-                      </button>
+                      <div className="documents-row-actions">
+                        <button
+                          type="button"
+                          className="administration-table-action"
+                          onClick={() => setSelectedDocument(item)}
+                        >
+                          <Eye size={17} />
+                          Voir
+                        </button>
+                        <button
+                          type="button"
+                          className="administration-table-action"
+                          onClick={() => handleOpenPdf(item)}
+                          disabled={pdfUnavailable || openingPdfId === item.id}
+                          title={
+                            pdfUnavailable
+                              ? 'Le modèle PDF de ce type n’est pas disponible côté backend.'
+                              : 'Ouvrir le PDF'
+                          }
+                        >
+                          <FileText size={17} />
+                          {openingPdfId === item.id ? 'Ouverture...' : 'PDF'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                )
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
-      <div className="administration-document-summary">
-        <div>
-          <Archive size={18} />
-
-          <span>
-            Les documents archivés restent
-            consultables dans le système.
-          </span>
+      {selectedDocument && (
+        <div
+          className="administration-modal-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedDocument(null);
+            }
+          }}
+        >
+          <section
+            className="administration-modal documents-detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="document-detail-title"
+          >
+            <header className="administration-modal-header">
+              <div>
+                <h2 id="document-detail-title">Détails du document</h2>
+                <p>{selectedDocument.referenceDocument || 'Sans référence'}</p>
+              </div>
+              <button
+                type="button"
+                className="administration-modal-close"
+                onClick={() => setSelectedDocument(null)}
+                aria-label="Fermer les détails"
+              >
+                <X size={18} />
+              </button>
+            </header>
+            <div className="documents-detail-content">
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  {typeById.get(String(selectedDocument.typeDocumentId))?.libelle ||
+                    'Type supprimé'}
+                </dd>
+                <dt>Agent</dt>
+                <dd>{getAgentName(selectedDocument)}</dd>
+                <dt>Destinataire</dt>
+                <dd>{selectedDocument.destinataire || '—'}</dd>
+                <dt>Date de création</dt>
+                <dd>
+                  {formatDate(
+                    selectedDocument.dateCreation ||
+                      selectedDocument.dateDocument
+                  )}
+                </dd>
+                <dt>Statut</dt>
+                <dd>{formatStatus(selectedDocument.statut)}</dd>
+                {Object.entries(selectedDocument.donnees || {}).map(
+                  ([key, value]) => (
+                    <div className="documents-detail-entry" key={key}>
+                      <dt>{key}</dt>
+                      <dd>{value == null ? '—' : String(value)}</dd>
+                    </div>
+                  )
+                )}
+              </dl>
+              {typeById.get(String(selectedDocument.typeDocumentId))
+                ?.code !== 'CONGE' && (
+                <p className="administration-form-info">
+                  Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
+                </p>
+              )}
+              <div className="administration-form-actions">
+                <button
+                  type="button"
+                  className="administration-button-secondary"
+                  onClick={() => setSelectedDocument(null)}
+                >
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  className="administration-button-primary"
+                  onClick={() => handleOpenPdf(selectedDocument)}
+                  disabled={
+                    typeById.get(String(selectedDocument.typeDocumentId))
+                      ?.code !== 'CONGE' || openingPdfId === selectedDocument.id
+                  }
+                >
+                  <FileText size={18} />
+                  Voir le PDF
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
-      </div>
+      )}
     </div>
   );
 }
