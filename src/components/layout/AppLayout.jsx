@@ -9,10 +9,12 @@ export default function AppLayout({
   children,
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = user?.role === 'SPERS_CHEF';
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${isAdmin ? ' admin-theme' : ''}`}>
       <Sidebar
+        user={user}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

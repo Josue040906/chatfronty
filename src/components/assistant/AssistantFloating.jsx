@@ -6,10 +6,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:8080';
+import { API_BASE_URL, getAuthHeaders } from '../../api/client';
 
 export default function AssistantFloating() {
   const [open, setOpen] = useState(false);
@@ -49,10 +46,11 @@ export default function AssistantFloating() {
 
     try {
       const response = await fetch(
-        `${API_URL}/api/chat`,
+        `${API_BASE_URL}/api/chat`,
         {
           method: 'POST',
           headers: {
+            ...getAuthHeaders(),
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

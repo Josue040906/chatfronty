@@ -3,11 +3,14 @@ import { ArrowLeft, FileText, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import { getDirections } from '../../api/directions';
 import {
   createDocumentRequest,
   getDocumentRequestPdf,
   getDocumentTypes,
 } from '../../api/documents';
+import { getPostesByService } from '../../api/postes';
+import { getServices } from '../../api/services';
 
 function downloadPdfInNewTab(pdfWindow, blob) {
   const url = URL.createObjectURL(blob);
@@ -30,7 +33,12 @@ export default function NewDocumentPage() {
   const navigate = useNavigate();
   const [types, setTypes] = useState([]);
   const [agents, setAgents] = useState([]);
+  const [directions, setDirections] = useState([]);
+  const [services, setServices] = useState([]);
+  const [postes, setPostes] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  const [loadingPostes, setLoadingPostes] = useState(false);
+  const [mutationOptionsError, setMutationOptionsError] = useState('');
   const [saving, setSaving] = useState(false);
   const [openingPdf, setOpeningPdf] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +51,11 @@ export default function NewDocumentPage() {
     dateDebut: '',
     dateFin: '',
     motif: '',
+    directionSouhaiteeId: '',
+    serviceSouhaiteId: '',
+    posteSouhaiteId: '',
+    lieuTravailSouhaite: '',
+    dateEffetSouhaitee: '',
   });
 
   useEffect(() => {
@@ -88,12 +101,116 @@ export default function NewDocumentPage() {
     [formData.typeDocumentId, types]
   );
   const isLeaveRequest = selectedType?.code === 'CONGE';
+  const isAdvancementRequest = selectedType?.code === 'AVANCEMENT';
+  const isMutationRequest = selectedType?.code === 'MUTATION';
+  const hasPdfTemplate =
+    isLeaveRequest || isAdvancementRequest || isMutationRequest;
+  const selectedAgent = agents.find(
+    (agent) => String(agent.id) === formData.employeId
+  );
+  const filteredServices = formData.directionSouhaiteeId
+    ? services.filter(
+        (service) =>
+          String(service.direction_id) === formData.directionSouhaiteeId
+      )
+    : services;
+
+  useEffect(() => {
+    if (!isMutationRequest) return undefined;
+
+    let cancelled = false;
+
+    Promise.all([getDirections(), getServices()])
+      .then(([directionRows, serviceRows]) => {
+        if (cancelled) return;
+        setDirections(directionRows);
+        setServices(serviceRows);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) {
+          setMutationOptionsError(
+            err?.message ||
+              'Impossible de charger les référentiels de mutation.'
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isMutationRequest]);
+
+  useEffect(() => {
+    if (!isMutationRequest || !formData.serviceSouhaiteId) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    getPostesByService(formData.serviceSouhaiteId)
+      .then((posteRows) => {
+        if (!cancelled) setPostes(posteRows);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) {
+          setMutationOptionsError(
+            err?.message || 'Impossible de charger les postes du service.'
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPostes(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.serviceSouhaiteId, isMutationRequest]);
 
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
     setError('');
     setPdfError('');
+    setMutationOptionsError('');
+    if (name === 'typeDocumentId') {
+      setPostes([]);
+      setLoadingPostes(false);
+    }
+  }
+
+  function handleDirectionChange(event) {
+    setFormData((current) => ({
+      ...current,
+      directionSouhaiteeId: event.target.value,
+      serviceSouhaiteId: '',
+      posteSouhaiteId: '',
+    }));
+    setPostes([]);
+    setLoadingPostes(false);
+    setError('');
+    setMutationOptionsError('');
+  }
+
+  function handleServiceChange(event) {
+    const value = event.target.value;
+    const service = services.find(
+      (item) => String(item.id) === value
+    );
+    setFormData((current) => ({
+      ...current,
+      directionSouhaiteeId: service?.direction_id
+        ? String(service.direction_id)
+        : current.directionSouhaiteeId,
+      serviceSouhaiteId: value,
+      posteSouhaiteId: '',
+    }));
+    setPostes([]);
+    setLoadingPostes(Boolean(value));
+    setError('');
+    setMutationOptionsError('');
   }
 
   async function handleSubmit(event) {
@@ -127,13 +244,47 @@ export default function NewDocumentPage() {
       return;
     }
 
+    if (
+      isMutationRequest &&
+      !formData.directionSouhaiteeId &&
+      !formData.serviceSouhaiteId &&
+      !formData.posteSouhaiteId &&
+      !formData.lieuTravailSouhaite.trim()
+    ) {
+      setError('Indiquez au moins un élément de la situation souhaitée.');
+      return;
+    }
+
+    if (isMutationRequest && !formData.motif.trim()) {
+      setError('Le motif de la mutation est obligatoire.');
+      return;
+    }
+
     const donnees = isLeaveRequest
       ? {
           dateDebut: formData.dateDebut,
           dateFin: formData.dateFin,
           motif: formData.motif.trim() || null,
         }
-      : {};
+      : isAdvancementRequest
+        ? { motif: formData.motif.trim() || null }
+        : isMutationRequest
+          ? {
+              directionSouhaiteeId: formData.directionSouhaiteeId
+                ? Number(formData.directionSouhaiteeId)
+                : null,
+              serviceSouhaiteId: formData.serviceSouhaiteId
+                ? Number(formData.serviceSouhaiteId)
+                : null,
+              posteSouhaiteId: formData.posteSouhaiteId
+                ? Number(formData.posteSouhaiteId)
+                : null,
+              lieuTravailSouhaite:
+                formData.lieuTravailSouhaite.trim() || null,
+              dateEffetSouhaitee: formData.dateEffetSouhaitee || null,
+              motif: formData.motif.trim(),
+            }
+        : {};
 
     try {
       setSaving(true);
@@ -185,7 +336,14 @@ export default function NewDocumentPage() {
       dateDebut: '',
       dateFin: '',
       motif: '',
+      directionSouhaiteeId: '',
+      serviceSouhaiteId: '',
+      posteSouhaiteId: '',
+      lieuTravailSouhaite: '',
+      dateEffetSouhaitee: '',
     }));
+    setPostes([]);
+    setLoadingPostes(false);
     setError('');
     setPdfError('');
   }
@@ -218,7 +376,7 @@ export default function NewDocumentPage() {
           </div>
         )}
 
-        {selectedType?.code !== 'CONGE' && (
+        {!hasPdfTemplate && (
           <div className="administration-form-info">
             Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
           </div>
@@ -232,7 +390,7 @@ export default function NewDocumentPage() {
           >
             Retour aux documents
           </button>
-          {selectedType?.code === 'CONGE' && (
+          {hasPdfTemplate && (
             <button
               type="button"
               className="administration-button-primary"
@@ -275,6 +433,11 @@ export default function NewDocumentPage() {
       {error && (
         <div className="administration-state administration-state-error" role="alert">
           {error}
+        </div>
+      )}
+      {isMutationRequest && mutationOptionsError && (
+        <div className="administration-state administration-state-error" role="alert">
+          {mutationOptionsError}
         </div>
       )}
 
@@ -385,6 +548,150 @@ export default function NewDocumentPage() {
               />
             </div>
           </>
+        ) : isAdvancementRequest ? (
+          <>
+            <div className="administration-form-info">
+              La situation actuelle et la prochaine situation seront calculées
+              et vérifiées par le backend à partir de l’historique de carrière.
+              Elles ne sont pas saisies dans ce formulaire.
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="motif">Motif (facultatif)</label>
+              <textarea
+                id="motif"
+                name="motif"
+                value={formData.motif}
+                onChange={handleChange}
+                rows={4}
+                maxLength={2000}
+                disabled={saving}
+                placeholder="Vous pouvez préciser le motif de la demande."
+              />
+              <small>{formData.motif.length}/2000 caractères</small>
+            </div>
+          </>
+        ) : isMutationRequest ? (
+          <>
+            <div className="administration-form-info">
+              La situation actuelle est enregistrée par le backend comme
+              instantané. La demande ne modifie pas l’affectation de l’agent.
+              Choisissez au moins un élément de destination.
+            </div>
+            {selectedAgent && (
+              <div className="administration-form-info">
+                <strong>Situation actuelle de l’agent</strong>
+                <br />
+                Direction : {selectedAgent.direction || 'Non renseignée'}
+                {' · '}Service : {selectedAgent.service || 'Non renseigné'}
+                {' · '}Poste : {selectedAgent.poste || 'Non renseigné'}
+                {' · '}Lieu : {selectedAgent.lieu_travail || 'Non renseigné'}
+              </div>
+            )}
+            <div className="administration-form-group">
+              <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
+              <select
+                id="directionSouhaiteeId"
+                name="directionSouhaiteeId"
+                value={formData.directionSouhaiteeId}
+                onChange={handleDirectionChange}
+                disabled={saving}
+              >
+                <option value="">Ne pas préciser</option>
+                {directions.map((direction) => (
+                  <option key={direction.id} value={direction.id}>
+                    {direction.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="serviceSouhaiteId">Service souhaité</label>
+              <select
+                id="serviceSouhaiteId"
+                name="serviceSouhaiteId"
+                value={formData.serviceSouhaiteId}
+                onChange={handleServiceChange}
+                disabled={saving}
+              >
+                <option value="">Ne pas préciser</option>
+                {filteredServices.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="posteSouhaiteId">Poste souhaité</label>
+              <select
+                id="posteSouhaiteId"
+                name="posteSouhaiteId"
+                value={formData.posteSouhaiteId}
+                onChange={handleChange}
+                disabled={
+                  saving ||
+                  loadingPostes ||
+                  !formData.serviceSouhaiteId
+                }
+              >
+                <option value="">
+                  {formData.serviceSouhaiteId
+                    ? loadingPostes
+                      ? 'Chargement des postes...'
+                      : 'Ne pas préciser'
+                    : 'Choisissez d’abord un service'}
+                </option>
+                {postes.map((poste) => (
+                  <option key={poste.id} value={poste.id}>
+                    {poste.intitule}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="lieuTravailSouhaite">
+                Lieu de travail souhaité
+              </label>
+              <input
+                id="lieuTravailSouhaite"
+                name="lieuTravailSouhaite"
+                type="text"
+                value={formData.lieuTravailSouhaite}
+                onChange={handleChange}
+                maxLength={255}
+                disabled={saving}
+              />
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="dateEffetSouhaitee">
+                Date d’effet souhaitée (facultative)
+              </label>
+              <input
+                id="dateEffetSouhaitee"
+                name="dateEffetSouhaitee"
+                type="date"
+                value={formData.dateEffetSouhaitee}
+                onChange={handleChange}
+                disabled={saving}
+              />
+            </div>
+            <div className="administration-form-group">
+              <label htmlFor="motif">
+                Motif <span>*</span>
+              </label>
+              <textarea
+                id="motif"
+                name="motif"
+                value={formData.motif}
+                onChange={handleChange}
+                rows={4}
+                maxLength={2000}
+                disabled={saving}
+                required
+              />
+              <small>{formData.motif.length}/2000 caractères</small>
+            </div>
+          </>
         ) : selectedType ? (
           <div className="administration-form-info">
             {selectedType.description ||
@@ -410,7 +717,11 @@ export default function NewDocumentPage() {
           <button
             type="submit"
             className="administration-button-primary"
-            disabled={loadingOptions || saving || types.length === 0}
+            disabled={
+              loadingOptions ||
+              saving ||
+              types.length === 0
+            }
           >
             <Save size={18} />
             {saving ? 'Création...' : 'Créer le document'}

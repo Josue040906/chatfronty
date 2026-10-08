@@ -65,6 +65,20 @@ function getHistoryDate(item) {
   return formatDate(item.dateDebut);
 }
 
+function emptyCareerAnalysis(employeId) {
+  return {
+    employeId: Number(employeId),
+    situationActuelle: null,
+    situationSuivante: null,
+    historique: [],
+    ancienneteActuelle: {},
+    ancienneteRequise: {},
+    eligible: null,
+    eligibiliteDeterminee: false,
+    evolution: { type: 'AUCUNE' },
+  };
+}
+
 export default function CareerAnalysisPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -84,11 +98,18 @@ export default function CareerAnalysisPage() {
       setError('');
 
       try {
-        const [agentResult, analysisResult] =
-          await Promise.all([
-            getAgentById(id),
-            analyserCarriere(id),
-          ]);
+        const agentResult = await getAgentById(id);
+        let analysisResult;
+
+        try {
+          analysisResult = await analyserCarriere(id);
+        } catch (analysisError) {
+          if (analysisError.status !== 404) {
+            throw analysisError;
+          }
+
+          analysisResult = emptyCareerAnalysis(id);
+        }
 
         if (cancelled) return;
 
@@ -258,7 +279,7 @@ export default function CareerAnalysisPage() {
         )}
       </section>
 
-      {!analysis.situationActuelle ? (
+      {!analysis.situationActuelle && (
         <section className="career-empty-analysis">
           <div className="career-empty-icon">
             <History size={24} />
@@ -268,15 +289,9 @@ export default function CareerAnalysisPage() {
 
           <p>Aucune situation de carrière actuelle n’est enregistrée pour cet agent.</p>
 
-          <button
-            type="button"
-            onClick={() => navigate(`/agents/${id}`)}
-          >
-            Retour au profil
-          </button>
         </section>
-      ) : (
-        <>
+      )}
+      <>
           <section className="career-panel">
             <div className="career-panel-header">
               <div className="career-panel-icon">
@@ -547,9 +562,7 @@ export default function CareerAnalysisPage() {
               </div>
             )}
           </section>
-
-        </>
-      )}
+      </>
     </div>
   );
 }

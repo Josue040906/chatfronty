@@ -5,11 +5,11 @@
   Building2,
   FileText,
   LayoutDashboard,
+  ShieldCheck,
   Settings,
   Users,
   X,
   Plus,
-  History,
 } from 'lucide-react';
 
 import { NavLink } from 'react-router-dom';
@@ -40,12 +40,6 @@ const mainNavigation = [
     path: '/carrieres',
   },
   {
-    id: 'documents',
-    label: 'Documents RH',
-    icon: FileText,
-    path: '/documents',
-  },
-  {
     id: 'activites',
     label: 'Mes activités',
     icon: Activity,
@@ -55,16 +49,16 @@ const mainNavigation = [
 
 const documentNavigation = [
   {
+    id: 'documents',
+    label: 'Documents RH',
+    icon: FileText,
+    path: '/documents',
+  },
+  {
     id: 'nouveau-document',
     label: 'Nouveau document',
     icon: Plus,
     path: '/documents/nouveau',
-  },
-  {
-    id: 'historique-documents',
-    label: 'Historique',
-    icon: History,
-    path: '/documents/historique',
   },
 ];
 
@@ -96,7 +90,7 @@ function NavigationItem({ item, onClose }) {
   );
 }
 
-export default function Sidebar({ open, onClose }) {
+  export default function Sidebar({ user, open, onClose }) {
   return (
     <>
       <div
@@ -184,6 +178,17 @@ export default function Sidebar({ open, onClose }) {
                 onClose={onClose}
               />
             ))}
+            {user?.role === 'SPERS_CHEF' && (
+              <NavigationItem
+                item={{
+                  id: 'demandes-inscription',
+                  label: 'Demandes d’inscription',
+                  icon: ShieldCheck,
+                  path: '/administration/demandes-inscription',
+                }}
+                onClose={onClose}
+              />
+            )}
           </div>
         </nav>
 

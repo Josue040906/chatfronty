@@ -15,7 +15,6 @@ import OrganisationPage from '../../pages/Organisation/OrganisationPage';
 import CarrieresPage from '../../pages/Carrieres/CarrieresPage';
 import DocumentsPage from '../../pages/Documents/DocumentsPage';
 import NewDocumentPage from '../../pages/Documents/NewDocumentPage';
-import DocumentHistoryPage from '../../pages/Documents/DocumentHistoryPage';
 import DocumentDetailsPage from '../../pages/Documents/DocumentDetailsPage';
 import MesActivitesPage from '../../pages/Activites/MesActivitesPage';
 import AdministrationPage from '../../pages/Administration/AdministrationPage';
@@ -26,6 +25,7 @@ import GradesPage from '../../pages/Administration/GradesPage';
 import StatutsPage from '../../pages/Administration/StatutsPage';
 import ReglesRhPage from '../../pages/Administration/ReglesRhPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
+import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -43,6 +43,13 @@ function ProtectedLayout({ user, onLogout }) {
   );
 }
 
+function AdminOnly({ user, children }) {
+  if (user?.role !== 'SPERS_CHEF') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
 
 
 
@@ -186,10 +193,6 @@ export default function AppRouter({
 
 
       <Route
-        path="/documents/historique"
-        element={<DocumentHistoryPage />}
-      />
-      <Route
         path="/activites"
         element={ <MesActivitesPage />}
       />
@@ -231,6 +234,15 @@ export default function AppRouter({
         <Route
           path="/administration"
           element={<AdministrationPage />}
+        />
+
+        <Route
+          path="/administration/demandes-inscription"
+          element={
+            <AdminOnly user={user}>
+              <DemandesInscriptionPage />
+            </AdminOnly>
+          }
         />
 
       </Route>

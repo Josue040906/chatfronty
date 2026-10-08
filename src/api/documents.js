@@ -71,14 +71,6 @@ export async function getDocumentsByAgent(agentId) {
   return normalizeResponse(response);
 }
 
-export async function getDocumentHistory() {
-  const response = await apiGet(
-    '/api/documents/historique'
-  );
-
-  return normalizeResponse(response);
-}
-
 export async function createDocument(documentData) {
   return apiPost(
     '/api/documents',

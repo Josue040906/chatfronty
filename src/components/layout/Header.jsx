@@ -7,7 +7,7 @@ UserRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getEmployeePhotoUrl } from '../../utils/employee';
-import { API_BASE_URL } from '../../api/client';
+import { API_BASE_URL, getAuthHeaders } from '../../api/client';
 
 export default function Header({
 user,
@@ -48,7 +48,8 @@ return;
 
 try {
   const response = await fetch(
-    `${API_BASE_URL}/api/notifications?userId=${userId}`
+    `${API_BASE_URL}/api/notifications?userId=${userId}`,
+    { headers: getAuthHeaders() }
   );
 
   if (!response.ok) {
@@ -76,7 +77,8 @@ return;
 
 try {
   const response = await fetch(
-    `${API_BASE_URL}/api/notifications/non-lues?userId=${userId}`
+    `${API_BASE_URL}/api/notifications/non-lues?userId=${userId}`,
+    { headers: getAuthHeaders() }
   );
 
   if (!response.ok) {
@@ -162,6 +164,7 @@ try {
     `${API_BASE_URL}/api/notifications/${notificationId}/lue?userId=${userId}`,
     {
       method: 'PUT',
+      headers: getAuthHeaders(),
     }
   );
 
@@ -201,6 +204,7 @@ try {
     `${API_BASE_URL}/api/notifications/lues?userId=${userId}`,
     {
       method: 'PUT',
+      headers: getAuthHeaders(),
     }
   );
 

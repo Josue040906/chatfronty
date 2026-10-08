@@ -1,4 +1,4 @@
-import { apiPost, apiPut } from './client';
+import { apiGet, apiPost, apiPut } from './client';
 
 export async function inscrireUtilisateur(
   matricule,
@@ -34,4 +34,14 @@ export async function changerMotDePasse(
     ancienMotDePasse,
     nouveauMotDePasse,
   });
+}
+
+export async function listerComptesEnAttente() {
+  return apiGet('/api/utilisateurs/en-attente');
+}
+
+export async function validerCompte(utilisateurId, decision) {
+  const endpoint = decision === 'approuver' ? 'approuver' : 'refuser';
+
+  return apiPut(`/api/utilisateurs/${endpoint}`, { utilisateurId });
 }

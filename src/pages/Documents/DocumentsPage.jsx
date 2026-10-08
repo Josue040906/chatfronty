@@ -38,6 +38,39 @@ function formatStatus(status) {
     .replace(/^\p{L}/u, (letter) => letter.toUpperCase());
 }
 
+const documentFieldLabels = {
+  dateDebut: 'Date de début',
+  dateFin: 'Date de fin',
+  motif: 'Motif',
+  classeLibelle: 'Classe',
+  echelonOrdre: 'Échelon',
+  dureeMinAnnees: 'Durée minimale (années)',
+  situationActuelle: 'Situation actuelle',
+  situationDemandee: 'Situation demandée',
+  dateEffetSouhaitee: 'Date d’effet souhaitée',
+};
+
+function formatDocumentValue(key, value) {
+  if (value == null || value === '') return '—';
+  if (
+    (key === 'dateDebut' ||
+      key === 'dateFin' ||
+      key === 'dateEffetSouhaitee') &&
+    typeof value === 'string'
+  ) {
+    return formatDate(value);
+  }
+  return String(value);
+}
+
+function canOpenPdf(type) {
+  return (
+    type?.code === 'CONGE' ||
+    type?.code === 'AVANCEMENT' ||
+    type?.code === 'MUTATION'
+  );
+}
+
 function openPdfTab(popup, blob) {
   const url = URL.createObjectURL(blob);
 
@@ -140,7 +173,7 @@ export default function DocumentsPage() {
 
   async function handleOpenPdf(documentData) {
     const type = typeById.get(String(documentData.typeDocumentId));
-    if (type?.code !== 'CONGE') {
+    if (!canOpenPdf(type)) {
       setPdfError(
         'Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.'
       );
@@ -279,7 +312,7 @@ export default function DocumentsPage() {
             <tbody>
               {filteredDocuments.map((item) => {
                 const type = typeById.get(String(item.typeDocumentId));
-                const pdfUnavailable = type?.code !== 'CONGE';
+                const pdfUnavailable = !canOpenPdf(type);
 
                 return (
                   <tr key={item.id}>
@@ -382,17 +415,66 @@ export default function DocumentsPage() {
                 </dd>
                 <dt>Statut</dt>
                 <dd>{formatStatus(selectedDocument.statut)}</dd>
-                {Object.entries(selectedDocument.donnees || {}).map(
-                  ([key, value]) => (
-                    <div className="documents-detail-entry" key={key}>
-                      <dt>{key}</dt>
-                      <dd>{value == null ? '—' : String(value)}</dd>
-                    </div>
-                  )
+                {Object.entries(selectedDocument.donnees || {}).flatMap(
+                  ([key, value]) => {
+                    const selectedType = typeById.get(
+                      String(selectedDocument.typeDocumentId)
+                    );
+                    const label =
+                      documentFieldLabels[key] ||
+                      key.replace(/([A-Z])/g, ' $1');
+
+                    if (
+                      (key === 'situationActuelle' ||
+                        key === 'situationDemandee') &&
+                      value &&
+                      typeof value === 'object'
+                    ) {
+                      const situation = value;
+                      if (selectedType?.code === 'MUTATION') {
+                        const fields = [
+                          ['Direction', situation.direction],
+                          ['Service', situation.service],
+                          ['Poste', situation.poste],
+                          ['Lieu', situation.lieuTravail],
+                        ];
+                        const display = fields
+                          .filter(([, fieldValue]) => fieldValue)
+                          .map(([fieldLabel, fieldValue]) =>
+                            `${fieldLabel} : ${fieldValue}`
+                          )
+                          .join(' · ') || 'Non renseignée';
+
+                        return [
+                          <dt key={`${key}-label`}>{label}</dt>,
+                          <dd key={`${key}-value`}>{display}</dd>,
+                        ];
+                      }
+                      const classLabel =
+                        situation.classeLibelle || 'Classe non précisée';
+                      const echelon = situation.echelonOrdre;
+                      const display = echelon == null
+                        ? classLabel
+                        : `${classLabel} — échelon ${echelon}`;
+
+                      return [
+                        <dt key={`${key}-label`}>{label}</dt>,
+                        <dd key={`${key}-value`}>{display}</dd>,
+                      ];
+                    }
+
+                    return [
+                      <dt key={`${key}-label`}>{label}</dt>,
+                      <dd key={`${key}-value`}>
+                        {formatDocumentValue(key, value)}
+                      </dd>,
+                    ];
+                  }
                 )}
               </dl>
-              {typeById.get(String(selectedDocument.typeDocumentId))
-                ?.code !== 'CONGE' && (
+              {!canOpenPdf(
+                typeById.get(String(selectedDocument.typeDocumentId))
+              ) && (
                 <p className="administration-form-info">
                   Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
                 </p>
@@ -410,8 +492,9 @@ export default function DocumentsPage() {
                   className="administration-button-primary"
                   onClick={() => handleOpenPdf(selectedDocument)}
                   disabled={
-                    typeById.get(String(selectedDocument.typeDocumentId))
-                      ?.code !== 'CONGE' || openingPdfId === selectedDocument.id
+                    !canOpenPdf(
+                      typeById.get(String(selectedDocument.typeDocumentId))
+                    ) || openingPdfId === selectedDocument.id
                   }
                 >
                   <FileText size={18} />

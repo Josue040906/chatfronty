@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../api/client';
+import { apiPost } from '../api/client';
 import { getProfil } from '../api/profil';
 
 const getStoredUser = () => {
@@ -10,7 +11,12 @@ const getStoredUser = () => {
   }
 
   try {
-    return JSON.parse(savedUser);
+    const utilisateur = JSON.parse(savedUser);
+    if (!utilisateur?.accessToken) {
+      localStorage.removeItem('user');
+      return null;
+    }
+    return utilisateur;
   } catch (error) {
     console.error('Failed to parse stored user', error);
     localStorage.removeItem('user');
@@ -92,8 +98,11 @@ export function useAuth() {
 
       const connectedUser = {
         userId: utilisateur.userId,
+        accessToken: utilisateur.accessToken,
         employeId: utilisateur.employeId,
         email: utilisateur.email,
+        role: utilisateur.role,
+        statutCompte: utilisateur.statutCompte,
 
         matricule: utilisateur.matricule,
         nom: utilisateur.nom,
@@ -144,9 +153,17 @@ export function useAuth() {
     setUser(updatedUser);
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    try {
+      if (user?.accessToken) {
+        await apiPost('/api/utilisateurs/logout', {});
+      }
+    } catch (error) {
+      console.error('Impossible d’enregistrer la déconnexion.', error);
+    } finally {
+      localStorage.removeItem('user');
+      setUser(null);
+    }
   };
 
   return {

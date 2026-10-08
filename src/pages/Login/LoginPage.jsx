@@ -69,7 +69,7 @@ export default function LoginPage({ onLogin }) {
       );
 
       setSuccess(
-        'Compte créé avec succès. Vous pouvez maintenant vous connecter.'
+        'Votre demande a été envoyée. Vous pourrez vous connecter après validation par un administrateur.'
       );
 
       setEmail('');

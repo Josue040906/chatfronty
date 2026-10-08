@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles, Send, X, Maximize2, Minimize2, ChevronRight } from 'lucide-react';
 import { COLORS, accentGradient, accentGradientSoft } from '../../theme';
+import { API_BASE_URL, getAuthHeaders } from '../../api/client';
 
 
 const SIZES = ['small', 'wide', 'full'];
@@ -135,9 +136,10 @@ export default function AssistantPanel({
     ]);
 
     try {
-      const response = await fetch('http://localhost:8080/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
+          ...getAuthHeaders(),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ message: query })
@@ -543,4 +545,3 @@ const getStyles = (darkMode, size) => ({
     flexShrink: 0
   }
 });
-
