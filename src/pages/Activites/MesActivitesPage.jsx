@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react';
-import { History } from 'lucide-react';
+import {
+  AlertCircle,
+  CalendarDays,
+  Check,
+  Clock3,
+  FileOutput,
+  History,
+  LogIn,
+  LogOut,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 import { getActivites } from '../../api/activite';
 
 const TYPE_ACTIONS = {
@@ -14,6 +28,18 @@ const TYPE_ACTIONS = {
   TELEVERSEMENT: 'Téléversement',
 };
 
+const TYPE_ICONS = {
+  CONNEXION: LogIn,
+  DECONNEXION: LogOut,
+  CREATION: Plus,
+  MODIFICATION: Pencil,
+  SUPPRESSION: Trash2,
+  VALIDATION: Check,
+  REFUS: X,
+  GENERATION: FileOutput,
+  TELEVERSEMENT: Upload,
+};
+
 function formaterDateHeure(valeur) {
   if (!valeur) {
     return { date: '—', heure: '—' };
@@ -25,7 +51,11 @@ function formaterDateHeure(valeur) {
   }
 
   return {
-    date: date.toLocaleDateString('fr-FR'),
+    date: date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
     heure: date.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -86,77 +116,97 @@ export default function MesActivitesPage() {
 
       <div className="activities-content">
         <div className="activities-section-header">
-          <div>
+          <div className="activities-section-title">
             <span className="activities-section-label">
-              Espace personnel
+              Votre espace
             </span>
 
             <h2>Historique des activités</h2>
           </div>
 
-          <span className="activities-count">
-            {activites.length} activité{activites.length === 1 ? '' : 's'}
-          </span>
+          {!loading && !error && (
+            <span className="activities-count" aria-live="polite">
+              {activites.length} activité{activites.length === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
 
-        <div className="activities-table-wrap">
-          <table className="activities-table">
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Heure</th>
-                <th scope="col">Agents concernés</th>
-                <th scope="col">Description de l’activité</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="4">Chargement des activités...</td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td colSpan="4" role="alert">{error}</td>
-                </tr>
-              ) : activites.length === 0 ? (
-                <tr>
-                  <td colSpan="4">
-                    <div className="activities-empty-state">
-                      <History size={22} />
-                      <p>Aucune activité enregistrée pour le moment.</p>
+        {loading ? (
+          <div
+            className="activities-list activities-loading-list"
+            aria-label="Chargement des activités"
+            aria-busy="true"
+          >
+            {[1, 2, 3].map((item) => (
+              <div className="activity-skeleton" key={item} aria-hidden="true">
+                <span className="activity-skeleton-icon" />
+                <span className="activity-skeleton-content">
+                  <span />
+                  <span />
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="activities-state activities-state-error" role="alert">
+            <div className="activities-state-icon">
+              <AlertCircle size={22} />
+            </div>
+            <h3>Impossible de charger vos activités</h3>
+            <p>{error}</p>
+          </div>
+        ) : activites.length === 0 ? (
+          <div className="activities-state">
+            <div className="activities-state-icon">
+              <History size={22} />
+            </div>
+            <h3>Pas encore d’activité</h3>
+            <p>
+              Les actions que vous effectuerez dans SYGPERS apparaîtront ici.
+            </p>
+          </div>
+        ) : (
+          <div className="activities-list" aria-live="polite">
+            {activites.map((activite) => {
+              const { date, heure } = formaterDateHeure(activite.dateHeure);
+              const type = activite.typeAction || '';
+              const Icon = TYPE_ICONS[type] || History;
+
+              return (
+                <article className="activity-item" key={activite.id}>
+                  <div className={`activity-timeline activity-timeline-${type.toLowerCase()}`}>
+                    <span className="activity-timeline-icon">
+                      <Icon size={17} />
+                    </span>
+                  </div>
+
+                  <div className="activity-main">
+                    <div className="activity-top">
+                      <div className="activity-heading">
+                        <span className={`activity-type-pill activity-type-${type.toLowerCase()}`}>
+                          {TYPE_ACTIONS[type] || type || 'Activité'}
+                        </span>
+                        <h3>{activite.description || 'Aucune description disponible.'}</h3>
+                      </div>
+
+                      <time className="activity-time" dateTime={activite.dateHeure || undefined}>
+                        <Clock3 size={14} />
+                        {heure}
+                      </time>
                     </div>
-                  </td>
-                </tr>
-              ) : (
-                activites.map((activite) => {
-                  const { date, heure } = formaterDateHeure(
-                    activite.dateHeure
-                  );
-                  const agent = [
-                    activite.employePrenom,
-                    activite.employeNom,
-                  ].filter(Boolean).join(' ');
 
-                  return (
-                    <tr key={activite.id}>
-                      <td>{date}</td>
-                      <td>{heure}</td>
-                      <td>{agent || activite.employeMatricule || '—'}</td>
-                      <td>
-                        <strong>
-                          {TYPE_ACTIONS[activite.typeAction]
-                            || activite.typeAction}
-                        </strong>
-                        {' — '}
-                        {activite.description}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div className="activity-meta">
+                      <span>
+                        <CalendarDays size={14} />
+                        {date}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

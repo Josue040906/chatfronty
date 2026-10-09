@@ -160,7 +160,7 @@ export default function AppRouter({
 
         <Route
           path="/agents"
-          element={<AgentsPage />}
+          element={<AgentsPage user={user} />}
         />
 
         <Route 

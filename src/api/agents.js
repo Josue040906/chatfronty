@@ -1,5 +1,6 @@
 import {
   apiGet,
+  apiPost,
   apiPostFormData,
   apiPut,
 } from './client';
@@ -14,6 +15,46 @@ export async function getAgents() {
 
 export async function getAgentById(id) {
   return apiGet(`/api/employes/${id}`);
+}
+
+export async function getAgentReferenceData() {
+  const response = await apiGet('/api/employes/referentiels');
+
+  if (
+    !Array.isArray(response?.typesEmploi) ||
+    !Array.isArray(response?.categories)
+  ) {
+    throw new Error(
+      'Les référentiels nécessaires au formulaire sont indisponibles.'
+    );
+  }
+
+  return response;
+}
+
+export async function createAgent(data) {
+  return apiPost('/api/employes', {
+    matricule: data.matricule,
+    nom: data.nom,
+    prenom: data.prenom,
+    sexe: data.sexe || null,
+    adresse: data.adresse || null,
+    cin: data.cin || null,
+    telephone: data.telephone || null,
+    dateNaissance: data.dateNaissance || null,
+    lieuNaissance: data.lieuNaissance || null,
+    dateEmbauche: data.dateEmbauche,
+    posteId: Number(data.posteId),
+    serviceId: Number(data.serviceId),
+    typeEmploiId: data.typeEmploiId
+      ? Number(data.typeEmploiId)
+      : null,
+    categorieId: data.categorieId
+      ? Number(data.categorieId)
+      : null,
+    lieuTravail: data.lieuTravail || null,
+    photo: '',
+  });
 }
 
 export async function updateAgent(id, data) {

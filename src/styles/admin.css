@@ -1,24 +1,27 @@
 .admin-theme {
-  --admin-background: #151610;
-  --admin-surface: #202119;
-  --admin-surface-raised: #292a20;
-  --admin-border: #3c3d2e;
-  --admin-text: #f1f0df;
-  --admin-muted: #a8a995;
-  --admin-yellow: #f0ca45;
+  --admin-background: #fbf8f2;
+  --admin-surface: #ffffff;
+  --admin-surface-raised: #f1f8f2;
+  --admin-border: #d8e4d9;
+  --admin-text: #173c2a;
+  --admin-muted: #667b6d;
+  --admin-yellow: #f2ce4b;
+  --admin-yellow-hover: #ffdf70;
+  --admin-green: #24583b;
+  color-scheme: light;
   min-height: 100vh;
   background: var(--admin-background);
   color: var(--admin-text);
 }
 
 .admin-theme .app-sidebar {
-  background: #11120e;
-  border-right-color: #333426;
+  background: #103b28;
+  border-right-color: var(--admin-border);
 }
 
 .admin-theme .sidebar-header {
-  background: #171811;
-  border-bottom-color: #333426;
+  background: #123f2b;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
 .admin-theme .sidebar-header::after {
@@ -39,20 +42,20 @@
 }
 
 .admin-theme .sidebar-brand-subtitle {
-  color: #aaa987;
+  color: #c0d1c4;
 }
 
 .admin-theme .sidebar-nav-item {
-  color: #b8b9aa;
+  color: #d2dfd5;
 }
 
 .admin-theme .sidebar-nav-item:hover {
-  background: #24251c;
-  color: var(--admin-text);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .admin-theme .sidebar-nav-item-active {
-  background: rgba(240, 202, 69, 0.13);
+  background: rgba(242, 206, 75, 0.16);
   color: var(--admin-yellow);
 }
 
@@ -62,21 +65,21 @@
 
 .admin-theme .sidebar-section-label,
 .admin-theme .sidebar-footer-card span {
-  color: #858775;
+  color: #b4c9b9;
 }
 
 .admin-theme .sidebar-footer,
 .admin-theme .sidebar-footer-card {
-  border-color: #333426;
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .admin-theme .sidebar-footer-card strong {
-  color: var(--admin-text);
+  color: #ffffff;
 }
 
 .admin-theme .app-header {
-  border-bottom-color: #333426;
-  background: rgba(21, 22, 16, 0.96);
+  border-bottom-color: #e5e0d7;
+  background: rgba(251, 248, 242, 0.96);
 }
 
 .admin-theme .header-brand-mobile strong {
@@ -90,9 +93,9 @@
 
 .admin-theme .header-menu-button,
 .admin-theme .header-icon-button {
-  border-color: var(--admin-border);
-  background: var(--admin-surface);
-  color: var(--admin-yellow);
+  border-color: #ddd4c9;
+  background: #ffffff;
+  color: var(--admin-text);
 }
 
 .admin-theme .app-content {
@@ -104,37 +107,14 @@
   color: var(--admin-text);
 }
 
-.admin-theme .app-content :is(p, span, small) {
+.admin-theme .app-content :is(p, small) {
   color: var(--admin-muted);
 }
 
-.admin-theme .app-content :is(
-  [class*="-card"],
-  [class*="-panel"],
-  [class*="-widget"],
-  [class*="-table"],
-  [class*="-empty"],
-  [class*="-state"]
-) {
-  border-color: var(--admin-border) !important;
-  background-color: var(--admin-surface) !important;
-  color: var(--admin-text);
-  box-shadow: none;
-}
-
 .admin-theme .app-content :is(input, select, textarea) {
-  border-color: var(--admin-border) !important;
-  background-color: #181912 !important;
+  border-color: #d8e4d9 !important;
+  background-color: #ffffff !important;
   color: var(--admin-text) !important;
-}
-
-.admin-theme .app-content :is(
-  button[class*="primary"],
-  button[class*="submit"]
-) {
-  border-color: var(--admin-yellow);
-  background: var(--admin-yellow);
-  color: #1b1b11;
 }
 
 .registration-requests-page {
@@ -461,4 +441,684 @@
   .is-spinning {
     animation: none;
   }
+}
+
+/* Thème admin : surfaces vert forêt, accent jaune et états accessibles. */
+.admin-theme .sidebar-close:hover,
+.admin-theme .header-menu-button:hover,
+.admin-theme .header-icon-button:hover,
+.admin-theme .header-user-trigger:hover {
+  border-color: var(--admin-yellow);
+  background: var(--admin-surface-raised);
+  color: var(--admin-yellow);
+}
+
+.admin-theme .sidebar-close:active,
+.admin-theme .header-menu-button:active,
+.admin-theme .header-icon-button:active,
+.admin-theme .header-user-trigger:active {
+  transform: translateY(1px);
+}
+
+.admin-theme :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--admin-yellow);
+  outline-offset: 3px;
+}
+
+.admin-theme .app-content :is(input, select, textarea):hover:not(:disabled) {
+  border-color: #52745b !important;
+}
+
+.admin-theme .app-content :is(input, select, textarea):focus {
+  border-color: var(--admin-yellow) !important;
+  box-shadow: 0 0 0 3px rgba(242, 206, 75, 0.18);
+  outline: none;
+}
+
+.admin-theme .app-content :is(input, select, textarea)::placeholder {
+  color: #91a497;
+  opacity: 1;
+}
+
+.admin-theme .app-content :is(input, select, textarea):disabled {
+  background: #17271e !important;
+  color: #91a497 !important;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.admin-theme .administration-page-header h1,
+.admin-theme .registration-requests-header h1 {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-eyebrow,
+.admin-theme .registration-requests-eyebrow {
+  color: var(--admin-yellow);
+}
+
+.admin-theme .administration-page-header p,
+.admin-theme .administration-section-header p,
+.admin-theme .administration-card-content span,
+.admin-theme .administration-list-content p,
+.admin-theme .administration-list-meta {
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-header-icon,
+.admin-theme .administration-card-icon,
+.admin-theme .administration-list-icon {
+  border-color: var(--admin-border);
+  background: rgba(242, 206, 75, 0.1);
+  color: var(--admin-yellow);
+}
+
+.admin-theme .administration-section-header h2,
+.admin-theme .administration-card-content strong,
+.admin-theme .administration-list-content h2 {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-card {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-card:hover {
+  border-color: var(--admin-yellow);
+  background: var(--admin-surface-raised);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.admin-theme .administration-card:active {
+  transform: translateY(0);
+  background: #214331;
+}
+
+.admin-theme .administration-card:focus-visible {
+  outline: 2px solid var(--admin-yellow);
+  outline-offset: 3px;
+}
+
+.admin-theme .administration-card-arrow {
+  color: #a9baad;
+}
+
+.admin-theme .administration-card:hover .administration-card-arrow {
+  color: var(--admin-yellow);
+}
+
+.admin-theme .administration-back-button,
+.admin-theme .administration-secondary-button {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-back-button:hover,
+.admin-theme .administration-secondary-button:hover {
+  border-color: var(--admin-green);
+  background: var(--admin-surface-raised);
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-back-button:active,
+.admin-theme .administration-secondary-button:active {
+  background: #214331;
+}
+
+.admin-theme .administration-toolbar,
+.admin-theme .administration-search {
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-search {
+  border-color: var(--admin-border);
+  background: #0d2017;
+}
+
+.admin-theme .administration-search:focus-within {
+  border-color: var(--admin-yellow);
+  box-shadow: 0 0 0 3px rgba(242, 206, 75, 0.16);
+}
+
+.admin-theme .administration-search input {
+  background: transparent !important;
+  color: var(--admin-text) !important;
+}
+
+.admin-theme .administration-search input::placeholder {
+  color: #91a497;
+}
+
+.admin-theme .administration-primary-button,
+.admin-theme .registration-action-accept {
+  border-color: var(--admin-yellow);
+  background: var(--admin-yellow);
+  color: #172116;
+}
+
+.admin-theme .administration-primary-button:hover:not(:disabled),
+.admin-theme .registration-action-accept:hover:not(:disabled) {
+  border-color: var(--admin-yellow-hover);
+  background: var(--admin-yellow-hover);
+  color: #172116;
+  box-shadow: 0 6px 16px rgba(242, 206, 75, 0.18);
+}
+
+.admin-theme .administration-primary-button:active:not(:disabled),
+.admin-theme .registration-action-accept:active:not(:disabled) {
+  transform: translateY(1px);
+  background: #dfbb39;
+}
+
+.admin-theme .administration-primary-button:disabled,
+.admin-theme .administration-secondary-button:disabled,
+.admin-theme .administration-icon-button:disabled,
+.admin-theme .administration-modal-close:disabled,
+.admin-theme .registration-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-theme .administration-list-card {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-list-card:hover {
+  border-color: #52745b;
+  background: var(--admin-surface-raised);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.admin-theme .administration-list-id {
+  background: #203a2b;
+  color: #d2dfd4;
+}
+
+.admin-theme .administration-state {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-state-error,
+.admin-theme .administration-form-error {
+  border-color: #854c43;
+  background: #35211d;
+  color: #ffc0b4;
+}
+
+.admin-theme .administration-state-success {
+  border-color: #477456;
+  background: #173324;
+  color: #b7e3bd;
+}
+
+.admin-theme .administration-list-actions {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-icon-button,
+.admin-theme .administration-modal-close {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: #d5e0d6;
+}
+
+.admin-theme .administration-icon-button:hover:not(:disabled),
+.admin-theme .administration-modal-close:hover:not(:disabled) {
+  border-color: var(--admin-yellow);
+  background: var(--admin-surface-raised);
+  color: var(--admin-yellow);
+}
+
+.admin-theme .administration-icon-button:active:not(:disabled),
+.admin-theme .administration-modal-close:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.admin-theme .administration-icon-button-danger {
+  color: #ffaaa0;
+}
+
+.admin-theme .administration-icon-button-danger:hover:not(:disabled) {
+  border-color: #b86255;
+  background: #3b2420;
+  color: #ffc0b4;
+}
+
+.admin-theme .administration-modal-overlay {
+  background: rgba(3, 12, 8, 0.78);
+}
+
+.admin-theme .administration-modal {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-modal-header,
+.admin-theme .administration-form-actions {
+  border-color: var(--admin-border);
+}
+
+.admin-theme .administration-modal-header h2 {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-form-field > span {
+  color: #d9e3d9;
+}
+
+.admin-theme .administration-form-field input,
+.admin-theme .administration-form-field textarea,
+.admin-theme .administration-form-field select {
+  border-color: var(--admin-border);
+  background: #0d2017;
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-form-field input:focus,
+.admin-theme .administration-form-field textarea:focus,
+.admin-theme .administration-form-field select:focus {
+  border-color: var(--admin-yellow);
+  box-shadow: 0 0 0 3px rgba(242, 206, 75, 0.16);
+}
+
+.admin-theme .administration-form-field input:disabled,
+.admin-theme .administration-form-field textarea:disabled,
+.admin-theme .administration-form-field select:disabled {
+  background: #17271e;
+  color: #91a497;
+}
+
+.admin-theme .administration-form-field small {
+  color: var(--admin-muted);
+}
+
+.admin-theme .registration-requests-header p {
+  color: var(--admin-muted);
+}
+
+.admin-theme .registration-refresh-button {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-yellow);
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.admin-theme .registration-refresh-button:hover:not(:disabled) {
+  border-color: var(--admin-yellow);
+  background: var(--admin-surface-raised);
+}
+
+.admin-theme .registration-refresh-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.admin-theme .registration-requests-summary,
+.admin-theme .registration-request,
+.admin-theme .registration-empty-state {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+}
+
+.admin-theme .registration-requests-summary {
+  color: var(--admin-yellow);
+}
+
+.admin-theme .registration-requests-summary strong,
+.admin-theme .registration-request-name h2,
+.admin-theme .registration-empty-state strong {
+  color: var(--admin-text);
+}
+
+.admin-theme .registration-requests-summary span,
+.admin-theme .registration-request-name span,
+.admin-theme .registration-empty-state {
+  color: var(--admin-muted);
+}
+
+.admin-theme .registration-request:hover {
+  border-color: #52745b;
+  background: var(--admin-surface-raised);
+}
+
+.admin-theme .registration-request-details span {
+  color: #d1ddd2;
+}
+
+.admin-theme .registration-request-details svg,
+.admin-theme .registration-empty-state svg {
+  color: var(--admin-yellow);
+}
+
+.admin-theme .registration-action-reject {
+  border-color: #75463e;
+  background: #35211d;
+  color: #ffc0b4;
+}
+
+.admin-theme .registration-action-reject:hover:not(:disabled) {
+  border-color: #b86255;
+  background: #432923;
+  color: #ffd0c7;
+}
+
+.admin-theme .registration-empty-state {
+  border-style: dashed;
+}
+
+.admin-theme .app-content .agents-create-button {
+  border-color: var(--admin-yellow);
+  background: var(--admin-yellow);
+  color: #173c2a;
+}
+
+.admin-theme .app-content .agents-create-button:hover {
+  border-color: var(--admin-yellow-hover);
+  background: var(--admin-yellow-hover);
+  color: #173c2a;
+  box-shadow: 0 5px 14px rgba(23, 60, 42, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-theme *,
+  .admin-theme *::before,
+  .admin-theme *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Keep the standard light layout; only replace its brown accent palette. */
+.admin-theme .app-content {
+  background: #fbf8f2;
+}
+
+.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td),
+.admin-theme .app-content :is(.administration-page-header h1, .registration-requests-header h1) {
+  color: var(--admin-text);
+}
+
+.admin-theme .app-content :is(p, small),
+.admin-theme .administration-page-header p,
+.admin-theme .administration-section-header p,
+.admin-theme .administration-card-content span,
+.admin-theme .administration-list-content p,
+.admin-theme .administration-list-meta,
+.admin-theme .registration-requests-header p {
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-eyebrow,
+.admin-theme .registration-requests-eyebrow {
+  color: #8b6b00;
+}
+
+.admin-theme .administration-header-icon,
+.admin-theme .administration-card-icon,
+.admin-theme .administration-list-icon,
+.admin-theme .registration-request-avatar {
+  border-color: #dce7dc;
+  background: #f1f8f2;
+  color: var(--admin-green);
+}
+
+.admin-theme .administration-section-header h2,
+.admin-theme .administration-card-content strong,
+.admin-theme .administration-list-content h2,
+.admin-theme .registration-request-name h2,
+.admin-theme .registration-requests-summary strong,
+.admin-theme .registration-empty-state strong {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-card,
+.admin-theme .administration-list-card,
+.admin-theme .registration-request,
+.admin-theme .registration-requests-summary,
+.admin-theme .registration-empty-state {
+  border-color: #e1e8df;
+  background: #ffffff;
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-card:hover,
+.admin-theme .administration-list-card:hover,
+.admin-theme .registration-request:hover {
+  border-color: #a9c5ad;
+  background: #f1f8f2;
+  box-shadow: 0 8px 20px rgba(23, 60, 42, 0.08);
+}
+
+.admin-theme .administration-card:active,
+.admin-theme .administration-list-card:active {
+  background: #e9f3eb;
+}
+
+.admin-theme .administration-card-arrow,
+.admin-theme .registration-request-name span,
+.admin-theme .registration-requests-summary span {
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-card:hover .administration-card-arrow,
+.admin-theme .registration-request-details svg,
+.admin-theme .registration-empty-state svg {
+  color: var(--admin-green);
+}
+
+.admin-theme .administration-back-button,
+.admin-theme .administration-secondary-button,
+.admin-theme .administration-icon-button,
+.admin-theme .administration-modal-close,
+.admin-theme .registration-refresh-button {
+  border-color: #d8e4d9;
+  background: #ffffff;
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-back-button:hover,
+.admin-theme .administration-secondary-button:hover,
+.admin-theme .administration-icon-button:hover:not(:disabled),
+.admin-theme .administration-modal-close:hover:not(:disabled),
+.admin-theme .registration-refresh-button:hover:not(:disabled) {
+  border-color: #a9c5ad;
+  background: #f1f8f2;
+  color: var(--admin-green);
+}
+
+.admin-theme .administration-back-button:active,
+.admin-theme .administration-secondary-button:active,
+.admin-theme .administration-icon-button:active:not(:disabled),
+.admin-theme .administration-modal-close:active:not(:disabled),
+.admin-theme .registration-refresh-button:active:not(:disabled) {
+  background: #e9f3eb;
+}
+
+.admin-theme .administration-search {
+  border-color: #d8e4d9;
+  background: #ffffff;
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-search:focus-within {
+  border-color: #7da487;
+  box-shadow: 0 0 0 3px rgba(36, 88, 59, 0.1);
+}
+
+.admin-theme .administration-search input {
+  background: transparent !important;
+  color: var(--admin-text) !important;
+}
+
+.admin-theme .administration-search input::placeholder,
+.admin-theme .app-content :is(input, select, textarea)::placeholder {
+  color: #84958a;
+  opacity: 1;
+}
+
+.admin-theme .app-content :is(input, select, textarea):hover:not(:disabled) {
+  border-color: #a9c5ad !important;
+}
+
+.admin-theme .app-content :is(input, select, textarea):disabled {
+  border-color: #d8e4d9 !important;
+  background: #f3f5f2 !important;
+  color: #718077 !important;
+}
+
+.admin-theme .administration-primary-button,
+.admin-theme .registration-action-accept {
+  border-color: var(--admin-green);
+  background: var(--admin-green);
+  color: #ffffff;
+}
+
+.admin-theme .app-content .administration-primary-button:hover:not(:disabled),
+.admin-theme .registration-action-accept:hover:not(:disabled) {
+  border-color: #1b472f;
+  background: #1b472f;
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(23, 60, 42, 0.18);
+}
+
+.admin-theme .app-content .administration-primary-button {
+  border-color: var(--admin-green);
+  background: var(--admin-green);
+  color: #ffffff;
+}
+
+.admin-theme .app-content .administration-primary-button:active:not(:disabled),
+.admin-theme .registration-action-accept:active:not(:disabled) {
+  background: #103b28;
+}
+
+.admin-theme .header-menu-button:hover,
+.admin-theme .header-icon-button:hover,
+.admin-theme .header-user-trigger:hover {
+  border-color: #a9c5ad;
+  background: #f1f8f2;
+  color: var(--admin-green);
+}
+
+.admin-theme .sidebar-close:hover {
+  border-color: rgba(242, 206, 75, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--admin-yellow);
+}
+
+.admin-theme .header-menu-button:active,
+.admin-theme .header-icon-button:active,
+.admin-theme .header-user-trigger:active {
+  transform: translateY(1px);
+}
+
+.admin-theme .administration-list-id {
+  background: #f1f8f2;
+  color: var(--admin-green);
+}
+
+.admin-theme .administration-state {
+  border-color: #d8e4d9;
+  background: #ffffff;
+  color: var(--admin-muted);
+}
+
+.admin-theme .administration-state-error,
+.admin-theme .administration-form-error,
+.admin-theme .registration-message.is-error {
+  border-color: #e6caca;
+  background: #fff8f8;
+  color: #a33a3a;
+}
+
+.admin-theme .administration-state-success,
+.admin-theme .registration-message.is-success {
+  border-color: #bbd8c0;
+  background: #f0f8f1;
+  color: #24633e;
+}
+
+.admin-theme .administration-icon-button-danger {
+  color: #a34a4a;
+}
+
+.admin-theme .administration-icon-button-danger:hover:not(:disabled),
+.admin-theme .registration-action-reject:hover:not(:disabled) {
+  border-color: #e3c4c4;
+  background: #fff6f6;
+  color: #9a3030;
+}
+
+.admin-theme .registration-action-reject {
+  border-color: #e2c9c5;
+  background: #fff8f7;
+  color: #a34a4a;
+}
+
+.admin-theme .administration-modal-overlay {
+  background: rgba(23, 60, 42, 0.38);
+}
+
+.admin-theme .administration-modal {
+  border-color: #e2d9d0;
+  background: #ffffff;
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-modal-header,
+.admin-theme .administration-form-actions {
+  border-color: #eee9e4;
+}
+
+.admin-theme .administration-modal-header h2 {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-form-field > span {
+  color: var(--admin-text);
+}
+
+.admin-theme .administration-form-field input,
+.admin-theme .administration-form-field textarea,
+.admin-theme .administration-form-field select {
+  border-color: #dfe3e8;
+  background: #ffffff;
+  color: #173c2a;
+}
+
+.admin-theme .administration-form-field input:focus,
+.admin-theme .administration-form-field textarea:focus,
+.admin-theme .administration-form-field select:focus,
+.admin-theme .app-content :is(input, select, textarea):focus {
+  border-color: #7da487 !important;
+  box-shadow: 0 0 0 3px rgba(36, 88, 59, 0.1);
+  outline: none;
+}
+
+.admin-theme :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #8b6b00;
+  outline-offset: 2px;
+}
+
+.admin-theme .registration-request-details span {
+  color: #53685a;
+}
+
+.admin-theme .registration-action-reject {
+  border-color: #e2c9c5;
+  background: #fff8f7;
+  color: #a34a4a;
+}
+
+.admin-theme .registration-empty-state {
+  border-style: dashed;
 }

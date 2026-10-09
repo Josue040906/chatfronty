@@ -6,22 +6,29 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import {
   BriefcaseBusiness,
+  UserPlus,
   Search,
   Users,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import CreateAgentModal from './CreateAgentModal';
 
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
 
 
-export default function AgentsPage() {
+export default function AgentsPage({ user }) {
+  const navigate = useNavigate();
+  const canCreateAgent = ['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role);
   const [agents, setAgents] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createFeedback, setCreateFeedback] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +90,22 @@ export default function AgentsPage() {
     });
   }, [agents, search]);
 
+  async function handleAgentCreated(feedback) {
+    setCreateOpen(false);
+    setCreateFeedback(feedback);
+
+    try {
+      const result = await getAgents();
+      setAgents(result);
+    } catch (refreshError) {
+      console.error('Agent créé, mais impossible d’actualiser la liste.', refreshError);
+      setCreateFeedback({
+        tone: 'warning',
+        message: `${feedback.message} La liste n’a pas pu être actualisée.`,
+      });
+    }
+  }
+
   if (loading) {
     return (
       <div className="agents-page">
@@ -127,14 +150,46 @@ export default function AgentsPage() {
           </p>
         </div>
 
-        <div className="agents-heading-stat">
-          <Users size={19} />
-          <div>
-            <strong>{agents.length}</strong>
-            <span>agents enregistrés</span>
+        <div className="agents-heading-actions">
+          {canCreateAgent && (
+            <button
+              type="button"
+              className="agents-create-button"
+              onClick={() => {
+                setCreateFeedback(null);
+                setCreateOpen(true);
+              }}
+            >
+              <UserPlus size={17} />
+              Ajouter un agent
+            </button>
+          )}
+
+          <div className="agents-heading-stat">
+            <Users size={19} />
+            <div>
+              <strong>{agents.length}</strong>
+              <span>agents enregistrés</span>
+            </div>
           </div>
         </div>
       </section>
+
+      {createFeedback && (
+        <div
+          className={`agents-create-feedback agents-create-feedback-${createFeedback.tone}`}
+          role={createFeedback.tone === 'success' ? 'status' : 'alert'}
+        >
+          {createFeedback.message}
+          <button
+            type="button"
+            onClick={() => setCreateFeedback(null)}
+            aria-label="Fermer le message"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <section className="agents-toolbar">
         <div className="agents-search">
@@ -186,7 +241,7 @@ export default function AgentsPage() {
                   <tr
                     key={agent.id}
                     onClick={() => {
-                      window.location.href = `/agents/${agent.id}`;
+                      navigate(`/agents/${agent.id}`);
                     }}
                   >
                     <td>
@@ -240,6 +295,14 @@ export default function AgentsPage() {
           </div>
         )}
       </section>
+
+      {createOpen && canCreateAgent && (
+        <CreateAgentModal
+          acteurId={user?.userId}
+          onClose={() => setCreateOpen(false)}
+          onCreated={handleAgentCreated}
+        />
+      )}
     </div>
   );
 }
