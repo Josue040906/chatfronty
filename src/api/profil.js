@@ -26,6 +26,8 @@ export async function updateProfil(userId, data) {
     dateNaissance: data.dateNaissance || null,
     lieuNaissance: data.lieuNaissance,
     adresse: data.adresse,
+    localiteResidenceId: data.localiteResidenceId || null,
+    effacerLocaliteResidence: Boolean(data.effacerLocaliteResidence),
     telephone: data.telephone,
   });
 }

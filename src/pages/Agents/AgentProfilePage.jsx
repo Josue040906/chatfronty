@@ -24,6 +24,9 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import LocaliteField from '../../components/forms/LocaliteField';
+import PhoneField from '../../components/forms/PhoneField';
+import { isPhoneNumberValid } from '../../utils/phone';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -61,6 +64,8 @@ export default function AgentProfilePage({ user }) {
     prenom: '',
     sexe: '',
     adresse: '',
+    localiteResidenceId: '',
+    effacerLocaliteResidence: false,
     cin: '',
     telephone: '',
     dateNaissance: '',
@@ -120,6 +125,8 @@ export default function AgentProfilePage({ user }) {
       prenom: data.prenom || '',
       sexe: data.sexe || '',
       adresse: data.adresse || '',
+      localiteResidenceId: data.localite_residence_id || '',
+      effacerLocaliteResidence: false,
       cin: data.cin || '',
       telephone: data.telephone || '',
       dateNaissance: data.date_naissance
@@ -216,6 +223,13 @@ export default function AgentProfilePage({ user }) {
   }
 
   async function handleSave() {
+    if (!isPhoneNumberValid(form.telephone)) {
+      setSaveError(
+        'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
+      );
+      return;
+    }
+
     setSaving(true);
     setSaveError('');
     setSaveSuccess('');
@@ -661,12 +675,11 @@ export default function AgentProfilePage({ user }) {
                   Téléphone
                 </label>
 
-                <input
-                  id="telephone"
-                  name="telephone"
-                  type="tel"
+                <PhoneField
                   value={form.telephone}
-                  onChange={handleChange}
+                  onChange={(telephone) =>
+                    setForm((current) => ({ ...current, telephone }))
+                  }
                   disabled={saving}
                 />
               </div>
@@ -732,16 +745,21 @@ export default function AgentProfilePage({ user }) {
               </div>
 
               <div className="agent-form-field agent-form-field-full">
-                <label htmlFor="adresse">
+                <span>
                   Adresse
-                </label>
+                </span>
 
-                <input
-                  id="adresse"
-                  name="adresse"
-                  type="text"
-                  value={form.adresse}
-                  onChange={handleChange}
+                <LocaliteField
+                  selectedId={form.localiteResidenceId}
+                  currentAddress={form.adresse}
+                  onChange={(localiteResidenceId, adresse) =>
+                    setForm((current) => ({
+                      ...current,
+                      localiteResidenceId: localiteResidenceId || '',
+                      effacerLocaliteResidence: !localiteResidenceId,
+                      adresse,
+                    }))
+                  }
                   disabled={saving}
                 />
               </div>

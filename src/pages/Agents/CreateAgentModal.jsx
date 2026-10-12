@@ -8,6 +8,9 @@ import {
 import { createAgent, uploadAgentPhoto, getAgentReferenceData } from '../../api/agents';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
+import LocaliteField from '../../components/forms/LocaliteField';
+import PhoneField from '../../components/forms/PhoneField';
+import { isPhoneNumberValid } from '../../utils/phone';
 
 const EMPTY_FORM = {
   matricule: '',
@@ -15,6 +18,7 @@ const EMPTY_FORM = {
   prenom: '',
   sexe: '',
   adresse: '',
+  localiteResidenceId: '',
   cin: '',
   telephone: '',
   dateNaissance: '',
@@ -166,6 +170,14 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (!isPhoneNumberValid(form.telephone)) {
+      setFormError(
+        'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
+      );
+      return;
+    }
+
     setSaving(true);
     setFormError('');
 
@@ -317,12 +329,12 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                 </label>
                 <label className="agent-form-field">
                   <span>Téléphone</span>
-                  <input
-                    name="telephone"
-                    type="tel"
+                  <PhoneField
                     value={form.telephone}
-                    onChange={handleChange}
-                    autoComplete="tel"
+                    onChange={(telephone) =>
+                      setForm((current) => ({ ...current, telephone }))
+                    }
+                    disabled={saving}
                   />
                 </label>
                 <label className="agent-form-field">
@@ -342,15 +354,20 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                   />
                 </label>
-                <label className="agent-form-field agent-create-full">
+                <div className="agent-form-field agent-create-full">
                   <span>Adresse</span>
-                  <input
-                    name="adresse"
-                    value={form.adresse}
-                    onChange={handleChange}
-                    autoComplete="street-address"
+                  <LocaliteField
+                    selectedId={form.localiteResidenceId}
+                    onChange={(localiteResidenceId, adresse) =>
+                      setForm((current) => ({
+                        ...current,
+                        localiteResidenceId: localiteResidenceId || '',
+                        adresse,
+                      }))
+                    }
+                    disabled={saving}
                   />
-                </label>
+                </div>
               </div>
             </fieldset>
 

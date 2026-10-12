@@ -20,6 +20,9 @@ import {
 } from '../../api/profil';
 import { getEmployeePhotoUrl } from '../../utils/employee';
 import { changerMotDePasse } from '../../api/utilisateurs';
+import LocaliteField from '../../components/forms/LocaliteField';
+import PhoneField from '../../components/forms/PhoneField';
+import { isPhoneNumberValid } from '../../utils/phone';
 
 function formatDate(value) {
   if (!value) {
@@ -59,6 +62,8 @@ function toPersonalForm(profil = {}) {
     dateNaissance: toDateInput(profil.date_naissance),
     lieuNaissance: profil.lieu_naissance || '',
     adresse: profil.adresse || '',
+    localiteResidenceId: profil.localite_residence_id || '',
+    effacerLocaliteResidence: false,
     telephone: profil.telephone || '',
   };
 }
@@ -74,6 +79,7 @@ function InfoItem({
   type = 'text',
   maxLength,
   onChange,
+  editControl,
   disabled = false,
 }) {
   return (
@@ -93,7 +99,7 @@ function InfoItem({
 
       <div className="profil-info-value">
         {editing ? (
-          type === 'select' ? (
+          editControl || (type === 'select' ? (
             <select
               className="profil-edit-input"
               name={name}
@@ -115,7 +121,7 @@ function InfoItem({
               onChange={onChange}
               disabled={disabled}
             />
-          )
+          ))
         ) : (
           value || '—'
         )}
@@ -232,6 +238,13 @@ export default function ProfilPage({ user, onUserUpdated }) {
   }
 
   async function handleSaveProfil() {
+    if (!isPhoneNumberValid(form.telephone)) {
+      setSaveError(
+        'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
+      );
+      return;
+    }
+
     setSaving(true);
     setSaveMessage('');
     setSaveError('');
@@ -618,8 +631,21 @@ export default function ProfilPage({ user, onUserUpdated }) {
             editing={editing}
             name="adresse"
             editValue={form.adresse}
-            maxLength={255}
-            onChange={handlePersonalChange}
+            editControl={
+              <LocaliteField
+                selectedId={form.localiteResidenceId}
+                currentAddress={form.adresse}
+                onChange={(localiteResidenceId, adresse) =>
+                  setForm((current) => ({
+                    ...current,
+                    localiteResidenceId: localiteResidenceId || '',
+                    effacerLocaliteResidence: !localiteResidenceId,
+                    adresse,
+                  }))
+                }
+                disabled={saving}
+              />
+            }
             disabled={saving}
           />
 
@@ -630,9 +656,15 @@ export default function ProfilPage({ user, onUserUpdated }) {
             editing={editing}
             name="telephone"
             editValue={form.telephone}
-            type="tel"
-            maxLength={30}
-            onChange={handlePersonalChange}
+            editControl={
+              <PhoneField
+                value={form.telephone}
+                onChange={(telephone) =>
+                  setForm((current) => ({ ...current, telephone }))
+                }
+                disabled={saving}
+              />
+            }
             disabled={saving}
           />
 
