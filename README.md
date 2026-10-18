@@ -2,10 +2,11 @@
 
 ## Backend API
 
-The frontend uses the Assistant RH API URL configured by `VITE_API_URL`.
-Copy `.env.example` to `.env` and adjust the URL when the backend is hosted
-somewhere other than `http://localhost:8080`. The development server reads
-environment values when it starts, so restart Vite after changing `.env`.
+The frontend uses the Assistant RH API URL configured by `VITE_API_URL` and
+calls Bandy Akama directly for chat using `VITE_BANDY_API_URL`. Copy
+`.env.example` to `.env` and adjust both URLs for your deployment. The
+development server reads environment values when it starts, so restart Vite
+after changing `.env`.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -26,6 +26,7 @@ import {
 } from '../../utils/employee';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
+import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
@@ -70,8 +71,6 @@ export default function AgentProfilePage({ user }) {
     telephone: '',
     dateNaissance: '',
     lieuNaissance: '',
-    dateEmbauche: '',
-    lieuTravail: '',
     photo: '',
   });
 
@@ -133,10 +132,6 @@ export default function AgentProfilePage({ user }) {
         ? data.date_naissance.substring(0, 10)
         : '',
       lieuNaissance: data.lieu_naissance || '',
-      dateEmbauche: data.date_embauche
-        ? data.date_embauche.substring(0, 10)
-        : '',
-      lieuTravail: data.lieu_travail || '',
       photo: data.photo || '',
     };
   }
@@ -242,7 +237,6 @@ export default function AgentProfilePage({ user }) {
       await updateAgent(id, {
          acteurId: user?.userId,
         ...form,
-        photo: agent.photo || '',
       });
 
       /*
@@ -719,26 +713,10 @@ export default function AgentProfilePage({ user }) {
                   Lieu de naissance
                 </label>
 
-                <input
+                <VilleField
                   id="lieuNaissance"
                   name="lieuNaissance"
-                  type="text"
                   value={form.lieuNaissance}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="dateEmbauche">
-                  Date d'embauche
-                </label>
-
-                <input
-                  id="dateEmbauche"
-                  name="dateEmbauche"
-                  type="date"
-                  value={form.dateEmbauche}
                   onChange={handleChange}
                   disabled={saving}
                 />
@@ -760,21 +738,6 @@ export default function AgentProfilePage({ user }) {
                       adresse,
                     }))
                   }
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="lieuTravail">
-                  Lieu de travail
-                </label>
-
-                <input
-                  id="lieuTravail"
-                  name="lieuTravail"
-                  type="text"
-                  value={form.lieuTravail}
-                  onChange={handleChange}
                   disabled={saving}
                 />
               </div>

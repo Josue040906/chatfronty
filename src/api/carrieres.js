@@ -1,4 +1,4 @@
-import { apiGet } from './client';
+import { apiGet, apiPost, apiPut } from './client';
 
 function normalizeResponse(response) {
   if (Array.isArray(response)) {
@@ -38,4 +38,69 @@ export async function getCareerHistory(employeId) {
   );
 
   return normalizeResponse(response);
+}
+
+export async function getEmployeeDiplomas(employeId) {
+  const response = await apiGet(`/api/employes/${employeId}/diplomes`);
+  return Array.isArray(response) ? response : response?.value || [];
+}
+
+export async function getDiplomaOptions(filters = {}) {
+  const query = new URLSearchParams();
+  if (filters.niveauId) query.set('niveauId', filters.niveauId);
+  if (filters.domaineId) query.set('domaineId', filters.domaineId);
+  const queryString = query.toString();
+  const response = await apiGet(
+    `/api/referentiels/diplomes/options${queryString ? `?${queryString}` : ''}`
+  );
+
+  return response?.value && !Array.isArray(response.value)
+    ? response.value
+    : response;
+}
+
+export async function addEmployeeDiploma(employeId, data) {
+  return apiPost(`/api/employes/${employeId}/diplomes`, data);
+}
+
+export async function proposeEstablishment(data) {
+  return apiPost('/api/referentiels/etablissements/demandes', data);
+}
+
+export async function getReclassementProposal(employeId) {
+  return apiGet(`/api/carrieres/employes/${employeId}/reclassement`);
+}
+
+export async function confirmReclassement(employeId) {
+  return apiPost(`/api/employes/${employeId}/reclassement`);
+}
+
+export async function getAvancementProposal(employeId) {
+  return apiGet(`/api/carrieres/employes/${employeId}/avancement`);
+}
+
+export async function confirmAvancement(employeId, dateEffet) {
+  return apiPost(`/api/carrieres/employes/${employeId}/avancement`, {
+    dateEffet,
+  });
+}
+
+export async function getReclassementRules() {
+  const response = await apiGet('/api/referentiels/reclassements');
+  return Array.isArray(response) ? response : response?.value || [];
+}
+
+export async function getReclassementTargets() {
+  const response = await apiGet('/api/referentiels/reclassements/options');
+  return Array.isArray(response) ? response : response?.value || [];
+}
+
+export async function updateDiplomaLevelOrder(niveauId, ordreAcademique) {
+  return apiPut(`/api/referentiels/niveaux-diplome/${niveauId}/ordre`, {
+    ordreAcademique,
+  });
+}
+
+export async function saveReclassementRule(niveauId, data) {
+  return apiPut(`/api/referentiels/reclassements/${niveauId}`, data);
 }

@@ -10,6 +10,7 @@
   Users,
   X,
   Plus,
+  GraduationCap,
 } from 'lucide-react';
 
 import { NavLink } from 'react-router-dom';
@@ -179,15 +180,26 @@ function NavigationItem({ item, onClose }) {
               />
             ))}
             {user?.role === 'SPERS_CHEF' && (
-              <NavigationItem
-                item={{
-                  id: 'demandes-inscription',
-                  label: 'Demandes d’inscription',
-                  icon: ShieldCheck,
-                  path: '/administration/demandes-inscription',
-                }}
-                onClose={onClose}
-              />
+              <>
+                <NavigationItem
+                  item={{
+                    id: 'demandes-inscription',
+                    label: 'Demandes d’inscription',
+                    icon: ShieldCheck,
+                    path: '/administration/demandes-inscription',
+                  }}
+                  onClose={onClose}
+                />
+                <NavigationItem
+                  item={{
+                    id: 'regles-reclassement',
+                    label: 'Règles de reclassement',
+                    icon: GraduationCap,
+                    path: '/administration/reclassements',
+                  }}
+                  onClose={onClose}
+                />
+              </>
             )}
           </div>
         </nav>

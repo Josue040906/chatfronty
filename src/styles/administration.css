@@ -237,6 +237,139 @@
   color: #6d4e35;
 }
 
+.reclassement-config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reclassement-config-card {
+  padding: 22px;
+  border: 1px solid #e1d8ce;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.reclassement-config-card > header,
+.reclassement-config-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.reclassement-config-card > header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reclassement-config-card > header strong {
+  color: #403027;
+  font-size: 16px;
+}
+
+.reclassement-config-card > header span,
+.reclassement-config-footer > span {
+  color: #88796b;
+  font-size: 12px;
+}
+
+.reclassement-config-state {
+  padding: 6px 9px;
+  border-radius: 99px;
+  background: #f4ede5;
+  color: #705039 !important;
+  font-size: 11px !important;
+  font-weight: 700;
+}
+
+.reclassement-config-state.configured {
+  background: #e7efe5;
+  color: #466044 !important;
+}
+
+.reclassement-config-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.reclassement-config-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #5f5044;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.reclassement-config-fields label.wide {
+  grid-column: 1 / -1;
+}
+
+.reclassement-config-fields input:not([type='checkbox']),
+.reclassement-config-fields select {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid #d9cec0;
+  border-radius: 8px;
+  background: #fff;
+  color: #403027;
+  font: inherit;
+  font-size: 13px;
+}
+
+.reclassement-config-fields .reclassement-config-checkbox {
+  flex-direction: row;
+  align-items: center;
+  grid-column: 1 / -1;
+}
+
+.reclassement-config-footer {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #eee7df;
+}
+
+.reclassement-config-notice {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.reclassement-config-notice.success {
+  border: 1px solid #bbf7d0;
+  background: #ecfdf3;
+  color: #18794e;
+}
+
+.reclassement-config-notice.error {
+  border: 1px solid #f2c8c2;
+  background: #fff0ed;
+  color: #854b43;
+}
+
+@media (max-width: 760px) {
+  .reclassement-config-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .reclassement-config-fields label.wide,
+  .reclassement-config-fields .reclassement-config-checkbox {
+    grid-column: auto;
+  }
+
+  .reclassement-config-card > header,
+  .reclassement-config-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 
 /* ---------------------------------------------------------
    Responsive

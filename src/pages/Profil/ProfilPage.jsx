@@ -22,6 +22,7 @@ import { getEmployeePhotoUrl } from '../../utils/employee';
 import { changerMotDePasse } from '../../api/utilisateurs';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
+import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 
 function formatDate(value) {
@@ -619,7 +620,15 @@ export default function ProfilPage({ user, onUserUpdated }) {
             editing={editing}
             name="lieuNaissance"
             editValue={form.lieuNaissance}
-            maxLength={150}
+            editControl={
+              <VilleField
+                id="profil-lieu-naissance"
+                name="lieuNaissance"
+                value={form.lieuNaissance}
+                onChange={handlePersonalChange}
+                disabled={saving}
+              />
+            }
             onChange={handlePersonalChange}
             disabled={saving}
           />

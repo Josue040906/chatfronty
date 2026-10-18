@@ -1,1384 +1,1304 @@
-/* =========================================================
-   ORGANISATION RH
-   ORGANIGRAMME ADMINISTRATIF
-   ========================================================= */
-
 .organisation-page {
+  --org-navy: #3a2a1e;
+  --org-blue: #6d4e35;
+  --org-teal: #b8874a;
+  --org-ink: #3a2a1e;
+  --org-muted: #8a7c6e;
+  --org-border: #ddd4c9;
+  --org-canvas: #f3eee3;
+  --org-surface: #fbf8f2;
   display: flex;
   flex-direction: column;
   gap: 22px;
-
-  /*
-   * Jetons de couleur locaux : chacun regroupe une valeur
-   * réellement répétée à l'identique ailleurs dans ce fichier.
-   */
-  --org-trunk: #b99b79;
-  --org-accent: #9d7b5a;
-  --org-brown: #76563a;
-  --org-surface: #fffdf9;
-  --org-border: #e5dcd1;
-  --org-label: #947b65;
-  --org-connector-thin: #c7ad92;
-  --org-shadow-rgb: 58, 42, 30;
+  color: var(--org-ink);
 }
 
-/* =========================================================
-   STATISTIQUES
-   ========================================================= */
+.org-page-heading,
+.org-workspace-heading,
+.org-workspace-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
 
-.organisation-stats {
+.org-page-heading {
+  padding: 4px 0 2px;
+}
+
+.org-overline {
+  color: #b8874a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.org-page-heading h1 {
+  margin: 5px 0 5px;
+  color: #3a2a1e;
+  font-size: clamp(27px, 3vw, 34px);
+  font-weight: 750;
+  letter-spacing: -.035em;
+}
+
+.org-page-heading p {
+  margin: 0;
+  color: var(--org-muted);
+  font-size: 13px;
+}
+
+.org-heading-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid var(--org-border);
+  border-radius: 999px;
+  background: #fff;
+  color: #6d5d50;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.org-live-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #b8874a;
+  box-shadow: 0 0 0 3px rgba(184, 135, 74, .14);
+}
+
+.org-overview {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
 }
 
-.organisation-stat-card {
+.org-overview-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 82px;
-  padding: 15px 16px;
-
-  background: var(--org-surface);
+  min-height: 77px;
+  padding: 15px 17px;
   border: 1px solid var(--org-border);
   border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(58, 42, 30, .035);
 }
 
-.organisation-stat-icon {
-  width: 38px;
-  height: 38px;
-
+.org-overview-icon,
+.org-node-icon,
+.org-service-icon,
+.org-dialog-icon,
+.org-empty-icon,
+.org-loading-mark {
   display: grid;
-  place-items: center;
   flex: 0 0 auto;
-
-  color: var(--org-brown);
-  background: #f1e7db;
-  border-radius: 10px;
+  place-items: center;
 }
 
-.organisation-stat-card strong {
-  display: block;
+.org-overview-icon {
+  width: 39px;
+  height: 39px;
+  border-radius: 11px;
+}
 
-  color: #4d392a;
-  font-size: 19px;
+.org-overview-icon-blue {
+  color: #6d4e35;
+  background: #f5eee6;
+}
+
+.org-overview-icon-teal {
+  color: #98713f;
+  background: #f6efdf;
+}
+
+.org-overview-icon-slate {
+  color: #806f61;
+  background: #f3eee7;
+}
+
+.org-overview-card strong,
+.org-overview-card small {
+  display: block;
+}
+
+.org-overview-card strong {
+  color: #3a2a1e;
+  font-size: 20px;
   line-height: 1;
 }
 
-.organisation-stat-card span {
-  display: block;
+.org-overview-card small {
   margin-top: 5px;
-
-  color: #8f7d6c;
-  font-size: 10px;
-}
-
-/* =========================================================
-   CARTE PRINCIPALE
-   ========================================================= */
-
-.organisation-card {
-  overflow: hidden;
-
-  background: var(--org-surface);
-  border: 1px solid var(--org-border);
-  border-radius: 15px;
-}
-
-.organisation-card-header {
-  padding: 20px 22px;
-  border-bottom: 1px solid #eee7df;
-}
-
-.organisation-card-header h2 {
-  margin: 4px 0 5px;
-
-  color: #49372a;
-  font-size: 17px;
-}
-
-.organisation-card-header p {
-  margin: 0;
-
-  color: #8c7c6e;
+  color: #8a7c6e;
   font-size: 11px;
-  line-height: 1.5;
 }
 
-/* =========================================================
-   CANVAS
-   ========================================================= */
-
-.organisation-canvas {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
-
-  padding: 30px 24px 44px;
-
-  background:
-    radial-gradient(
-      circle at 1px 1px,
-      rgba(118, 86, 58, 0.045) 1px,
-      transparent 1px
-    );
-
-  background-size: 18px 18px;
+.org-workspace {
+  overflow: hidden;
+  border: 1px solid #ddd4c9;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(58, 42, 30, .055);
 }
 
-.organisation-tree {
-  width: 100%;
-  min-width: 820px;
-  max-width: 1180px;
-
-  margin: 0 auto;
+.org-workspace-heading {
+  min-height: 83px;
+  padding: 17px 21px;
+  border-bottom: 1px solid #e9e1d7;
 }
 
-/* =========================================================
-   MINISTÈRE
-   ========================================================= */
-
-.organisation-root {
-  position: relative;
-  z-index: 5;
-
+.org-workspace-tools {
   display: flex;
   align-items: center;
-  gap: 12px;
-
-  width: fit-content;
-  min-width: 330px;
-  max-width: calc(100% - 40px);
-
-  margin: 0 auto;
-  padding: 13px 18px;
-
-  color: #fffaf4;
-
-  background: var(--org-brown);
-  border: 1px solid #63472f;
-  border-radius: 12px;
-
-  box-shadow:
-    0 5px 14px rgba(var(--org-shadow-rgb), 0.13);
+  gap: 17px;
 }
 
-.organisation-root-icon {
-  width: 40px;
-  height: 40px;
-
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.17);
-  border-radius: 9px;
-}
-
-.organisation-root-content {
-  min-width: 0;
-}
-
-.organisation-root-content strong {
-  display: block;
-
-  color: #fffaf4;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.organisation-root-content span {
-  display: block;
-  margin-top: 3px;
-
-  color: rgba(255, 250, 244, 0.72);
-  font-size: 10px;
-}
-
-/* =========================================================
-   CONNECTEUR MINISTÈRE → STRUCTURES
-   ========================================================= */
-
-.organisation-root-connector {
-  width: 2px;
-  height: 34px;
-
-  margin: 0 auto;
-
-  background: var(--org-trunk);
-}
-
-/* =========================================================
-   BRANCHE PRINCIPALE
-   ========================================================= */
-
-.organisation-main-branches {
-  position: relative;
-
+.org-structure-search {
   display: flex;
-  flex-direction: column;
-  gap: 30px;
-
-  width: 100%;
-}
-
-/*
- * Tronc vertical principal.
- */
-
-.organisation-main-branches::before {
-  content: "";
-
-  position: absolute;
-
-  top: -34px;
-  bottom: 28px;
-  left: 18px;
-
-  width: 2px;
-
-  background: var(--org-trunk);
-}
-
-/* =========================================================
-   DIRECTION
-   ========================================================= */
-
-.organisation-direction-node {
-  position: relative;
-  z-index: 2;
-
-  width: 100%;
-}
-
-/*
- * Tronc principal → direction.
- */
-
-.organisation-direction-node::before {
-  content: "";
-
-  position: absolute;
-
-  top: 31px;
-  left: 18px;
-
-  width: 42px;
-  height: 2px;
-
-  background: var(--org-trunk);
-}
-
-/*
- * Point de connexion.
- */
-
-.organisation-direction-node::after {
-  content: "";
-
-  position: absolute;
-
-  top: 27px;
-  left: 14px;
-
-  width: 8px;
-  height: 8px;
-
-  background: var(--org-surface);
-  border: 2px solid var(--org-accent);
-  border-radius: 50%;
-}
-
-/* =========================================================
-   BOÎTE DIRECTION
-   ========================================================= */
-
-.organisation-direction-box {
-  position: relative;
-  z-index: 4;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  width: calc(100% - 70px);
-  min-height: 66px;
-
-  margin-left: 60px;
-  padding: 10px 13px;
-
-  background: var(--org-surface);
-  border: 1px solid #d8c7b5;
-  border-left: 4px solid var(--org-brown);
-  border-radius: 11px;
-
-  box-shadow:
-    0 2px 7px rgba(var(--org-shadow-rgb), 0.055);
-}
-
-.organisation-direction-toggle {
-  width: 28px;
-  height: 28px;
-
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-
-  padding: 0;
-
-  color: var(--org-brown);
-  background: #f1e7db;
-
-  border: 1px solid #e2d4c5;
-  border-radius: 7px;
-
-  cursor: pointer;
-
-  transition:
-    background 140ms ease,
-    transform 140ms ease;
-}
-
-.organisation-direction-toggle:hover {
-  background: #e6d7c6;
-}
-
-.organisation-direction-icon {
-  width: 36px;
+  width: min(290px, 28vw);
+  min-width: 190px;
   height: 36px;
-
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-
-  color: var(--org-brown);
-  background: #f5eee6;
-
-  border: 1px solid #e5d8ca;
-  border-radius: 9px;
-}
-
-.organisation-direction-content {
-  min-width: 0;
-  flex: 1;
-}
-
-.organisation-direction-content strong {
-  display: block;
-
-  color: #49372a;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.organisation-direction-content span {
-  display: block;
-  margin-top: 3px;
-
-  color: #948477;
-  font-size: 10px;
-}
-
-/* =========================================================
-   DIRECTEUR — carte de tête, intégrée dans la boîte direction
-   ========================================================= */
-
-.organisation-direction-responsable {
-  display: flex;
   align-items: center;
-
-  flex: 0 0 auto;
-
-  min-width: 176px;
-  padding-left: 13px;
-
-  border-left: 1px solid #e7ddd2;
-}
-
-/* =========================================================
-   DIRECTION → SERVICES
-   ========================================================= */
-
-.organisation-direction-children {
-  position: relative;
-
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-
-  margin-left: 91px;
-  padding: 18px 0 6px 31px;
-}
-
-/*
- * Ligne verticale reliant les services.
- */
-
-.organisation-direction-children::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  bottom: 17px;
-  left: 14px;
-
-  width: 2px;
-
-  background: var(--org-trunk);
-}
-
-/* =========================================================
-   SERVICE
-   ========================================================= */
-
-.organisation-service-node {
-  position: relative;
-
-  display: grid;
-
-  /*
-   * Service | responsable | agents
-   */
-
-  grid-template-columns: 310px 195px minmax(0, 1fr);
-
-  align-items: center;
-
-  column-gap: 10px;
-
-  width: 100%;
-}
-
-/*
- * Ligne verticale → service.
- */
-
-.organisation-service-node::before {
-  content: "";
-
-  position: absolute;
-
-  top: 50%;
-  left: -31px;
-
-  width: 31px;
-  height: 2px;
-
-  background: var(--org-trunk);
-}
-
-/*
- * Point de connexion du service.
- */
-
-.organisation-service-node::after {
-  content: "";
-
-  position: absolute;
-
-  top: calc(50% - 4px);
-  left: -35px;
-
-  width: 8px;
-  height: 8px;
-
-  background: var(--org-surface);
-  border: 2px solid var(--org-accent);
-  border-radius: 50%;
-}
-
-/* =========================================================
-   BOÎTE SERVICE
-   ========================================================= */
-
-.organisation-service-box {
-  position: relative;
-  z-index: 3;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  min-height: 58px;
-  padding: 9px 11px;
-
-  background: #fdfaf5;
-
-  border: 1px solid #dccdbd;
-  border-left: 3px solid var(--org-accent);
-  border-radius: 10px;
-
-  box-shadow:
-    0 1px 4px rgba(var(--org-shadow-rgb), 0.035);
-}
-
-.organisation-service-code {
-  width: 52px;
-  min-width: 52px;
-
-  padding: 7px 5px;
-
-  color: var(--org-brown);
-  background: #f0e4d6;
-
-  border: 1px solid #dfcfbd;
-  border-radius: 7px;
-
-  font-size: 9px;
-  font-weight: 800;
-
-  text-align: center;
-  letter-spacing: 0.02em;
-}
-
-.organisation-service-main {
-  min-width: 0;
-}
-
-.organisation-service-main strong {
-  display: block;
-
-  color: #503b2c;
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.organisation-service-main span {
-  display: block;
-  margin-top: 3px;
-
-  color: #968576;
-  font-size: 8px;
-}
-
-/* =========================================================
-   RESPONSABLE DU SERVICE — carte de tête
-   ========================================================= */
-
-.organisation-service-responsable {
-  position: relative;
-
-  display: flex;
-  align-items: center;
-
-  min-width: 0;
-  min-height: 50px;
-
-  padding: 6px 8px;
-
-  background: #faf5ed;
-
-  border: 1px solid #e1d4c5;
+  gap: 8px;
+  padding: 0 9px;
+  border: 1px solid #e1d8ce;
   border-radius: 8px;
+  color: #8a7c6e;
+  background: #fff;
+  transition: border-color 130ms ease, box-shadow 130ms ease;
 }
 
-/*
- * Service → responsable.
- */
-
-.organisation-service-responsable::before {
-  content: "";
-
-  position: absolute;
-
-  left: -10px;
-  top: 50%;
-
-  width: 10px;
-  height: 1px;
-
-  background: var(--org-connector-thin);
+.org-structure-search:focus-within {
+  border-color: #c9aa7e;
+  box-shadow: 0 0 0 3px rgba(184, 135, 74, .1);
 }
 
-/* =========================================================
-   AGENTS
-   ========================================================= */
+.org-structure-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #3a2a1e;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+}
 
-.organisation-service-agents {
-  position: relative;
+.org-structure-search input::placeholder {
+  color: #a39789;
+}
 
+.org-structure-search button {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #8a7c6e;
+  background: transparent;
+  cursor: pointer;
+}
+
+.org-structure-search button:hover {
+  color: #6d4e35;
+  background: #f5eee6;
+}
+
+.org-workspace-heading h2 {
+  margin: 4px 0 0;
+  color: #49382d;
+  font-size: 16px;
+  font-weight: 730;
+}
+
+.org-legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
+}
 
-  gap: 6px;
+.org-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #8a7c6e;
+  font-size: 10px;
+  white-space: nowrap;
+}
 
+.org-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+.org-legend-ministry {
+  background: var(--org-navy);
+}
+
+.org-legend-direction {
+  background: var(--org-blue);
+}
+
+.org-legend-service {
+  background: var(--org-teal);
+}
+
+.org-flow-shell {
+  position: relative;
+  height: min(70vh, 740px);
+  min-height: 620px;
+  background: var(--org-canvas);
+}
+
+.org-flow-shell .react-flow {
+  background: transparent;
+}
+
+.org-flow-shell .react-flow__pane {
+  cursor: grab;
+}
+
+.org-flow-shell .react-flow__pane:active {
+  cursor: grabbing;
+}
+
+.org-flow-shell .react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.org-flow-shell .react-flow__attribution {
+  display: none;
+}
+
+.org-handle {
+  width: 7px;
+  height: 7px;
+  visibility: visible;
+  opacity: 0;
+  border: 0;
+  background: transparent;
+}
+
+.org-ministry-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 390px;
+  min-height: 112px;
+  padding: 19px 23px;
+  border: 1px solid #513a29;
+  border-radius: 15px;
+  color: #fff;
+  background: var(--org-navy);
+  box-shadow: 0 10px 24px rgba(58, 42, 30, .16);
+}
+
+.org-ministry-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 13px;
+  color: #f2d59e;
+  background: rgba(255, 255, 255, .08);
+}
+
+.org-ministry-copy {
   min-width: 0;
-  min-height: 50px;
-
-  padding: 7px 8px 7px 12px;
-
-  background: rgba(255, 253, 249, 0.82);
-
-  border: 1px dashed #d4c3b1;
-  border-radius: 9px;
 }
 
-/*
- * Service → zone des agents.
- */
-
-.organisation-service-agents::before {
-  content: "";
-
-  position: absolute;
-
-  left: -10px;
-  top: 50%;
-
-  width: 10px;
-  height: 1px;
-
-  background: var(--org-connector-thin);
+.org-ministry-copy span,
+.org-ministry-copy strong,
+.org-ministry-copy small {
+  display: block;
 }
 
-.organisation-service-agents .organisation-agent-card {
-  background: var(--org-surface);
+.org-ministry-copy span {
+  margin-bottom: 5px;
+  color: #e2cfb0;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .15em;
 }
 
-/* =========================================================
-   CARTE AGENT
-   ========================================================= */
+.org-ministry-copy strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 720;
+  line-height: 1.35;
+}
 
-.organisation-agent-card {
+.org-ministry-copy small {
+  margin-top: 4px;
+  color: #d7c3a4;
+  font-size: 10px;
+}
+
+.org-ministry-indicator {
+  width: 6px;
+  height: 6px;
+  align-self: flex-start;
+  margin: 2px 0 0 auto;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #d6b06d;
+  box-shadow: 0 0 0 4px rgba(214, 176, 109, .14);
+}
+
+.org-direction-node {
+  width: 300px;
+  min-height: 155px;
+  padding: 15px 16px 13px;
+  border: 1px solid #e1d8ce;
+  border-top: 3px solid var(--org-blue);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 11px rgba(58, 42, 30, .065);
+}
+
+.org-node-eyebrow {
   display: flex;
   align-items: center;
   gap: 7px;
+  color: #8a7c6e;
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
 
-  min-width: 0;
-
-  padding: 5px 7px;
-
-  color: inherit;
-  background: #faf6f0;
-
-  border: 1px solid var(--org-border);
+.org-node-icon {
+  width: 27px;
+  height: 27px;
   border-radius: 8px;
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease,
-    box-shadow 140ms ease;
 }
 
-.organisation-agent-card:hover {
-  background: #f3e9dd;
-  border-color: #cdbba7;
-
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 3px 8px rgba(var(--org-shadow-rgb), 0.08);
+.org-node-icon-direction {
+  color: var(--org-blue);
+  background: #f5eee6;
 }
 
-.organisation-agent-card--compact {
-  max-width: 220px;
+.org-direction-name {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 40px;
+  margin-top: 9px;
+  color: #3a2a1e;
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-/*
- * Carte "de tête" : responsable de service ou directeur.
- * Se distingue d'un agent ordinaire par l'avatar teinté, la
- * bordure d'accent et le nom en brun — le rôle ("Responsable",
- * "Directeur") est affiché dans la carte elle-même, voir
- * .organisation-agent-role.
- */
-
-.organisation-agent-card--lead {
-  width: 100%;
-
-  background: #ffffff;
-  border-color: var(--org-accent);
-  border-left: 3px solid var(--org-brown);
-
-  box-shadow:
-    0 1px 3px rgba(var(--org-shadow-rgb), 0.05);
+.org-direction-meta {
+  display: flex;
+  gap: 13px;
+  margin-top: 8px;
 }
 
-.organisation-agent-card--lead:hover {
-  background: #faf5ed;
-  border-color: var(--org-brown);
+.org-direction-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8a7c6e;
+  font-size: 9px;
 }
 
-.organisation-agent-card--lead .organisation-agent-photo {
-  color: #fffaf4;
-  background: var(--org-brown);
+.org-direction-meta svg {
+  color: #9b7a51;
 }
 
-.organisation-agent-card--lead
-  .organisation-agent-details
-  strong {
-  max-width: none;
-
-  color: var(--org-brown);
-
-  /*
-   * Le nom d'un responsable n'est jamais tronqué : il passe
-   * à la ligne plutôt que de déborder de la carte.
-   */
-  overflow: visible;
-  white-space: normal;
-  overflow-wrap: anywhere;
+.org-leader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #eee8df;
 }
 
-.organisation-agent-role {
-  color: var(--org-brown);
-  font-weight: 700;
-}
-
-.organisation-agent-photo {
-  width: 31px;
-  height: 31px;
-
-  display: grid;
-  place-items: center;
+.org-leader-dot {
+  width: 7px;
+  height: 7px;
   flex: 0 0 auto;
-
-  overflow: hidden;
-
-  background: #e8ddd0;
-  color: #6e4b32;
-
-  border-radius: 7px;
-
-  font-size: 9px;
-  font-weight: 800;
+  border-radius: 50%;
+  background: #b8874a;
 }
 
-.organisation-agent-photo img {
-  width: 100%;
-  height: 100%;
+.org-leader-empty .org-leader-dot {
+  background: #d4c8b8;
+}
 
+.org-leader-copy small,
+.org-leader-copy strong {
   display: block;
-
-  object-fit: cover;
 }
 
-.organisation-agent-details {
-  min-width: 0;
+.org-leader-copy small {
+  color: #958779;
+  font-size: 8px;
 }
 
-.organisation-agent-details strong {
-  display: block;
-
-  max-width: 145px;
-
+.org-leader-copy strong {
   overflow: hidden;
-
-  color: #4d392c;
-
+  max-width: 238px;
+  margin-top: 1px;
+  color: #6d5d50;
   font-size: 9px;
-  font-weight: 700;
-  line-height: 1.3;
-
+  font-weight: 640;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.organisation-agent-details span {
-  display: block;
-  margin-top: 2px;
-
-  color: #907f70;
-
-  font-family: monospace;
-  font-size: 8px;
-}
-
-/* =========================================================
-   SERVICES SANS DIRECTION
-   ========================================================= */
-
-.organisation-direct-services {
+.org-service-node-wrap {
   position: relative;
-
-  margin-top: 2px;
-  padding: 24px 0 5px 60px;
-
-  border-top: 1px solid #dfd3c6;
+  width: 284px;
+  height: 126px;
 }
 
-/*
- * Connexion directe au Ministère.
- */
-
-.organisation-direct-services::before {
-  content: "";
-
-  position: absolute;
-
-  top: -30px;
-  left: 18px;
-
-  width: 2px;
-  height: 54px;
-
-  background: var(--org-trunk);
-}
-
-.organisation-direct-services-title {
+.org-service-node {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-
-  margin-bottom: 13px;
-  padding: 10px 13px;
-
-  background: #f7f0e7;
-
-  border: 1px dashed #cdbba7;
-  border-radius: 10px;
+  width: 284px;
+  height: 126px;
+  padding: 12px;
+  border: 1px solid #e5dccf;
+  border-left: 3px solid var(--org-teal);
+  border-radius: 11px;
+  color: inherit;
+  background: #fff;
+  box-shadow: 0 3px 9px rgba(58, 42, 30, .045);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-.organisation-direct-services-icon {
+.org-service-node:hover,
+.org-service-node:focus-visible {
+  z-index: 2;
+  border-color: #cfb991;
+  border-left-color: #b8874a;
+  outline: none;
+  box-shadow: 0 8px 18px rgba(109, 78, 53, .12);
+  transform: translateY(-2px);
+}
+
+.org-service-node.is-selected {
+  border-color: #c9aa7e;
+  border-left-color: #9b6f37;
+  box-shadow: 0 0 0 3px rgba(184, 135, 74, .14);
+}
+
+.org-service-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: #98713f;
+  background: #f6efdf;
+}
+
+.org-service-copy {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.org-service-copy .org-node-eyebrow {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #9b7a51;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-service-copy > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  min-height: 36px;
+  margin-top: 5px;
+  color: #49382d;
+  font-size: 11px;
+  font-weight: 720;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.org-service-leader {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 4px;
+  color: #958779;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-service-count {
+  display: flex;
+  min-width: 35px;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px;
+  border-radius: 8px;
+  color: #80633e;
+  background: #f8f1e5;
+}
+
+.org-service-count strong {
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.org-service-count small {
+  margin-top: 3px;
+  font-size: 7px;
+}
+
+.org-service-arrow {
+  flex: 0 0 auto;
+  color: #aa997e;
+}
+
+.org-flow-controls {
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid #e1d8ce;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 3px 10px rgba(58, 42, 30, .07);
+}
+
+.org-flow-controls button {
+  display: grid;
   width: 31px;
   height: 31px;
-
-  display: grid;
   place-items: center;
-  flex: 0 0 auto;
+  border: 0;
+  border-radius: 7px;
+  color: #806f61;
+  background: transparent;
+  cursor: pointer;
+}
 
-  color: var(--org-brown);
-  background: #eadccc;
-
+.org-filter-empty button {
+  margin-top: 15px;
+  padding: 8px 12px;
+  border: 1px solid #e1d8ce;
   border-radius: 8px;
+  color: #6d4e35;
+  background: #fff;
+  cursor: pointer;
 }
 
-.organisation-direct-services-title strong {
-  display: block;
-
-  color: #574232;
-  font-size: 11px;
+.org-filter-empty button:hover {
+  border-color: #cfb991;
+  background: #fbf8f2;
 }
 
-.organisation-direct-services-title span {
-  display: block;
-  margin-top: 2px;
+.org-flow-controls button:hover,
+.org-flow-controls button:focus-visible {
+  outline: none;
+  color: #6d4e35;
+  background: #f5eee6;
+}
 
-  color: #948477;
+.org-control-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 3px;
+  background: #e9e1d7;
+}
+
+.org-flow-hint {
+  position: absolute;
+  z-index: 4;
+  right: 17px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid rgba(221, 212, 201, .85);
+  border-radius: 8px;
+  color: #8a7c6e;
+  background: rgba(255, 255, 255, .86);
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.org-workspace-footer {
+  min-height: 42px;
+  padding: 0 18px;
+  border-top: 1px solid #e9e1d7;
+  color: #8a7c6e;
   font-size: 9px;
 }
 
-.organisation-direct-services-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-
-  margin-left: 30px;
-  padding-left: 31px;
-
-  border-left: 2px solid var(--org-trunk);
+.org-workspace-footer > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* =========================================================
-   ÉTAT VIDE
-   ========================================================= */
+.org-workspace-footer .org-live-dot {
+  width: 6px;
+  height: 6px;
+}
 
-.organisation-empty {
+.org-empty,
+.org-state-card {
   display: flex;
+  min-height: 340px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  min-height: 220px;
-  padding: 30px;
-
-  color: #98897b;
-
-  background: var(--org-surface);
-
-  border: 1px dashed #d9cbbd;
-  border-radius: 13px;
-
+  padding: 28px;
+  color: #8a7c6e;
   text-align: center;
 }
 
-.organisation-empty strong {
-  margin-top: 10px;
-
-  color: #574232;
-  font-size: 13px;
+.org-empty-icon,
+.org-loading-mark {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  color: #6d4e35;
+  background: #f5eee6;
 }
 
-.organisation-empty span {
-  margin-top: 5px;
+.org-empty strong,
+.org-state-card strong {
+  color: #49382d;
+  font-size: 14px;
+}
 
-  color: #958477;
+.org-empty > span:last-child,
+.org-state-card > span:not(.org-loading-mark) {
+  max-width: 400px;
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.org-state-card {
+  min-height: 400px;
+  border: 1px solid var(--org-border);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.org-loading-mark {
+  animation: org-pulse 1.4s ease-in-out infinite;
+}
+
+.org-state-error .org-loading-mark {
+  color: #a44e51;
+  background: #fbefef;
+  animation: none;
+}
+
+.org-state-error button {
+  margin-top: 18px;
+  padding: 9px 14px;
+  border: 1px solid #e1d8ce;
+  border-radius: 8px;
+  color: #6d4e35;
+  background: #fff;
+  cursor: pointer;
+}
+
+@keyframes org-pulse {
+  50% { opacity: .55; }
+}
+
+.org-dialog-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(38, 27, 18, .5);
+  backdrop-filter: blur(4px);
+  animation: org-fade-in 140ms ease-out;
+}
+
+.org-dialog {
+  display: flex;
+  overflow: hidden;
+  width: min(780px, 100%);
+  max-height: min(720px, calc(100vh - 44px));
+  flex-direction: column;
+  border: 1px solid rgba(221, 212, 201, .95);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(58, 42, 30, .24);
+  animation: org-dialog-in 170ms ease-out;
+}
+
+.org-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 23px;
+  border-bottom: 1px solid #e9e1d7;
+  background: #fbf8f2;
+}
+
+.org-dialog-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.org-dialog-title-group {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 13px;
+}
+
+.org-dialog-icon {
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+  color: #80633e;
+  background: #f6efdf;
+}
+
+.org-dialog-eyebrow {
+  color: #8a7c6e;
+  font-size: 9px;
+  font-weight: 780;
+  letter-spacing: .12em;
+}
+
+.org-dialog-header h2 {
+  margin: 4px 0 0;
+  color: #3a2a1e;
+  font-size: 18px;
+  font-weight: 730;
+  line-height: 1.3;
+}
+
+.org-dialog-header p {
+  margin: 4px 0 0;
+  color: #8a7c6e;
+  font-size: 10px;
+}
+
+.org-dialog-manager {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #e9e1d7;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.org-dialog-manager-avatar {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #e5dccf;
+  border-radius: 50%;
+  color: #6d4e35;
+  background: #f5eee6;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.org-dialog-manager-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.org-dialog-manager-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.org-dialog-manager-copy small {
+  color: #8a7c6e;
+  font-size: 9px;
+}
+
+.org-dialog-manager-copy strong {
+  max-width: 210px;
+  overflow: hidden;
+  color: #49382d;
+  font-size: 11px;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-dialog-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #e1d8ce;
+  border-radius: 9px;
+  color: #806f61;
+  background: #fff;
+  cursor: pointer;
+}
+
+.org-dialog-close:hover,
+.org-dialog-close:focus-visible {
+  outline: none;
+  border-color: #cdbbaa;
+  color: #6d4e35;
+  background: #f8f5ef;
+}
+
+.org-dialog-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 23px;
+  color: #806f61;
+  background: #faf7f1;
+  font-size: 10px;
+}
+
+.org-dialog-count {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 7px;
+  color: #80633e;
+  background: #f6efdf;
+  font-weight: 750;
+}
+
+.org-dialog-hint {
+  margin-left: auto;
+  color: #8a7c6e;
+}
+
+.org-agent-search {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  margin: 15px 21px 11px;
+  padding: 0 11px;
+  border: 1px solid #e1d8ce;
+  border-radius: 9px;
+  color: #8a7c6e;
+  background: #fff;
+}
+
+.org-agent-search:focus-within {
+  border-color: #c9aa7e;
+  box-shadow: 0 0 0 3px rgba(184, 135, 74, .1);
+}
+
+.org-agent-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #3a2a1e;
+  background: transparent;
+  font: inherit;
   font-size: 11px;
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 1100px) {
-  .organisation-tree {
-    min-width: 780px;
-  }
-
-  .organisation-service-node {
-    grid-template-columns: 290px 188px minmax(0, 1fr);
-  }
+.org-agent-search input::placeholder {
+  color: #a39789;
 }
 
-@media (max-width: 1000px) {
-  .organisation-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .organisation-direction-responsable {
-    min-width: 160px;
-  }
-
-  .organisation-service-node {
-    grid-template-columns: 270px 178px minmax(0, 1fr);
-  }
+.org-agent-search button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #8a7c6e;
+  background: transparent;
+  cursor: pointer;
 }
 
-@media (max-width: 850px) {
-  .organisation-service-node {
-    grid-template-columns: 260px minmax(0, 1fr);
-    row-gap: 7px;
+.org-agent-list {
+  overflow-y: auto;
+  display: grid;
+  min-height: 150px;
+  flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  align-content: start;
+  gap: 12px;
+  padding: 4px 21px 18px;
+  overscroll-behavior: contain;
+}
+
+.org-agent-card {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 100px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 11px;
+  border: 1px solid #e5dccf;
+  border-radius: 13px;
+  color: #49382d;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(58, 42, 30, .045);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 130ms ease, box-shadow 130ms ease, transform 130ms ease;
+}
+
+.org-agent-card:hover,
+.org-agent-card:focus-visible {
+  outline: none;
+  border-color: #cfb991;
+  box-shadow: 0 7px 15px rgba(58, 42, 30, .09);
+  transform: translateY(-2px);
+}
+
+.org-agent-avatar {
+  position: relative;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #e5dccf;
+  border-radius: 50%;
+  color: #6d4e35;
+  background: #f5eee6;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.org-agent-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.org-agent-identity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.org-agent-identity strong {
+  overflow: hidden;
+  color: #49382d;
+  font-size: 11px;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-agent-identity small {
+  color: #8a7c6e;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+}
+
+.org-agent-position {
+  overflow: hidden;
+  color: #806f61;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-agent-arrow {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  flex: 0 0 auto;
+  color: #aa9c8b;
+}
+
+.org-dialog-empty {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  grid-column: 1 / -1;
+  color: #8a7c6e;
+  text-align: center;
+}
+
+.org-dialog-empty strong {
+  color: #6d5d50;
+  font-size: 12px;
+}
+
+.org-dialog-empty span {
+  font-size: 10px;
+}
+
+.org-dialog-footer {
+  padding: 11px 22px;
+  border-top: 1px solid #e9e1d7;
+  color: #958779;
+  background: #faf7f1;
+  font-size: 9px;
+  text-align: right;
+}
+
+@keyframes org-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes org-dialog-in {
+  from { opacity: 0; transform: translateY(7px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 760px) {
+  .org-page-heading {
+    align-items: flex-start;
   }
 
-  .organisation-service-responsable {
-    min-width: 0;
+  .org-heading-note {
+    display: none;
   }
 
-  .organisation-service-agents {
-    grid-column: 1 / -1;
+  .org-workspace-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 13px;
   }
 
-  .organisation-service-agents::before {
+  .org-workspace-tools {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .org-structure-search {
+    width: min(100%, 420px);
+  }
+
+  .org-flow-shell {
+    height: min(68vh, 650px);
+    min-height: 450px;
+  }
+
+  .org-flow-hint {
+    right: 10px;
+    bottom: 9px;
+    max-width: calc(100% - 20px);
+    font-size: 8px;
+  }
+
+  .org-workspace-footer > span:last-child {
     display: none;
   }
 }
 
-@media (max-width: 700px) {
-  .organisation-direction-box {
-    width: calc(100% - 55px);
-    margin-left: 45px;
+@media (max-width: 520px) {
+  .organisation-page {
+    gap: 15px;
   }
 
-  .organisation-direction-node::before {
-    left: 18px;
-    width: 27px;
+  .org-overview {
+    gap: 7px;
   }
 
-  .organisation-direction-children {
-    margin-left: 65px;
+  .org-overview-card {
+    min-height: 68px;
+    gap: 8px;
+    padding: 10px 8px;
   }
 
-  .organisation-direction-responsable {
-    max-width: 210px;
-  }
-}
-
-@media (max-width: 650px) {
-  .organisation-stats {
-    grid-template-columns: 1fr;
+  .org-overview-icon {
+    width: 32px;
+    height: 32px;
   }
 
-  .organisation-canvas {
-    padding: 20px 12px 30px;
+  .org-overview-icon svg {
+    width: 16px;
+    height: 16px;
   }
 
-  .organisation-tree {
-    min-width: 650px;
+  .org-overview-card strong {
+    font-size: 17px;
   }
 
-  .organisation-root {
-    min-width: 280px;
+  .org-overview-card small {
+    font-size: 9px;
   }
 
-  .organisation-direct-services {
-    padding-left: 45px;
-  }
-}
-
-/* =========================================================
-   AMÉLIORATION ORGANIGRAMME
-   PHOTOS + AGENTS INTÉGRÉS AUX SERVICES
-   ========================================================= */
-
-/* ---------------------------------------------------------
-   SERVICE : zone plus clairement structurée
-   --------------------------------------------------------- */
-
-.organisation-service-node {
-  align-items: stretch;
-}
-
-/*
- * La zone des agents devient une véritable partie
- * visuelle du service.
- */
-.organisation-service-agents {
-  align-content: flex-start;
-  min-height: 54px;
-  box-sizing: border-box;
-}
-
-/*
- * Petit titre visuel au-dessus des agents.
- * On utilise un pseudo-element pour ne pas modifier le JSX.
- */
-.organisation-service-agents::after {
-  content: "Agents du service";
-
-  position: absolute;
-  top: 5px;
-  left: 15px;
-
-  color: #9a8877;
-  font-size: 8px;
-  font-weight: 700;
-
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-
-  pointer-events: none;
-}
-
-/*
- * On réserve de l'espace en haut pour le libellé.
- */
-.organisation-service-agents {
-  padding-top: 22px;
-}
-
-/* ---------------------------------------------------------
-   CARTES AGENTS
-   --------------------------------------------------------- */
-
-.organisation-agent-card {
-  position: relative;
-
-  min-height: 43px;
-
-  box-sizing: border-box;
-
-  background: #fffdf9;
-
-  border-color: #ded1c3;
-}
-
-.organisation-agent-card--compact {
-  min-width: 150px;
-}
-
-/*
- * Photo plus visible dans l'organigramme.
- */
-.organisation-agent-photo {
-  width: 36px;
-  height: 36px;
-
-  flex: 0 0 36px;
-
-  border-radius: 50%;
-
-  background:
-    linear-gradient(
-      145deg,
-      #eadccc,
-      #d8c5b0
-    );
-
-  border: 2px solid #fffdf9;
-
-  box-shadow:
-    0 0 0 1px #d5c2ae;
-
-  overflow: hidden;
-}
-
-/*
- * Image réelle.
- */
-.organisation-agent-photo img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-  object-position: center;
-
-  display: block;
-}
-
-/*
- * Initiales lorsqu'il n'y a pas de photo.
- */
-.organisation-agent-photo span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  height: 100%;
-
-  color: #6e4b32;
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-/* ---------------------------------------------------------
-   INFORMATIONS AGENT
-   --------------------------------------------------------- */
-
-.organisation-agent-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  min-width: 0;
-}
-
-.organisation-agent-details strong {
-  max-width: 150px;
-
-  color: #49372a;
-
-  font-size: 9px;
-  font-weight: 750;
-
-  line-height: 1.25;
-}
-
-.organisation-agent-details span {
-  margin-top: 3px;
-
-  color: #907f70;
-
-  font-size: 7.5px;
-}
-
-/*
- * Poste affiché lorsqu'une carte non compacte est utilisée.
- */
-.organisation-agent-details small {
-  display: block;
-
-  margin-top: 2px;
-
-  color: #a08d7c;
-
-  font-size: 7.5px;
-
-  line-height: 1.2;
-}
-
-/* ---------------------------------------------------------
-   RÔLE : DIRECTEUR / RESPONSABLE
-   --------------------------------------------------------- */
-
-.organisation-agent-role {
-  color: #76563a !important;
-
-  font-family: inherit !important;
-
-  font-size: 7.5px !important;
-  font-weight: 800;
-
-  text-transform: uppercase;
-}
-
-/*
- * Les responsables ont une apparence légèrement différente
- * tout en restant dans la même logique visuelle.
- */
-.organisation-agent-card--lead {
-  background: #f7eee4;
-
-  border-color: #cdb69d;
-
-  box-shadow:
-    0 1px 4px rgba(118, 86, 58, 0.08);
-}
-
-.organisation-agent-card--lead .organisation-agent-photo {
-  border-color: #f7eee4;
-
-  box-shadow:
-    0 0 0 1px #b99b79;
-}
-
-/* ---------------------------------------------------------
-   RESPONSABLE DU SERVICE
-   --------------------------------------------------------- */
-
-.organisation-service-responsable {
-  min-width: 165px;
-
-  background: #f8f1e8;
-
-  border-color: #d9c8b6;
-}
-
-/*
- * On conserve la liaison visuelle avec le service.
- */
-.organisation-service-responsable::after {
-  content: "";
-
-  position: absolute;
-
-  right: -6px;
-  top: 50%;
-
-  width: 6px;
-  height: 6px;
-
-  transform: translateY(-50%);
-
-  background: #fffdf9;
-
-  border: 1px solid #b99b79;
-
-  border-radius: 50%;
-}
-
-/* ---------------------------------------------------------
-   SERVICE SANS AGENT
-   --------------------------------------------------------- */
-
-.organisation-service-empty {
-  display: flex;
-  align-items: center;
-
-  min-height: 43px;
-
-  padding: 8px 12px;
-
-  color: #9a8877;
-
-  background: #faf6f0;
-
-  border: 1px dashed #d9c9b9;
-  border-radius: 8px;
-
-  font-size: 8px;
-}
-
-/* ---------------------------------------------------------
-   DIRECTION : PHOTO DU DIRECTEUR
-   --------------------------------------------------------- */
-
-.organisation-direction-responsable {
-  min-width: 180px;
-}
-
-.organisation-direction-responsable
-.organisation-agent-card {
-  max-width: 210px;
-
-  padding: 5px 8px;
-}
-
-/* ---------------------------------------------------------
-   HOVER PHOTO
-   --------------------------------------------------------- */
-
-.organisation-agent-card:hover
-.organisation-agent-photo {
-  transform: scale(1.04);
-}
-
-.organisation-agent-photo {
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease;
-}
-
-/* ---------------------------------------------------------
-   ORGANIGRAMME : MEILLEURE LARGEUR POUR LES AGENTS
-   --------------------------------------------------------- */
-
-.organisation-service-node {
-  grid-template-columns:
-    minmax(260px, 300px)
-    minmax(165px, 190px)
-    minmax(260px, 1fr);
-}
-
-/*
- * Les agents restent à l'intérieur de la zone du service,
- * même lorsqu'ils sont nombreux.
- */
-.organisation-service-agents {
-  overflow: visible;
-
-  display: flex;
-  flex-wrap: wrap;
-
-  align-items: flex-start;
-  align-content: flex-start;
-
-  gap: 6px;
-}
-
-/* ---------------------------------------------------------
-   PETITS ÉCRANS
-   --------------------------------------------------------- */
-
-@media (max-width: 1000px) {
-  .organisation-service-node {
-    grid-template-columns:
-      minmax(240px, 270px)
-      minmax(155px, 180px)
-      minmax(230px, 1fr);
+  .org-workspace-heading {
+    padding: 14px;
   }
 
-  .organisation-agent-card--compact {
-    min-width: 140px;
-  }
-}
-
-@media (max-width: 850px) {
-  .organisation-service-node {
-    grid-template-columns: 260px 1fr;
-  }
-
-  .organisation-service-responsable {
+  .org-structure-search {
+    width: 100%;
     min-width: 0;
   }
 
-  .organisation-service-agents {
-    grid-column: 1 / -1;
+  .org-legend {
+    gap: 10px;
+  }
 
+  .org-legend > span {
+    font-size: 9px;
+  }
+
+  .org-flow-shell {
+    height: 60vh;
+    min-height: 390px;
+  }
+
+  .org-ministry-node {
+    width: 330px;
+    min-height: 100px;
+    gap: 11px;
+    padding: 15px;
+  }
+
+  .org-ministry-mark {
+    width: 41px;
+    height: 41px;
+  }
+
+  .org-ministry-copy strong {
+    font-size: 13px;
+  }
+
+  .org-flow-controls {
+    top: 9px;
+    right: 8px;
+  }
+
+  .org-dialog-backdrop {
+    padding: 10px;
+  }
+
+  .org-dialog {
+    max-height: calc(100vh - 20px);
+    border-radius: 13px;
+  }
+
+  .org-dialog-header {
+    padding: 17px 15px 14px;
+  }
+
+  .org-dialog-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .org-dialog-manager {
     width: 100%;
+  }
 
-    margin-left: 0;
+  .org-dialog-header h2 {
+    font-size: 15px;
+  }
+
+  .org-dialog-summary {
+    padding: 10px 15px;
+  }
+
+  .org-dialog-hint {
+    display: none;
+  }
+
+  .org-agent-search {
+    margin: 12px 14px 9px;
+  }
+
+  .org-agent-list {
+    grid-template-columns: 1fr;
+    padding: 4px 12px 12px;
+  }
+
+  .org-agent-card {
+    min-height: 105px;
+    gap: 11px;
+    padding: 12px;
+  }
+
+  .org-agent-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 13px;
+  }
+
+  .org-dialog-footer {
+    padding: 9px 14px;
   }
 }
 
-@media (max-width: 650px) {
-  .organisation-service-node {
-    grid-template-columns: 1fr;
-  }
-
-  .organisation-service-box {
-    width: 100%;
-  }
-
-  .organisation-service-responsable {
-    width: 100%;
-  }
-
-  .organisation-service-agents {
-    grid-column: auto;
-
-    width: 100%;
-  }
-
-  .organisation-agent-card--compact {
-    min-width: 145px;
+@media (prefers-reduced-motion: reduce) {
+  .org-ministry-node,
+  .org-direction-node,
+  .org-service-node,
+  .org-dialog-backdrop,
+  .org-dialog {
+    animation-duration: .01ms;
+    transition-duration: .01ms;
   }
 }

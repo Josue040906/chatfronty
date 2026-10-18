@@ -10,6 +10,7 @@ import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
+import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 
 const EMPTY_FORM = {
@@ -299,14 +300,13 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                 </label>
                 <label className="agent-form-field">
-                  <span>Prénom <b>*</b></span>
+                  <span>Prénom</span>
                   <input
                     name="prenom"
                     value={form.prenom}
                     onChange={handleChange}
                     maxLength={100}
                     autoComplete="given-name"
-                    required
                   />
                 </label>
                 <label className="agent-form-field">
@@ -348,7 +348,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                 </label>
                 <label className="agent-form-field">
                   <span>Lieu de naissance</span>
-                  <input
+                  <VilleField
+                    id="lieuNaissance"
                     name="lieuNaissance"
                     value={form.lieuNaissance}
                     onChange={handleChange}
@@ -431,7 +432,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                 </label>
                 <label className="agent-form-field">
                   <span>Lieu de travail</span>
-                  <input
+                  <VilleField
+                    id="lieuTravail"
                     name="lieuTravail"
                     value={form.lieuTravail}
                     onChange={handleChange}

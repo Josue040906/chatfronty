@@ -79,11 +79,45 @@ export async function updateAgent(id, data) {
       telephone: data.telephone,
       dateNaissance: data.dateNaissance || null,
       lieuNaissance: data.lieuNaissance,
-      dateEmbauche: data.dateEmbauche || null,
-      lieuTravail: data.lieuTravail,
-      photo: data.photo || '',
     }
   );
+}
+
+export async function updateAgentAssignment(id, data) {
+  return apiPut(
+    `/api/employes/${encodeURIComponent(id)}/affectation`,
+    {
+      acteurId: data.acteurId ? Number(data.acteurId) : null,
+      posteId: Number(data.posteId),
+      serviceId: Number(data.serviceId),
+      lieuTravail: data.lieuTravail?.trim() || null,
+      dateEffet: data.dateEffet,
+      referenceActe: data.referenceActe?.trim() || null,
+      observation: data.observation?.trim() || null,
+    }
+  );
+}
+
+export async function updateAgentPersonalDetails(id, userId, data) {
+  if (!userId) {
+    throw new Error("L'identifiant de l'utilisateur connecté est obligatoire.");
+  }
+
+  return apiPut(`/api/employes/${encodeURIComponent(id)}`, {
+    acteurId: userId,
+    nom: data.nom,
+    prenom: data.prenom,
+    sexe: data.sexe || null,
+    adresse: data.adresse || null,
+    localiteResidenceId: data.localiteResidenceId
+      ? Number(data.localiteResidenceId)
+      : null,
+    cin: data.cin || null,
+    telephone: data.telephone || null,
+    dateNaissance: data.dateNaissance || null,
+    lieuNaissance: data.lieuNaissance || null,
+    effacerLocaliteResidence: Boolean(data.effacerLocaliteResidence),
+  });
 }
 
 export async function uploadAgentPhoto(id, file, acteurId) {

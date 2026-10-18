@@ -9,6 +9,7 @@ import {
   getDocumentRequestPdf,
   getDocumentTypes,
 } from '../../api/documents';
+import { updateAgentAssignment } from '../../api/agents';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
 
@@ -29,7 +30,13 @@ function downloadPdfInNewTab(pdfWindow, blob) {
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-export default function NewDocumentPage() {
+function todayInputValue() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+export default function NewDocumentPage({ user }) {
   const navigate = useNavigate();
   const [types, setTypes] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -44,6 +51,7 @@ export default function NewDocumentPage() {
   const [error, setError] = useState('');
   const [pdfError, setPdfError] = useState('');
   const [createdDocument, setCreatedDocument] = useState(null);
+  const [completedMutation, setCompletedMutation] = useState(null);
   const [formData, setFormData] = useState({
     typeDocumentId: '',
     employeId: '',
@@ -103,12 +111,14 @@ export default function NewDocumentPage() {
   const isLeaveRequest = selectedType?.code === 'CONGE';
   const isAdvancementRequest = selectedType?.code === 'AVANCEMENT';
   const isMutationRequest = selectedType?.code === 'MUTATION';
+  const isMutationOperator = ['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role);
+  const isDirectMutation = isMutationRequest && isMutationOperator;
   const hasPdfTemplate =
     isLeaveRequest || isAdvancementRequest || isMutationRequest;
   const selectedAgent = agents.find(
     (agent) => String(agent.id) === formData.employeId
   );
-  const filteredServices = formData.directionSouhaiteeId
+  const filteredServices = !isDirectMutation && formData.directionSouhaiteeId
     ? services.filter(
         (service) =>
           String(service.direction_id) === formData.directionSouhaiteeId
@@ -223,7 +233,7 @@ export default function NewDocumentPage() {
       return;
     }
 
-    if (!formData.destinataire.trim()) {
+    if (!isDirectMutation && !formData.destinataire.trim()) {
       setError('Le destinataire du document est obligatoire.');
       return;
     }
@@ -244,20 +254,34 @@ export default function NewDocumentPage() {
       return;
     }
 
-    if (
-      isMutationRequest &&
-      !formData.directionSouhaiteeId &&
-      !formData.serviceSouhaiteId &&
-      !formData.posteSouhaiteId &&
-      !formData.lieuTravailSouhaite.trim()
-    ) {
-      setError('Indiquez au moins un élément de la situation souhaitée.');
-      return;
-    }
+    if (isDirectMutation) {
+      if (!formData.serviceSouhaiteId || !formData.posteSouhaiteId) {
+        setError('Le service et le poste de destination sont obligatoires.');
+        return;
+      }
+      if (!formData.dateEffetSouhaitee) {
+        setError('La date d’effet de la mutation est obligatoire.');
+        return;
+      }
+      if (formData.dateEffetSouhaitee > todayInputValue()) {
+        setError('La date d’effet ne peut pas être dans le futur.');
+        return;
+      }
+    } else if (isMutationRequest) {
+      if (
+        !formData.directionSouhaiteeId &&
+        !formData.serviceSouhaiteId &&
+        !formData.posteSouhaiteId &&
+        !formData.lieuTravailSouhaite.trim()
+      ) {
+        setError('Indiquez au moins un élément de la situation souhaitée.');
+        return;
+      }
 
-    if (isMutationRequest && !formData.motif.trim()) {
-      setError('Le motif de la mutation est obligatoire.');
-      return;
+      if (!formData.motif.trim()) {
+        setError('Le motif de la mutation est obligatoire.');
+        return;
+      }
     }
 
     const donnees = isLeaveRequest
@@ -288,6 +312,19 @@ export default function NewDocumentPage() {
 
     try {
       setSaving(true);
+      if (isDirectMutation) {
+        const result = await updateAgentAssignment(formData.employeId, {
+          acteurId: user?.userId,
+          posteId: formData.posteSouhaiteId,
+          serviceId: formData.serviceSouhaiteId,
+          lieuTravail: formData.lieuTravailSouhaite,
+          dateEffet: formData.dateEffetSouhaitee,
+          observation: formData.motif,
+        });
+        setCompletedMutation(result || {});
+        return;
+      }
+
       const result = await createDocumentRequest({
         typeDocumentId: Number(formData.typeDocumentId),
         employeId: Number(formData.employeId),
@@ -329,6 +366,7 @@ export default function NewDocumentPage() {
 
   function startAnotherDocument() {
     setCreatedDocument(null);
+    setCompletedMutation(null);
     setFormData((current) => ({
       ...current,
       employeId: '',
@@ -348,35 +386,43 @@ export default function NewDocumentPage() {
     setPdfError('');
   }
 
-  if (createdDocument) {
+  if (createdDocument || completedMutation) {
+    const mutationCompleted = Boolean(completedMutation);
+
     return (
       <div className="administration-page">
         <div className="administration-header">
           <div>
-            <h1>Document créé</h1>
-            <p>Le backend a enregistré votre document.</p>
+            <h1>{mutationCompleted ? 'Mutation effectuée' : 'Document créé'}</h1>
+            <p>{mutationCompleted
+              ? 'L’affectation de l’agent a été modifiée par le backend.'
+              : 'Le backend a enregistré votre document.'}</p>
           </div>
         </div>
 
         <div className="administration-state-success">
           <div>
-            <strong>Document créé avec succès.</strong>
-            <p>
-              Référence :{' '}
-              <strong>
-                {createdDocument.referenceDocument || 'attribuée par le serveur'}
-              </strong>
-            </p>
+            <strong>{mutationCompleted
+              ? completedMutation.message || 'Affectation modifiée avec succès.'
+              : 'Document créé avec succès.'}</strong>
+            {!mutationCompleted && (
+              <p>
+                Référence :{' '}
+                <strong>
+                  {createdDocument.referenceDocument || 'attribuée par le serveur'}
+                </strong>
+              </p>
+            )}
           </div>
         </div>
 
-        {pdfError && (
+        {!mutationCompleted && pdfError && (
           <div className="administration-state administration-state-error" role="alert">
             {pdfError}
           </div>
         )}
 
-        {!hasPdfTemplate && (
+        {!mutationCompleted && !hasPdfTemplate && (
           <div className="administration-form-info">
             Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
           </div>
@@ -390,7 +436,7 @@ export default function NewDocumentPage() {
           >
             Retour aux documents
           </button>
-          {hasPdfTemplate && (
+          {!mutationCompleted && hasPdfTemplate && (
             <button
               type="button"
               className="administration-button-primary"
@@ -425,7 +471,7 @@ export default function NewDocumentPage() {
             <ArrowLeft size={18} />
             Retour aux documents
           </button>
-          <h1>Nouveau document</h1>
+          <h1>{isDirectMutation ? 'Muter un agent' : 'Nouveau document'}</h1>
           <p>Choisissez un type, un agent et complétez les informations.</p>
         </div>
       </div>
@@ -489,22 +535,24 @@ export default function NewDocumentPage() {
           </select>
         </div>
 
-        <div className="administration-form-group">
-          <label htmlFor="destinataire">
-            Destinataire <span>*</span>
-          </label>
-          <input
-            id="destinataire"
-            name="destinataire"
-            type="text"
-            value={formData.destinataire}
-            onChange={handleChange}
-            maxLength={255}
-            placeholder="Ex. Chef du Service du Personnel"
-            disabled={saving}
-            required
-          />
-        </div>
+        {!isDirectMutation && (
+          <div className="administration-form-group">
+            <label htmlFor="destinataire">
+              Destinataire <span>*</span>
+            </label>
+            <input
+              id="destinataire"
+              name="destinataire"
+              type="text"
+              value={formData.destinataire}
+              onChange={handleChange}
+              maxLength={255}
+              placeholder="Ex. Chef du Service du Personnel"
+              disabled={saving}
+              required
+            />
+          </div>
+        )}
 
         {isLeaveRequest ? (
           <>
@@ -573,9 +621,9 @@ export default function NewDocumentPage() {
         ) : isMutationRequest ? (
           <>
             <div className="administration-form-info">
-              La situation actuelle est enregistrée par le backend comme
-              instantané. La demande ne modifie pas l’affectation de l’agent.
-              Choisissez au moins un élément de destination.
+              {isDirectMutation
+                ? 'Cette action modifie immédiatement l’affectation de l’agent. Le poste doit appartenir au service choisi.'
+                : 'La situation actuelle est enregistrée par le backend comme instantané. La demande ne modifie pas l’affectation de l’agent. Choisissez au moins un élément de destination.'}
             </div>
             {selectedAgent && (
               <div className="administration-form-info">
@@ -587,33 +635,40 @@ export default function NewDocumentPage() {
                 {' · '}Lieu : {selectedAgent.lieu_travail || 'Non renseigné'}
               </div>
             )}
+            {!isDirectMutation && (
+              <div className="administration-form-group">
+                <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
+                <select
+                  id="directionSouhaiteeId"
+                  name="directionSouhaiteeId"
+                  value={formData.directionSouhaiteeId}
+                  onChange={handleDirectionChange}
+                  disabled={saving}
+                >
+                  <option value="">Ne pas préciser</option>
+                  {directions.map((direction) => (
+                    <option key={direction.id} value={direction.id}>
+                      {direction.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="administration-form-group">
-              <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
-              <select
-                id="directionSouhaiteeId"
-                name="directionSouhaiteeId"
-                value={formData.directionSouhaiteeId}
-                onChange={handleDirectionChange}
-                disabled={saving}
-              >
-                <option value="">Ne pas préciser</option>
-                {directions.map((direction) => (
-                  <option key={direction.id} value={direction.id}>
-                    {direction.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="serviceSouhaiteId">Service souhaité</label>
+              <label htmlFor="serviceSouhaiteId">
+                Service souhaité {isDirectMutation && <span>*</span>}
+              </label>
               <select
                 id="serviceSouhaiteId"
                 name="serviceSouhaiteId"
                 value={formData.serviceSouhaiteId}
                 onChange={handleServiceChange}
                 disabled={saving}
+                required={isDirectMutation}
               >
-                <option value="">Ne pas préciser</option>
+                <option value="">
+                  {isDirectMutation ? 'Sélectionner un service' : 'Ne pas préciser'}
+                </option>
                 {filteredServices.map((service) => (
                   <option key={service.id} value={service.id}>
                     {service.nom}
@@ -622,7 +677,9 @@ export default function NewDocumentPage() {
               </select>
             </div>
             <div className="administration-form-group">
-              <label htmlFor="posteSouhaiteId">Poste souhaité</label>
+              <label htmlFor="posteSouhaiteId">
+                Poste souhaité {isDirectMutation && <span>*</span>}
+              </label>
               <select
                 id="posteSouhaiteId"
                 name="posteSouhaiteId"
@@ -633,12 +690,15 @@ export default function NewDocumentPage() {
                   loadingPostes ||
                   !formData.serviceSouhaiteId
                 }
+                required={isDirectMutation}
               >
                 <option value="">
                   {formData.serviceSouhaiteId
                     ? loadingPostes
                       ? 'Chargement des postes...'
-                      : 'Ne pas préciser'
+                      : isDirectMutation
+                        ? 'Sélectionner un poste'
+                        : 'Ne pas préciser'
                     : 'Choisissez d’abord un service'}
                 </option>
                 {postes.map((poste) => (
@@ -664,7 +724,7 @@ export default function NewDocumentPage() {
             </div>
             <div className="administration-form-group">
               <label htmlFor="dateEffetSouhaitee">
-                Date d’effet souhaitée (facultative)
+                Date d’effet {isDirectMutation && <span>*</span>}
               </label>
               <input
                 id="dateEffetSouhaitee"
@@ -672,12 +732,14 @@ export default function NewDocumentPage() {
                 type="date"
                 value={formData.dateEffetSouhaitee}
                 onChange={handleChange}
+                max={isDirectMutation ? todayInputValue() : undefined}
                 disabled={saving}
+                required={isDirectMutation}
               />
             </div>
             <div className="administration-form-group">
               <label htmlFor="motif">
-                Motif <span>*</span>
+                {isDirectMutation ? 'Observation (facultative)' : 'Motif *'}
               </label>
               <textarea
                 id="motif"
@@ -687,7 +749,7 @@ export default function NewDocumentPage() {
                 rows={4}
                 maxLength={2000}
                 disabled={saving}
-                required
+                required={!isDirectMutation}
               />
               <small>{formData.motif.length}/2000 caractères</small>
             </div>
@@ -724,7 +786,9 @@ export default function NewDocumentPage() {
             }
           >
             <Save size={18} />
-            {saving ? 'Création...' : 'Créer le document'}
+            {saving
+              ? isDirectMutation ? 'Mutation...' : 'Création...'
+              : isDirectMutation ? 'Muter l’agent' : 'Créer le document'}
           </button>
         </div>
       </form>

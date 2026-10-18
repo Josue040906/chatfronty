@@ -2,6 +2,10 @@ export const API_BASE_URL = (
   import.meta.env.VITE_API_URL || 'http://localhost:8080'
 ).replace(/\/+$/, '');
 
+export const BANDY_API_URL = (
+  import.meta.env.VITE_BANDY_API_URL || 'http://localhost:8090'
+).replace(/\/+$/, '');
+
 export function getAuthHeaders() {
   const storedUser = localStorage.getItem('user');
   if (!storedUser) {
@@ -39,6 +43,9 @@ async function handleResponse(response) {
 
     const error = new Error(message);
     error.status = response.status;
+    if (typeof data?.code === 'string') {
+      error.code = data.code;
+    }
     throw error;
   }
 

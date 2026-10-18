@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles, Send, X, Maximize2, Minimize2, ChevronRight } from 'lucide-react';
 import { COLORS, accentGradient, accentGradientSoft } from '../../theme';
-import { API_BASE_URL, getAuthHeaders } from '../../api/client';
+import { BANDY_API_URL, getAuthHeaders } from '../../api/client';
 
 
 const SIZES = ['small', 'wide', 'full'];
@@ -136,7 +136,7 @@ export default function AssistantPanel({
     ]);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+      const response = await fetch(`${BANDY_API_URL}/api/chat`, {
         method: 'POST',
         headers: {
           ...getAuthHeaders(),
@@ -149,11 +149,21 @@ export default function AssistantPanel({
         throw new Error(`Erreur HTTP ${response.status}`);
       }
 
-      const reply = await response.text();
+      const payload = await response.json();
+      const reply =
+        typeof payload === 'string'
+          ? payload
+          : payload?.data?.message ||
+            payload?.message ||
+            payload?.data ||
+            "Je n'ai pas reçu de réponse exploitable.";
 
       setMessages((m) => [
         ...m.slice(0, -1),
-        { role: 'assistant', text: reply }
+        {
+          role: 'assistant',
+          text: typeof reply === 'string' ? reply : JSON.stringify(reply)
+        }
       ]);
     } catch (error) {
       console.error('Erreur lors de la communication avec le backend :', error);

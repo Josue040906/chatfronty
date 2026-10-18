@@ -517,3 +517,365 @@
 .career-history-empty {
   padding-top: 22px;
 }
+
+.career-panel-header-actions {
+  align-items: center;
+}
+
+.career-panel-header-actions > div:nth-child(2) {
+  flex: 1;
+  min-width: 180px;
+}
+
+.career-history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+.career-history-panel {
+  min-width: 0;
+}
+
+.career-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.career-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.career-action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.career-action-button.primary {
+  background: #6E4B32;
+  color: #FFFAF3;
+}
+
+.career-action-button.primary:hover:not(:disabled) {
+  background: #533822;
+}
+
+.career-action-button.secondary {
+  background: #FFFDF9;
+  border-color: #D9CEC0;
+  color: #60452F;
+}
+
+.career-action-button.secondary:hover:not(:disabled) {
+  background: #F1EBE3;
+}
+
+.career-feedback,
+.career-inline-error {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.career-feedback.success {
+  margin-bottom: 18px;
+  background: #E7EFE5;
+  color: #466044;
+}
+
+.career-inline-error {
+  margin: 12px 0;
+  background: #FFF0ED;
+  color: #854B43;
+}
+
+.career-inline-error button {
+  margin-left: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.career-diploma-list {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.career-diploma-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #E8E0D5;
+}
+
+.career-diploma-item:last-child {
+  border-bottom: 0;
+}
+
+.career-diploma-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.career-diploma-heading strong {
+  color: #49382D;
+  font-size: 14px;
+}
+
+.career-diploma-heading span,
+.career-diploma-item small {
+  color: #887B70;
+  font-size: 12px;
+}
+
+.career-diploma-item p {
+  margin: 7px 0;
+  color: #75695E;
+  font-size: 13px;
+}
+
+.career-diploma-item small {
+  display: block;
+  margin-top: 4px;
+}
+
+.career-diploma-latest {
+  color: #466044 !important;
+  font-weight: 700;
+}
+
+.career-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  color: #5F5044;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.career-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(35, 26, 19, 0.58);
+}
+
+.career-dialog {
+  width: min(720px, 100%);
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+  background: #FFFCF7;
+  border: 1px solid #E1D8CB;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(30, 21, 13, 0.28);
+}
+
+.career-dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: #FFFCF7;
+  border-bottom: 1px solid #E8E0D5;
+}
+
+.career-dialog-header h2 {
+  margin: 0;
+  color: #3A2A1E;
+  font-size: 18px;
+}
+
+.career-dialog-header button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: #F1EBE3;
+  color: #60452F;
+  cursor: pointer;
+}
+
+.career-form {
+  padding: 20px 22px 22px;
+}
+
+.career-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.career-form label,
+.career-effect-date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #5F5044;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.career-form label.wide {
+  grid-column: 1 / -1;
+}
+
+.career-form-field.wide {
+  grid-column: 1 / -1;
+}
+
+.career-form input,
+.career-form select,
+.career-form textarea,
+.career-effect-date input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 11px;
+  border: 1px solid #D9CEC0;
+  border-radius: 9px;
+  background: #FFF;
+  color: #3F3026;
+  font: inherit;
+  font-size: 14px;
+}
+
+.career-form textarea {
+  resize: vertical;
+}
+
+.career-form-note {
+  margin: 14px 0 0;
+  color: #75695E;
+  font-size: 12px;
+}
+
+.career-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid #E8E0D5;
+}
+
+.career-proposal-block,
+.career-proposal-comparison > div {
+  padding: 14px;
+  border: 1px solid #E8E0D5;
+  border-radius: 11px;
+  background: #FBF8F2;
+}
+
+.career-proposal-block h3,
+.career-proposal-comparison h3 {
+  margin: 0 0 7px;
+  color: #49382D;
+  font-size: 13px;
+}
+
+.career-proposal-block p,
+.career-proposal-comparison p,
+.career-proposal-summary {
+  margin: 0;
+  color: #75695E;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.career-proposal-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.career-proposal-summary {
+  margin-top: 14px;
+}
+
+.career-blocking-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-left: 20px;
+  color: #854B43;
+  font-size: 13px;
+}
+
+.career-effect-date {
+  max-width: 260px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .career-history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .career-section-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .career-panel-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .career-panel-header-actions > .career-action-button {
+    width: 100%;
+  }
+
+  .career-form-grid,
+  .career-proposal-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .career-diploma-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .career-dialog-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .career-dialog {
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+  }
+}

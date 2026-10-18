@@ -26,6 +26,7 @@ import StatutsPage from '../../pages/Administration/StatutsPage';
 import ReglesRhPage from '../../pages/Administration/ReglesRhPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
+import ReclassementRulesPage from '../../pages/Administration/ReclassementRulesPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -169,7 +170,7 @@ export default function AppRouter({
         />
         <Route
           path="/carrieres/:id/analyse"
-          element={<CareerAnalysisPage />}
+          element={<CareerAnalysisPage user={user} />}
         />
         <Route
           path="/carrieres"
@@ -183,7 +184,7 @@ export default function AppRouter({
 
       <Route
         path="/documents/nouveau"
-        element={<NewDocumentPage />}
+        element={<NewDocumentPage user={user} />}
       />
       <Route
         path="/documents/:id"
@@ -241,6 +242,14 @@ export default function AppRouter({
           element={
             <AdminOnly user={user}>
               <DemandesInscriptionPage />
+            </AdminOnly>
+          }
+        />
+        <Route
+          path="/administration/reclassements"
+          element={
+            <AdminOnly user={user}>
+              <ReclassementRulesPage />
             </AdminOnly>
           }
         />

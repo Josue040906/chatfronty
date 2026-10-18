@@ -6,7 +6,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { API_BASE_URL, getAuthHeaders } from '../../api/client';
+import { BANDY_API_URL, getAuthHeaders } from '../../api/client';
 
 export default function AssistantFloating() {
   const [open, setOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function AssistantFloating() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/chat`,
+        `${BANDY_API_URL}/api/chat`,
         {
           method: 'POST',
           headers: {
@@ -70,7 +70,9 @@ export default function AssistantFloating() {
       const assistantResponse =
         typeof data === 'string'
           ? data
-          : data?.response ||
+          : data?.data?.message ||
+            data?.data ||
+            data?.response ||
             data?.message ||
             data?.content ||
             data?.text ||
