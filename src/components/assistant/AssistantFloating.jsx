@@ -12,17 +12,7 @@ import {
 } from 'lucide-react';
 import { BANDY_API_URL, getAuthHeaders } from '../../api/client';
 
-const CHAT_STORAGE_KEY = 'sygpers-assistant-chats';
 const EMPTY_MESSAGES = [];
-
-function readChats(storageKey) {
-  try {
-    const savedChats = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    return Array.isArray(savedChats) ? savedChats : [];
-  } catch {
-    return [];
-  }
-}
 
 function formatChatDate(value) {
   return new Intl.DateTimeFormat('fr-FR', {
@@ -34,22 +24,17 @@ function formatChatDate(value) {
 }
 
 export default function AssistantFloating({ user }) {
-  const chatStorageKey = `${CHAT_STORAGE_KEY}:${user?.userId || 'guest'}`;
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [chats, setChats] = useState(() => readChats(chatStorageKey));
+  const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [loading, setLoading] = useState(false);
   const messagesRef = useRef(null);
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
-
-  useEffect(() => {
-    localStorage.setItem(chatStorageKey, JSON.stringify(chats));
-  }, [chatStorageKey, chats]);
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -87,13 +72,12 @@ export default function AssistantFloating({ user }) {
       const current = previous.find((chat) => chat.id === chatId);
       const chat = current || {
         id: chatId,
-        title: text.slice(0, 48),
+        title: 'Discussion temporaire',
         messages: [],
       };
       return [
         {
           ...chat,
-          title: chat.messages.length ? chat.title : text.slice(0, 48),
           messages: [...chat.messages, userMessage],
           updatedAt: Date.now(),
         },
@@ -216,8 +200,8 @@ export default function AssistantFloating({ user }) {
               <button
                 type="button"
                 onClick={() => setHistoryOpen((value) => !value)}
-                aria-label="Historique des chats"
-                title="Historique"
+                aria-label="Échanges de cette session"
+                title="Échanges temporaires"
                 aria-pressed={historyOpen}
               >
                 <Clock3 size={17} />
@@ -251,9 +235,12 @@ export default function AssistantFloating({ user }) {
             {historyOpen ? (
               <div className="assistant-history">
                 <div className="assistant-history-heading">
-                  <span>Vos conversations</span>
+                  <span>Échanges de cette session</span>
                   <span>{chats.length}</span>
                 </div>
+                <p className="assistant-history-empty">
+                  Ces échanges restent dans cette page. Bandy ne permet pas encore de les enregistrer ni de les reprendre.
+                </p>
                 {chats.length ? chats.map((chat) => (
                   <button
                     key={chat.id}
@@ -266,12 +253,12 @@ export default function AssistantFloating({ user }) {
                   >
                     <MessageSquareText size={17} />
                     <span className="assistant-history-copy">
-                      <strong>{chat.title || 'Nouvelle conversation'}</strong>
+                      <strong>Discussion temporaire</strong>
                       <small>{formatChatDate(chat.updatedAt)}</small>
                     </span>
                   </button>
                 )) : (
-                  <p className="assistant-history-empty">Aucune conversation enregistrée.</p>
+                  <p className="assistant-history-empty">Aucun échange cette session.</p>
                 )}
               </div>
             ) : messages.length ? (

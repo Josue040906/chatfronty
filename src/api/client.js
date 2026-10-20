@@ -52,9 +52,10 @@ async function handleResponse(response) {
   return data;
 }
 
-export async function apiGet(path) {
+export async function apiGet(path, { signal } = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: getAuthHeaders(),
+    signal,
   });
 
   return handleResponse(response);
@@ -101,6 +102,15 @@ export async function apiPut(path, body) {
       'Content-Type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify(body),
+  });
+
+  return handleResponse(response);
+}
+
+export async function apiPatch(path) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
   });
 
   return handleResponse(response);

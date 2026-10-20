@@ -1,447 +1,414 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-Bell,
-ChevronDown,
-Menu,
-UserRound,
+  Bell,
+  ChevronDown,
+  Menu,
+  UserRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '../../api/notifications';
 import { getEmployeePhotoUrl } from '../../utils/employee';
-import { API_BASE_URL, getAuthHeaders } from '../../api/client';
+
+function formatNotificationDate(value) {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function getNotificationErrorMessage(error, action) {
+  if (error.code === 'RH_DATA_UNAVAILABLE') {
+    return 'Le backend répond, mais ne peut pas lire les données de notification. Vérifiez la connexion à la base RH et l’application de la migration V20261020_02__notifications_in_app.sql.';
+  }
+
+  return action;
+}
 
 export default function Header({
-user,
-onMenuClick,
-onLogout,
+  user,
+  onMenuClick,
+  onLogout,
 }) {
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [notificationActionError, setNotificationActionError] = useState('');
+  const [markingAllRead, setMarkingAllRead] = useState(false);
+  const [updatingNotificationIds, setUpdatingNotificationIds] = useState([]);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState('');
 
-const [notifications, setNotifications] = useState([]);
-const [unreadCount, setUnreadCount] = useState(0);
-const [notificationsOpen, setNotificationsOpen] = useState(false);
-const [userMenuOpen, setUserMenuOpen] = useState(false);
-const [failedAvatarUrl, setFailedAvatarUrl] = useState('');
+  const notificationsRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const userId = user?.userId;
+  const avatarUrl = getEmployeePhotoUrl(user?.photo);
+  const displayName =
+    user?.name ||
+    (user?.prenom && user?.nom
+      ? `${user.prenom} ${user.nom}`
+      : null) ||
+    user?.email ||
+    'Utilisateur';
 
-const notificationsRef = useRef(null);
-const userMenuRef = useRef(null);
+  const chargerNotifications = useCallback(async (signal, showLoading = false) => {
+    if (!userId) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setNotificationsError('');
+      setNotificationsLoading(false);
+      return;
+    }
 
-const displayName =
-user?.name ||
-(
-user?.prenom && user?.nom
-? `${user.prenom} ${user.nom}`
-: null
-) ||
-user?.email ||
-'Utilisateur';
+    if (showLoading) {
+      setNotificationsLoading(true);
+    }
 
-const userId = user?.userId;
+    try {
+      const data = await getNotifications(signal);
+      setNotifications(data.notifications);
+      setUnreadCount(data.nonLues);
+      setNotificationsError('');
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error(
+          'Erreur lors du chargement des notifications :',
+          error
+        );
+        setNotificationsError(
+          getNotificationErrorMessage(
+            error,
+            'Impossible de charger les notifications. Réessayez.'
+          )
+        );
+      }
+    } finally {
+      if (showLoading && !signal?.aborted) {
+        setNotificationsLoading(false);
+      }
+    }
+  }, [userId]);
 
-const avatarUrl = getEmployeePhotoUrl(user?.photo);
+  useEffect(() => {
+    const controller = new AbortController();
+    const initialLoad = window.setTimeout(() => {
+      chargerNotifications(controller.signal, true);
+    }, 0);
 
-const chargerNotifications = async () => {
-if (!userId) {
-setNotifications([]);
-setUnreadCount(0);
-return;
-}
+    const interval = window.setInterval(() => {
+      chargerNotifications(controller.signal);
+    }, 30000);
 
-try {
-  const response = await fetch(
-    `${API_BASE_URL}/api/notifications?userId=${userId}`,
-    { headers: getAuthHeaders() }
-  );
+    return () => {
+      controller.abort();
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
+    };
+  }, [chargerNotifications]);
 
-  if (!response.ok) {
-    throw new Error(
-      'Impossible de récupérer les notifications.'
-    );
-  }
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target)
+      ) {
+        setNotificationsOpen(false);
+      }
 
-  const data = await response.json();
-  setNotifications(Array.isArray(data) ? data : []);
-} catch (error) {
-  console.error(
-    'Erreur lors du chargement des notifications :',
-    error
-  );
-}
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
 
-};
+    document.addEventListener('mousedown', handleClickOutside);
 
-const chargerNombreNonLues = async () => {
-if (!userId) {
-setUnreadCount(0);
-return;
-}
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-try {
-  const response = await fetch(
-    `${API_BASE_URL}/api/notifications/non-lues?userId=${userId}`,
-    { headers: getAuthHeaders() }
-  );
+  const marquerCommeLue = async (notification) => {
+    if (!notification?.id || notification.lueLe || updatingNotificationIds.includes(notification.id)) {
+      return;
+    }
 
-  if (!response.ok) {
-    throw new Error(
-      'Impossible de récupérer le nombre de notifications non lues.'
-    );
-  }
+    setNotificationActionError('');
+    setUpdatingNotificationIds((current) => [...current, notification.id]);
 
-  const data = await response.json();
+    try {
+      await markNotificationRead(notification.id);
+      setNotifications((current) => current.map((item) => (
+        item.id === notification.id
+          ? { ...item, lueLe: new Date().toISOString() }
+          : item
+      )));
+      setUnreadCount((current) => Math.max(current - 1, 0));
+    } catch (error) {
+      console.error(
+        'Erreur lors du marquage de la notification :',
+        error
+      );
+      setNotificationActionError(
+        getNotificationErrorMessage(
+          error,
+          'Impossible de marquer cette notification comme lue.'
+        )
+      );
+    } finally {
+      setUpdatingNotificationIds((current) => (
+        current.filter((id) => id !== notification.id)
+      ));
+    }
+  };
 
-  setUnreadCount(
-    Number.isFinite(Number(data?.nombre))
-      ? Number(data.nombre)
-      : 0
-  );
-} catch (error) {
-  console.error(
-    'Erreur lors du chargement du compteur de notifications :',
-    error
-  );
-}
+  const marquerToutesCommeLues = async () => {
+    if (unreadCount === 0 || markingAllRead) {
+      return;
+    }
 
-};
+    setNotificationActionError('');
+    setMarkingAllRead(true);
 
-const chargerDonneesNotifications = async () => {
-await Promise.all([
-chargerNotifications(),
-chargerNombreNonLues(),
-]);
-};
+    try {
+      await markAllNotificationsRead();
+      const readAt = new Date().toISOString();
+      setNotifications((current) => current.map((notification) => (
+        notification.lueLe
+          ? notification
+          : { ...notification, lueLe: readAt }
+      )));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error(
+        'Erreur lors du marquage de toutes les notifications :',
+        error
+      );
+      setNotificationActionError(
+        getNotificationErrorMessage(
+          error,
+          'Impossible de marquer toutes les notifications comme lues.'
+        )
+      );
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
 
-useEffect(() => {
-chargerDonneesNotifications();
-
-const interval = setInterval(() => {
-  chargerNombreNonLues();
-}, 30000);
-
-return () => {
-  clearInterval(interval);
-};
-
-}, [userId]);
-
-useEffect(() => {
-const handleClickOutside = (event) => {
-if (
-notificationsRef.current &&
-!notificationsRef.current.contains(event.target)
-) {
-setNotificationsOpen(false);
-}
-
-  if (
-    userMenuRef.current &&
-    !userMenuRef.current.contains(event.target)
-  ) {
+  const ouvrirProfil = () => {
     setUserMenuOpen(false);
-  }
-};
+    navigate('/profil');
+  };
 
-document.addEventListener(
-  'mousedown',
-  handleClickOutside
-);
+  const deconnecter = () => {
+    setUserMenuOpen(false);
+    onLogout();
+  };
 
-return () => {
-  document.removeEventListener(
-    'mousedown',
-    handleClickOutside
-  );
-};
+  return (
+    <header className="app-header">
+      <div className="header-left">
+        <button
+          type="button"
+          className="header-menu-button"
+          onClick={onMenuClick}
+          aria-label="Ouvrir le menu"
+        >
+          <Menu size={20} />
+        </button>
 
-}, []);
+        <div className="header-brand-mobile">
+          <strong>SYGPERS</strong>
+        </div>
+      </div>
 
-const marquerCommeLue = async (notificationId) => {
-if (!userId || !notificationId) {
-return;
-}
-
-try {
-  const response = await fetch(
-    `${API_BASE_URL}/api/notifications/${notificationId}/lue?userId=${userId}`,
-    {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      'Impossible de marquer la notification comme lue.'
-    );
-  }
-
-  setNotifications((current) =>
-    current.map((notification) =>
-      notification.id === notificationId
-        ? { ...notification, lu: true }
-        : notification
-    )
-  );
-
-  setUnreadCount((current) =>
-    Math.max(current - 1, 0)
-  );
-} catch (error) {
-  console.error(
-    'Erreur lors du marquage de la notification :',
-    error
-  );
-}
-
-};
-
-const marquerToutesCommeLues = async () => {
-if (!userId || unreadCount === 0) {
-return;
-}
-
-try {
-  const response = await fetch(
-    `${API_BASE_URL}/api/notifications/lues?userId=${userId}`,
-    {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      'Impossible de marquer toutes les notifications comme lues.'
-    );
-  }
-
-  setNotifications((current) =>
-    current.map((notification) => ({
-      ...notification,
-      lu: true,
-    }))
-  );
-
-  setUnreadCount(0);
-} catch (error) {
-  console.error(
-    'Erreur lors du marquage de toutes les notifications :',
-    error
-  );
-}
-
-};
-
-const formaterDate = (dateCreation) => {
-if (!dateCreation) {
-return '';
-}
-
-const date = new Date(dateCreation);
-
-if (Number.isNaN(date.getTime())) {
-  return '';
-}
-
-return new Intl.DateTimeFormat('fr-FR', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-}).format(date);
-
-};
-
-const ouvrirProfil = () => {
-setUserMenuOpen(false);
-navigate('/profil');
-};
-
-const deconnecter = () => {
-setUserMenuOpen(false);
-onLogout();
-};
-
-return ( <header className="app-header"> <div className="header-left"> <button
-       type="button"
-       className="header-menu-button"
-       onClick={onMenuClick}
-       aria-label="Ouvrir le menu"
-     > <Menu size={20} /> </button>
-
-    <div className="header-brand-mobile">
-      <strong>SYGPERS</strong>
-    </div>
-  </div>
-
-  <div className="header-right">
-    <div
-      className="notification-wrapper"
-      ref={notificationsRef}
-    >
-      <button
-        type="button"
-        className="header-icon-button"
-        aria-label={`Notifications${
-          unreadCount > 0
-            ? `, ${unreadCount} non lue${
-                unreadCount > 1 ? 's' : ''
-              }`
-            : ''
-        }`}
-        onClick={() =>
-          setNotificationsOpen((current) => !current)
-        }
-      >
-        <Bell size={18} />
-
-        {unreadCount > 0 && (
-          <span className="notification-count">
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {notificationsOpen && (
-        <div className="notification-panel">
-          <div className="notification-panel-header">
-            <div>
-              <strong>Notifications</strong>
-
-              {unreadCount > 0 && (
-                <span>
-                  {unreadCount} non lue
-                  {unreadCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+      <div className="header-right">
+        <div className="notification-wrapper" ref={notificationsRef}>
+          <button
+            type="button"
+            className="header-icon-button"
+            aria-label={`Notifications${unreadCount > 0
+              ? `, ${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
+              : ''}`}
+            aria-expanded={notificationsOpen}
+            onClick={() => {
+              setNotificationsOpen((current) => !current);
+              setNotificationActionError('');
+            }}
+          >
+            <Bell size={18} />
 
             {unreadCount > 0 && (
-              <button
-                type="button"
-                className="notification-read-all"
-                onClick={marquerToutesCommeLues}
-              >
-                Tout lire
-              </button>
+              <span className="notification-count">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             )}
-          </div>
+          </button>
 
-          <div className="notification-list">
-            {notifications.length === 0 ? (
-              <div className="notification-empty">
-                <Bell size={22} />
-                <p>Aucune notification.</p>
-              </div>
-            ) : (
-              notifications.map((notification) => (
-                <button
-                  type="button"
-                  key={notification.id}
-                  className={`notification-item ${
-                    notification.lu
-                      ? 'notification-read'
-                      : 'notification-unread'
-                  }`}
-                  onClick={() => {
-                    if (!notification.lu) {
-                      marquerCommeLue(notification.id);
-                    }
-                  }}
-                >
-                  <div className="notification-item-icon">
-                    <Bell size={16} />
-                  </div>
-
-                  <div className="notification-item-content">
-                    <strong>
-                      {notification.titre}
-                    </strong>
-
-                    <p>
-                      {notification.message}
-                    </p>
-
+          {notificationsOpen && (
+            <section className="notification-panel" aria-label="Notifications">
+              <div className="notification-panel-header">
+                <div>
+                  <strong>Notifications</strong>
+                  {unreadCount > 0 && (
                     <span>
-                      {formaterDate(
-                        notification.date_creation
-                      )}
+                      {unreadCount} non lue{unreadCount > 1 ? 's' : ''}
                     </span>
-                  </div>
-
-                  {!notification.lu && (
-                    <span className="notification-unread-dot" />
                   )}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+                </div>
 
-    <div className="header-divider" />
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    className="notification-read-all"
+                    onClick={marquerToutesCommeLues}
+                    disabled={markingAllRead}
+                  >
+                    {markingAllRead ? 'Mise à jour…' : 'Tout lire'}
+                  </button>
+                )}
+              </div>
 
-    <div
-      className="header-user"
-      ref={userMenuRef}
-    >
-      <button
-        type="button"
-        className="header-user-trigger"
-        onClick={() =>
-          setUserMenuOpen((current) => !current)
-        }
-        title="Menu utilisateur"
-        aria-label="Ouvrir le menu utilisateur"
-        aria-expanded={userMenuOpen}
-      >
-        <span className="header-avatar">
-          {avatarUrl && failedAvatarUrl !== avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt=""
-              onError={() => setFailedAvatarUrl(avatarUrl)}
-            />
-          ) : (
-            <UserRound size={17} />
+              <div className="notification-list" aria-live="polite">
+                {notificationActionError && (
+                  <p className="notification-error" role="alert">
+                    {notificationActionError}
+                  </p>
+                )}
+
+                {notificationsError && (
+                  <div className="notification-error-state" role="alert">
+                    <p>{notificationsError}</p>
+                    <button
+                      type="button"
+                      onClick={() => chargerNotifications(undefined, true)}
+                    >
+                      Réessayer
+                    </button>
+                  </div>
+                )}
+
+                {notificationsLoading && notifications.length === 0 ? (
+                  <div className="notification-empty" role="status">
+                    <p>Chargement des notifications…</p>
+                  </div>
+                ) : notifications.length === 0 && !notificationsError ? (
+                  <div className="notification-empty">
+                    <Bell size={22} />
+                    <p>Aucune notification.</p>
+                  </div>
+                ) : (
+                  notifications.map((notification) => {
+                    const isRead = Boolean(notification.lueLe);
+                    const isUpdating = updatingNotificationIds.includes(notification.id);
+
+                    return (
+                      <button
+                        type="button"
+                        key={notification.id}
+                        className={`notification-item ${
+                          isRead ? 'notification-read' : 'notification-unread'
+                        }`}
+                        onClick={() => marquerCommeLue(notification)}
+                        disabled={isRead || isUpdating}
+                      >
+                        <span className="notification-item-icon">
+                          <Bell size={16} />
+                        </span>
+
+                        <span className="notification-item-content">
+                          <strong>{notification.titre}</strong>
+                          <span className="notification-message">
+                            {notification.message}
+                          </span>
+                          <span>
+                            {formatNotificationDate(notification.creeLe)}
+                          </span>
+                        </span>
+
+                        {!isRead && (
+                          <span className="notification-unread-dot" />
+                        )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </section>
           )}
-        </span>
-
-        <span className="header-user-info">
-          <strong>{displayName}</strong>
-          <span>{user?.poste || 'Agent'}</span>
-        </span>
-
-        <ChevronDown
-          size={16}
-          className={userMenuOpen ? 'header-chevron-open' : ''}
-        />
-      </button>
-
-      {userMenuOpen && (
-        <div className="header-user-dropdown">
-          <button
-            type="button"
-            onClick={ouvrirProfil}
-          >
-            <UserRound size={16} />
-            <span>Mon profil</span>
-          </button>
-
-          <div className="header-user-dropdown-divider" />
-
-          <button
-            type="button"
-            onClick={deconnecter}
-          >
-            <span>Déconnexion</span>
-          </button>
         </div>
-      )}
-    </div>
-  </div>
-</header>
 
-);
+        <div className="header-divider" />
+
+        <div className="header-user" ref={userMenuRef}>
+          <button
+            type="button"
+            className="header-user-trigger"
+            onClick={() => setUserMenuOpen((current) => !current)}
+            title="Menu utilisateur"
+            aria-label="Ouvrir le menu utilisateur"
+            aria-expanded={userMenuOpen}
+          >
+            <span className="header-avatar">
+              {avatarUrl && failedAvatarUrl !== avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  onError={() => setFailedAvatarUrl(avatarUrl)}
+                />
+              ) : (
+                <UserRound size={17} />
+              )}
+            </span>
+
+            <span className="header-user-info">
+              <strong>{displayName}</strong>
+              <span>{user?.poste || 'Agent'}</span>
+            </span>
+
+            <ChevronDown
+              size={16}
+              className={userMenuOpen ? 'header-chevron-open' : ''}
+            />
+          </button>
+
+          {userMenuOpen && (
+            <div className="header-user-dropdown">
+              <button type="button" onClick={ouvrirProfil}>
+                <UserRound size={16} />
+                <span>Mon profil</span>
+              </button>
+
+              <div className="header-user-dropdown-divider" />
+
+              <button type="button" onClick={deconnecter}>
+                <span>Déconnexion</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
 }
