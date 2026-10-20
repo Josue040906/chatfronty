@@ -114,7 +114,7 @@ export default function LoginPage({ onLogin }) {
           <p className="login-brand-description">
             Une plateforme centralisée pour consulter les agents,
             suivre les carrières et exploiter les données RH avec
-            l'assistance de bandI'Akam.
+            l'assistance de SYGPERS.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function LoginPage({ onLogin }) {
               <Sparkles size={20} strokeWidth={2} />
             </div>
 
-            <span>bandI'Akam</span>
+            <span>SYGPERS</span>
           </div>
 
           <div className="login-heading">

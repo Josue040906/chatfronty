@@ -66,7 +66,7 @@ function AssistantPage() {
         <h1>Assistant</h1>
 
         <p>
-          Votre assistant conversationnel RH bandI'Akam.
+          Votre assistant conversationnel RH SYGPERS.
         </p>
       </div>
     </div>
