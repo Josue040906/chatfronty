@@ -12,6 +12,7 @@ import {
   markNotificationRead,
 } from '../../api/notifications';
 import { getEmployeePhotoUrl } from '../../utils/employee';
+import EmployeePhoto from '../EmployeePhoto';
 
 function formatNotificationDate(value) {
   if (!value) {
@@ -372,7 +373,7 @@ export default function Header({
           >
             <span className="header-avatar">
               {avatarUrl && failedAvatarUrl !== avatarUrl ? (
-                <img
+                <EmployeePhoto
                   src={avatarUrl}
                   alt=""
                   onError={() => setFailedAvatarUrl(avatarUrl)}

@@ -13,6 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import CreateAgentModal from './CreateAgentModal';
 
 function formatName(agent) {
@@ -248,7 +249,7 @@ export default function AgentsPage({ user }) {
                       <div className="agent-table-person">
                         <div className="agent-table-avatar">
                           {getEmployeePhotoUrl(agent.photo) ? (
-                            <img
+                            <EmployeePhoto
                               src={getEmployeePhotoUrl(agent.photo)}
                               alt={`Photo de ${formatName(agent)}`}
                             />

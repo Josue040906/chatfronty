@@ -48,6 +48,7 @@ export default function AssistantFloating({ user }) {
   const [expanded, setExpanded] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [pendingInitialMessage, setPendingInitialMessage] = useState('');
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [historyPage, setHistoryPage] = useState(0);
@@ -63,6 +64,7 @@ export default function AssistantFloating({ user }) {
   const messagesRef = useRef(null);
   const conversationRequestRef = useRef(0);
   const shouldScrollToBottomRef = useRef(true);
+  const sendingRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
@@ -78,6 +80,7 @@ export default function AssistantFloating({ user }) {
     conversationRequestRef.current += 1;
     setActiveChatId(null);
     setMessage('');
+    setPendingInitialMessage('');
     setSendError('');
     setConversationError('');
     setConversationLoading(false);
@@ -130,6 +133,7 @@ export default function AssistantFloating({ user }) {
   async function selectConversation(chatId) {
     const requestId = ++conversationRequestRef.current;
     setActiveChatId(chatId);
+    setPendingInitialMessage('');
     setHistoryOpen(false);
     setSendError('');
     setConversationError('');
@@ -213,10 +217,15 @@ export default function AssistantFloating({ user }) {
     event?.preventDefault();
 
     const text = message.trim();
-    if (!text || loading || activeChat?.status === 'ARCHIVED') {
+    if (!text || sendingRef.current || activeChat?.status === 'ARCHIVED') {
       return;
     }
 
+    sendingRef.current = true;
+    const idempotencyKey = crypto.randomUUID();
+    if (!activeChatId) {
+      setPendingInitialMessage(text);
+    }
     setLoading(true);
     setSendError('');
     shouldScrollToBottomRef.current = true;
@@ -245,7 +254,7 @@ export default function AssistantFloating({ user }) {
       }
 
       const userMessage = {
-        id: crypto.randomUUID(),
+        id: idempotencyKey,
         role: 'user',
         content: text,
       };
@@ -260,9 +269,14 @@ export default function AssistantFloating({ user }) {
             }
           : chat
       )));
+      setPendingInitialMessage('');
       setMessage('');
 
-      const response = await sendConversationMessage(conversationId, text);
+      const response = await sendConversationMessage(
+        conversationId,
+        text,
+        idempotencyKey
+      );
       if (typeof response?.message !== 'string') {
         throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
       }
@@ -289,6 +303,8 @@ export default function AssistantFloating({ user }) {
       console.error('Erreur assistant SYGPERS :', error);
       setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
     } finally {
+      sendingRef.current = false;
+      setPendingInitialMessage('');
       setLoading(false);
     }
   }
@@ -437,7 +453,7 @@ export default function AssistantFloating({ user }) {
                   </button>
                 </div>
               </div>
-            ) : messages.length ? (
+            ) : messages.length || pendingInitialMessage ? (
               <div className="assistant-messages" ref={messagesRef}>
                 {hasEarlierMessages && (
                   <button
@@ -460,6 +476,11 @@ export default function AssistantFloating({ user }) {
                     <div className="assistant-message-content">{item.content}</div>
                   </div>
                 ))}
+                {pendingInitialMessage && (
+                  <div className="assistant-message assistant-message-user">
+                    <div className="assistant-message-content">{pendingInitialMessage}</div>
+                  </div>
+                )}
                 {loading && (
                   <div className="assistant-message assistant-message-bot">
                     <div className="assistant-message-avatar"><Bot size={14} /></div>

@@ -23,6 +23,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getOrganisationData } from '../../api/organisation';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import {
   getEmployeeInitials,
   getEmployeePhotoUrl,
@@ -301,12 +302,9 @@ function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
               <span className="org-dialog-manager-avatar" aria-hidden="true">
                 {getEmployeeInitials(manager) || '?'}
                 {getEmployeePhotoUrl(manager?.photo) && (
-                  <img
+                  <EmployeePhoto
                     src={getEmployeePhotoUrl(manager.photo)}
                     alt=""
-                    onError={(event) => {
-                      event.currentTarget.hidden = true;
-                    }}
                   />
                 )}
               </span>
@@ -361,12 +359,9 @@ function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
               <span className="org-agent-avatar" aria-hidden="true">
                 {getEmployeeInitials(agent) || '?'}
                 {getEmployeePhotoUrl(agent.photo) && (
-                  <img
+                  <EmployeePhoto
                     src={getEmployeePhotoUrl(agent.photo)}
                     alt=""
-                    onError={(event) => {
-                      event.currentTarget.hidden = true;
-                    }}
                   />
                 )}
               </span>

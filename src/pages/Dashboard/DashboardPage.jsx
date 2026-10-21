@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { getDashboardData } from '../../api/dashboard';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
@@ -218,7 +219,7 @@ export default function DashboardPage() {
               >
               <div className="dashboard-avatar">
                 {getEmployeePhotoUrl(employee.photo) ? (
-                  <img
+                  <EmployeePhoto
                     src={getEmployeePhotoUrl(employee.photo)}
                     alt={formatName(employee)}
                   />

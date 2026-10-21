@@ -46,10 +46,13 @@ export function listConversationMessages(conversationId, page = 0, { signal } = 
   );
 }
 
-export function sendConversationMessage(conversationId, message) {
+export function sendConversationMessage(conversationId, message, idempotencyKey) {
   return request(`/${encodeURIComponent(conversationId)}/messages`, {
     method: 'POST',
     body: { message },
+    headers: idempotencyKey
+      ? { 'Idempotency-Key': idempotencyKey }
+      : {},
   });
 }
 

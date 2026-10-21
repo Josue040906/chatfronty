@@ -11,7 +11,6 @@ import {
   Pencil,
   Save,
   X,
-  Camera,
   Upload,
 } from 'lucide-react';
 
@@ -24,6 +23,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
@@ -344,7 +344,7 @@ export default function AgentProfilePage({ user }) {
         <div className="agent-profile-identity">
         <div className="agent-profile-avatar">
           {getEmployeePhotoUrl(agent.photo) ? (
-            <img
+            <EmployeePhoto
               src={getEmployeePhotoUrl(agent.photo)}
               alt={`Photo de ${formatName(agent)}`}
             />
@@ -754,7 +754,7 @@ export default function AgentProfilePage({ user }) {
                 <div className="agent-photo-upload">
                   <div className="agent-photo-preview">
                     {displayedPhoto ? (
-                      <img
+                      <EmployeePhoto
                         src={displayedPhoto}
                         alt={`Aperçu de ${formatName(agent)}`}
                       />

@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
@@ -176,7 +177,7 @@ export default function CarrieresPage() {
               <div className="career-agent-card-top">
                 <div className="career-agent-avatar">
                   {getEmployeePhotoUrl(agent.photo) ? (
-                    <img
+                    <EmployeePhoto
                       src={getEmployeePhotoUrl(agent.photo)}
                       alt={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}
                     />

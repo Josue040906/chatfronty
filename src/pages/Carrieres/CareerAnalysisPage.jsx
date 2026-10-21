@@ -38,6 +38,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
@@ -781,7 +782,7 @@ export default function CareerAnalysisPage({ user }) {
         <div className="career-analysis-identity">
           <div className="career-analysis-avatar">
             {photoUrl
-              ? <img src={photoUrl} alt={agentName ? `Photo de ${agentName}` : "Photo de l'agent"} />
+              ? <EmployeePhoto src={photoUrl} alt={agentName ? `Photo de ${agentName}` : "Photo de l'agent"} />
               : getEmployeeInitials(agent)}
           </div>
           <div>

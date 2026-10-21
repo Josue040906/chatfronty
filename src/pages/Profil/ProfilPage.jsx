@@ -19,6 +19,7 @@ import {
   uploadProfilPhoto,
 } from '../../api/profil';
 import { getEmployeePhotoUrl } from '../../utils/employee';
+import EmployeePhoto from '../../components/EmployeePhoto';
 import { changerMotDePasse } from '../../api/utilisateurs';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
@@ -413,7 +414,7 @@ export default function ProfilPage({ user, onUserUpdated }) {
         <div className="profil-avatar-wrapper">
           <div className="profil-avatar">
             {displayedPhoto ? (
-              <img
+              <EmployeePhoto
                 src={displayedPhoto}
                 alt={`Photo de ${nomComplet}`}
               />
