@@ -10,17 +10,37 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { BANDY_API_URL, getAuthHeaders } from '../../api/client';
+import {
+  createConversation,
+  listConversationMessages,
+  listConversations,
+  MESSAGE_PAGE_SIZE,
+  sendConversationMessage,
+} from '../../api/assistant';
 
+const CONVERSATION_PAGE_SIZE = 50;
 const EMPTY_MESSAGES = [];
 
 function formatChatDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
   return new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(value));
+  }).format(date);
+}
+
+function toUiMessage(message) {
+  return {
+    id: message.id,
+    role: message.role.toLowerCase() === 'user' ? 'user' : 'assistant',
+    content: message.content,
+  };
 }
 
 export default function AssistantFloating({ user }) {
@@ -30,133 +50,244 @@ export default function AssistantFloating({ user }) {
   const [message, setMessage] = useState('');
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
+  const [historyPage, setHistoryPage] = useState(0);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
+  const [historyError, setHistoryError] = useState('');
+  const [conversationLoading, setConversationLoading] = useState(false);
+  const [conversationError, setConversationError] = useState('');
+  const [loadingEarlier, setLoadingEarlier] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesRef = useRef(null);
+  const conversationRequestRef = useRef(0);
+  const shouldScrollToBottomRef = useRef(true);
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
 
   useEffect(() => {
-    if (messagesRef.current) {
+    if (messagesRef.current && shouldScrollToBottomRef.current) {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      shouldScrollToBottomRef.current = false;
     }
-  }, [messages, loading]);
+  }, [messages, loading, conversationLoading]);
 
   function startNewChat() {
+    conversationRequestRef.current += 1;
     setActiveChatId(null);
     setMessage('');
+    setSendError('');
+    setConversationError('');
+    setConversationLoading(false);
     setHistoryOpen(false);
+  }
+
+  async function loadHistory(page = 0) {
+    if (page === 0) {
+      setHistoryLoading(true);
+      setHistoryError('');
+    } else {
+      setHistoryLoadingMore(true);
+    }
+
+    try {
+      const data = await listConversations(page, CONVERSATION_PAGE_SIZE);
+      if (!Array.isArray(data?.items)) {
+        throw new Error('La réponse de Bandy ne contient pas la liste des conversations.');
+      }
+
+      const pageChats = data.items.map((conversation) => ({
+        ...conversation,
+        id: String(conversation.id),
+      }));
+      const pageIds = new Set(pageChats.map((chat) => chat.id));
+
+      setChats((previous) => {
+        const mergedChats = pageChats.map((chat) => {
+          const existing = previous.find((item) => item.id === chat.id);
+          return existing ? { ...existing, ...chat, messages: existing.messages } : chat;
+        });
+        const otherChats = previous.filter((chat) => !pageIds.has(chat.id));
+        return page === 0
+          ? [...mergedChats, ...otherChats]
+          : [...previous, ...mergedChats.filter(
+              (chat) => !previous.some((item) => item.id === chat.id)
+            )];
+      });
+      setHistoryPage(page);
+      setHistoryTotal(data.total);
+    } catch (error) {
+      console.error('Impossible de charger l’historique Bandy :', error);
+      setHistoryError(error.message || 'Impossible de charger les conversations.');
+    } finally {
+      setHistoryLoading(false);
+      setHistoryLoadingMore(false);
+    }
+  }
+
+  async function selectConversation(chatId) {
+    const requestId = ++conversationRequestRef.current;
+    setActiveChatId(chatId);
+    setHistoryOpen(false);
+    setSendError('');
+    setConversationError('');
+    setConversationLoading(true);
+    shouldScrollToBottomRef.current = true;
+
+    try {
+      const firstPage = await listConversationMessages(chatId, 0);
+      if (!Array.isArray(firstPage?.items)) {
+        throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+      }
+
+      const lastPageNumber = Math.max(
+        0,
+        Math.ceil(firstPage.total / MESSAGE_PAGE_SIZE) - 1
+      );
+      const lastPage = lastPageNumber === 0
+        ? firstPage
+        : await listConversationMessages(chatId, lastPageNumber);
+
+      if (requestId !== conversationRequestRef.current) {
+        return;
+      }
+
+      shouldScrollToBottomRef.current = true;
+      setChats((previous) => previous.map((chat) => (
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: lastPage.items.map(toUiMessage),
+              messagesPage: lastPageNumber,
+              totalMessages: firstPage.total,
+            }
+          : chat
+      )));
+    } catch (error) {
+      if (requestId === conversationRequestRef.current) {
+        console.error('Impossible de charger cette conversation Bandy :', error);
+        setConversationError(error.message || 'Impossible de charger cette conversation.');
+      }
+    } finally {
+      if (requestId === conversationRequestRef.current) {
+        setConversationLoading(false);
+      }
+    }
+  }
+
+  async function loadEarlierMessages() {
+    if (!activeChat || loadingEarlier || activeChat.messagesPage < 1) {
+      return;
+    }
+
+    setLoadingEarlier(true);
+    shouldScrollToBottomRef.current = false;
+    try {
+      const pageNumber = activeChat.messagesPage - 1;
+      const data = await listConversationMessages(activeChat.id, pageNumber);
+      if (!Array.isArray(data?.items)) {
+        throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+      }
+
+      setChats((previous) => previous.map((chat) => (
+        chat.id === activeChat.id
+          ? {
+              ...chat,
+              messages: [...data.items.map(toUiMessage), ...chat.messages],
+              messagesPage: pageNumber,
+              totalMessages: data.total,
+            }
+          : chat
+      )));
+    } catch (error) {
+      console.error('Impossible de charger les messages précédents :', error);
+      setConversationError(error.message || 'Impossible de charger les messages précédents.');
+    } finally {
+      setLoadingEarlier(false);
+    }
   }
 
   async function handleSend(event) {
     event?.preventDefault();
 
     const text = message.trim();
-
-    if (!text || loading) {
+    if (!text || loading || activeChat?.status === 'ARCHIVED') {
       return;
     }
 
-    const chatId = activeChatId || String(Date.now());
-    if (!activeChatId) {
-      setActiveChatId(chatId);
-    }
-
-    const userMessage = {
-      id: Date.now(),
-      role: 'user',
-      content: text,
-    };
-
-    setChats((previous) => {
-      const current = previous.find((chat) => chat.id === chatId);
-      const chat = current || {
-        id: chatId,
-        title: 'Discussion temporaire',
-        messages: [],
-      };
-      return [
-        {
-          ...chat,
-          messages: [...chat.messages, userMessage],
-          updatedAt: Date.now(),
-        },
-        ...previous.filter((item) => item.id !== chatId),
-      ];
-    });
-
-    setMessage('');
     setLoading(true);
+    setSendError('');
+    shouldScrollToBottomRef.current = true;
 
     try {
-      const response = await fetch(
-        `${BANDY_API_URL}/api/chat`,
-        {
-          method: 'POST',
-          headers: {
-            ...getAuthHeaders(),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: text,
-          }),
-        }
-      );
+      let conversationId = activeChatId;
 
-      if (!response.ok) {
-        throw new Error(
-          `Erreur API ${response.status}`
-        );
+      if (!conversationId) {
+        const conversation = await createConversation();
+        if (!conversation?.id) {
+          throw new Error('Bandy n’a pas renvoyé l’identifiant de la conversation créée.');
+        }
+
+        conversationId = String(conversation.id);
+        setActiveChatId(conversationId);
+        setChats((previous) => [
+          {
+            ...conversation,
+            id: conversationId,
+            messages: EMPTY_MESSAGES,
+            messagesPage: 0,
+            totalMessages: 0,
+          },
+          ...previous.filter((chat) => chat.id !== conversationId),
+        ]);
       }
 
-      const data = await response.json();
+      const userMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: text,
+      };
 
-      const assistantResponse =
-        typeof data === 'string'
-          ? data
-          : data?.data?.message ||
-            data?.data ||
-            data?.response ||
-            data?.message ||
-            data?.content ||
-            data?.text ||
-            "Je n'ai pas reçu de réponse exploitable.";
-
+      shouldScrollToBottomRef.current = true;
       setChats((previous) => previous.map((chat) => (
-        chat.id === chatId
+        chat.id === conversationId
           ? {
               ...chat,
-              messages: [...chat.messages, {
-                id: Date.now() + 1,
-                role: 'assistant',
-                content: typeof assistantResponse === 'string'
-                  ? assistantResponse
-                  : JSON.stringify(assistantResponse),
-              }],
-              updatedAt: Date.now(),
+              messages: [...chat.messages, userMessage],
+              totalMessages: (chat.totalMessages || 0) + 1,
+            }
+          : chat
+      )));
+      setMessage('');
+
+      const response = await sendConversationMessage(conversationId, text);
+      if (typeof response?.message !== 'string') {
+        throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
+      }
+
+      shouldScrollToBottomRef.current = true;
+      setChats((previous) => previous.map((chat) => (
+        chat.id === conversationId
+          ? {
+              ...chat,
+              messages: [
+                ...chat.messages,
+                {
+                  id: crypto.randomUUID(),
+                  role: 'assistant',
+                  content: response.message,
+                },
+              ],
+              totalMessages: (chat.totalMessages || 0) + 1,
+              lastActivityAt: new Date().toISOString(),
             }
           : chat
       )));
     } catch (error) {
-      console.error(
-        'Erreur assistant SYGPERS :',
-        error
-      );
-
-      setChats((previous) => previous.map((chat) => (
-        chat.id === chatId
-          ? {
-              ...chat,
-              messages: [...chat.messages, {
-                id: Date.now() + 1,
-                role: 'assistant',
-                content: "Je rencontre actuellement un problème de connexion avec le service RH.",
-                error: true,
-              }],
-              updatedAt: Date.now(),
-            }
-          : chat
-      )));
+      console.error('Erreur assistant SYGPERS :', error);
+      setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
     } finally {
       setLoading(false);
     }
@@ -168,6 +299,15 @@ export default function AssistantFloating({ user }) {
       handleSend(event);
     }
   }
+
+  const hasEarlierMessages = activeChat
+    && activeChat.messagesPage > 0
+    && activeChat.messages.length < activeChat.totalMessages;
+  const hasMoreConversations = Math.min(
+    (historyPage + 1) * CONVERSATION_PAGE_SIZE,
+    historyTotal
+  ) < historyTotal;
+  const archivedConversation = activeChat?.status === 'ARCHIVED';
 
   return (
     <>
@@ -181,9 +321,7 @@ export default function AssistantFloating({ user }) {
 
               <div>
                 <strong>Assistant SYGPERS</strong>
-                <span>
-                  Assistant RH · SYGPERS
-                </span>
+                <span>Historique synchronisé avec Bandy</span>
               </div>
             </div>
 
@@ -191,17 +329,23 @@ export default function AssistantFloating({ user }) {
               <button
                 type="button"
                 onClick={startNewChat}
-                aria-label="Nouveau chat"
-                title="Nouveau chat"
+                aria-label="Nouvelle conversation"
+                title="Nouvelle conversation"
               >
                 <Plus size={18} />
               </button>
 
               <button
                 type="button"
-                onClick={() => setHistoryOpen((value) => !value)}
-                aria-label="Échanges de cette session"
-                title="Échanges temporaires"
+                onClick={() => {
+                  const nextOpen = !historyOpen;
+                  setHistoryOpen(nextOpen);
+                  if (nextOpen) {
+                    void loadHistory(0);
+                  }
+                }}
+                aria-label="Historique des conversations"
+                title="Historique des conversations"
                 aria-pressed={historyOpen}
               >
                 <Clock3 size={17} />
@@ -235,34 +379,76 @@ export default function AssistantFloating({ user }) {
             {historyOpen ? (
               <div className="assistant-history">
                 <div className="assistant-history-heading">
-                  <span>Échanges de cette session</span>
-                  <span>{chats.length}</span>
+                  <span>Vos conversations</span>
+                  <span>{historyTotal}</span>
                 </div>
-                <p className="assistant-history-empty">
-                  Ces échanges restent dans cette page. Bandy ne permet pas encore de les enregistrer ni de les reprendre.
-                </p>
-                {chats.length ? chats.map((chat) => (
-                  <button
-                    key={chat.id}
-                    type="button"
-                    className="assistant-history-item"
-                    onClick={() => {
-                      setActiveChatId(chat.id);
-                      setHistoryOpen(false);
-                    }}
-                  >
-                    <MessageSquareText size={17} />
-                    <span className="assistant-history-copy">
-                      <strong>Discussion temporaire</strong>
-                      <small>{formatChatDate(chat.updatedAt)}</small>
-                    </span>
-                  </button>
-                )) : (
-                  <p className="assistant-history-empty">Aucun échange cette session.</p>
+                {historyLoading ? (
+                  <p className="assistant-history-status" role="status">Chargement de l’historique…</p>
+                ) : historyError ? (
+                  <div className="assistant-inline-error" role="alert">
+                    <span>{historyError}</span>
+                    <button type="button" onClick={() => void loadHistory(0)}>Réessayer</button>
+                  </div>
+                ) : chats.length === 0 ? (
+                  <p className="assistant-history-empty">Aucune conversation enregistrée.</p>
+                ) : (
+                  <>
+                    {chats.map((chat) => (
+                      <button
+                        key={chat.id}
+                        type="button"
+                        className={`assistant-history-item${chat.id === activeChatId ? ' assistant-history-item-active' : ''}`}
+                        onClick={() => void selectConversation(chat.id)}
+                      >
+                        <MessageSquareText size={17} />
+                        <span className="assistant-history-copy">
+                          <strong>{chat.label || 'Nouvelle conversation'}</strong>
+                          <small>
+                            {chat.status === 'ARCHIVED' ? 'Archivée · ' : ''}
+                            {formatChatDate(chat.lastActivityAt || chat.createdAt)}
+                          </small>
+                        </span>
+                      </button>
+                    ))}
+                    {hasMoreConversations && (
+                      <button
+                        type="button"
+                        className="assistant-history-more"
+                        disabled={historyLoadingMore}
+                        onClick={() => void loadHistory(historyPage + 1)}
+                      >
+                        {historyLoadingMore ? 'Chargement…' : 'Charger les conversations précédentes'}
+                      </button>
+                    )}
+                  </>
                 )}
+              </div>
+            ) : conversationLoading ? (
+              <div className="assistant-panel-status" role="status">
+                <div className="assistant-message-content assistant-typing"><span /><span /><span /></div>
+                <span>Chargement de la conversation…</span>
+              </div>
+            ) : conversationError ? (
+              <div className="assistant-panel-status">
+                <div className="assistant-inline-error" role="alert">
+                  <span>{conversationError}</span>
+                  <button type="button" onClick={() => void selectConversation(activeChatId)}>
+                    Réessayer
+                  </button>
+                </div>
               </div>
             ) : messages.length ? (
               <div className="assistant-messages" ref={messagesRef}>
+                {hasEarlierMessages && (
+                  <button
+                    type="button"
+                    className="assistant-history-more"
+                    disabled={loadingEarlier}
+                    onClick={() => void loadEarlierMessages()}
+                  >
+                    {loadingEarlier ? 'Chargement…' : 'Charger les messages précédents'}
+                  </button>
+                )}
                 {messages.map((item) => (
                   <div
                     key={item.id}
@@ -271,9 +457,7 @@ export default function AssistantFloating({ user }) {
                     {item.role === 'assistant' && (
                       <div className="assistant-message-avatar"><Bot size={14} /></div>
                     )}
-                    <div className={`assistant-message-content ${item.error ? 'assistant-message-error' : ''}`}>
-                      {item.content}
-                    </div>
+                    <div className="assistant-message-content">{item.content}</div>
                   </div>
                 ))}
                 {loading && (
@@ -288,40 +472,54 @@ export default function AssistantFloating({ user }) {
                 <div className="assistant-empty-mark"><Sparkles size={20} /></div>
                 <p className="assistant-empty-eyebrow">VOTRE ASSISTANT RH</p>
                 <h1>Bonjour, <span>{userName}</span></h1>
-                <p className="assistant-empty-description">Que souhaitez-vous savoir aujourd'hui ?</p>
-                <form className="assistant-panel-input assistant-panel-input-centered" onSubmit={handleSend}>
-                  <textarea
-                    value={message}
-                    onChange={(event) => setMessage(event.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Posez votre question sur les agents, services ou procédures..."
-                    rows={2}
-                    disabled={loading}
-                    aria-label="Message à l'assistant SYGPERS"
-                  />
-                  <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
-                    <Send size={17} />
-                  </button>
-                </form>
+                <p className="assistant-empty-description">
+                  {archivedConversation
+                    ? 'Cette conversation est archivée. Démarrez-en une nouvelle pour continuer.'
+                    : 'Que souhaitez-vous savoir aujourd’hui ?'}
+                </p>
+                {!archivedConversation && (
+                  <form className="assistant-panel-input assistant-panel-input-centered" onSubmit={handleSend}>
+                    <textarea
+                      value={message}
+                      onChange={(event) => setMessage(event.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Posez votre question sur les agents, services ou procédures..."
+                      rows={2}
+                      disabled={loading}
+                      aria-label="Message à l'assistant SYGPERS"
+                    />
+                    <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
+                      <Send size={17} />
+                    </button>
+                  </form>
+                )}
               </div>
             )}
           </div>
 
+          {sendError && !historyOpen && (
+            <div className="assistant-send-error" role="alert">{sendError}</div>
+          )}
+
           {!historyOpen && messages.length > 0 && (
-            <form className="assistant-panel-input" onSubmit={handleSend}>
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Écrivez votre demande..."
-                rows={1}
-                disabled={loading}
-                aria-label="Message à l'assistant SYGPERS"
-              />
-              <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
-                <Send size={17} />
-              </button>
-            </form>
+            archivedConversation ? (
+              <p className="assistant-archive-notice">Cette conversation est archivée et ne peut plus recevoir de messages.</p>
+            ) : (
+              <form className="assistant-panel-input" onSubmit={handleSend}>
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Écrivez votre demande..."
+                  rows={1}
+                  disabled={loading}
+                  aria-label="Message à l'assistant SYGPERS"
+                />
+                <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
+                  <Send size={17} />
+                </button>
+              </form>
+            )
           )}
         </div>
       )}
