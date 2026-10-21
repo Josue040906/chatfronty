@@ -427,6 +427,28 @@
   font-size: 12px;
 }
 
+.assistant-send-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.assistant-send-error button {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.assistant-send-error button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .assistant-archive-notice {
   border-color: #e8dfd8;
   background: #f7f1e9;

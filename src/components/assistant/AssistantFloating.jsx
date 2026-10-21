@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import {
   Bot,
   Clock3,
@@ -18,8 +18,73 @@ import {
   sendConversationMessage,
 } from '../../api/assistant';
 
-const CONVERSATION_PAGE_SIZE = 50;
+const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
+const CONVERSATION_ID_PATTERN = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
+
+function getConversationStorageKey(userId) {
+  return userId ? `bandy-active-conversation:${userId}` : null;
+}
+
+function readStoredConversation(storageKey) {
+  if (!storageKey) {
+    return null;
+  }
+
+  try {
+    const storedValue = localStorage.getItem(storageKey);
+    if (!storedValue) {
+      return null;
+    }
+
+    const conversation = JSON.parse(storedValue);
+    if (!CONVERSATION_ID_PATTERN.test(conversation?.id || '')) {
+      localStorage.removeItem(storageKey);
+      return null;
+    }
+
+    return {
+      id: conversation.id,
+      label: conversation.label,
+      status: conversation.status,
+      createdAt: conversation.createdAt,
+      lastActivityAt: conversation.lastActivityAt,
+    };
+  } catch (error) {
+    console.error('Impossible de restaurer la conversation Bandy enregistrée.', error);
+    return null;
+  }
+}
+
+function storeConversation(storageKey, conversation) {
+  if (!storageKey || !conversation?.id) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({
+      id: conversation.id,
+      label: conversation.label,
+      status: conversation.status,
+      createdAt: conversation.createdAt,
+      lastActivityAt: conversation.lastActivityAt,
+    }));
+  } catch (error) {
+    console.error('Impossible d’enregistrer la conversation Bandy active.', error);
+  }
+}
+
+function clearStoredConversation(storageKey) {
+  if (!storageKey) {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(storageKey);
+  } catch (error) {
+    console.error('Impossible d’effacer la conversation Bandy active.', error);
+  }
+}
 
 function formatChatDate(value) {
   const date = new Date(value);
@@ -43,31 +108,126 @@ function toUiMessage(message) {
   };
 }
 
+const AssistantMessage = memo(function AssistantMessage({ item }) {
+  return (
+    <div
+      className={`assistant-message ${item.role === 'user' ? 'assistant-message-user' : 'assistant-message-bot'}`}
+    >
+      {item.role === 'assistant' && (
+        <div className="assistant-message-avatar"><Bot size={14} /></div>
+      )}
+      <div className="assistant-message-content">{item.content}</div>
+    </div>
+  );
+});
+
 export default function AssistantFloating({ user }) {
+  const userId = user?.userId;
+  const conversationStorageKey = getConversationStorageKey(userId);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [pendingInitialMessage, setPendingInitialMessage] = useState('');
-  const [chats, setChats] = useState([]);
-  const [activeChatId, setActiveChatId] = useState(null);
+  const [chats, setChats] = useState(() => {
+    const conversation = readStoredConversation(conversationStorageKey);
+    return conversation
+      ? [{ ...conversation, messages: EMPTY_MESSAGES, messagesPage: 0, totalMessages: 0 }]
+      : [];
+  });
+  const [activeChatId, setActiveChatId] = useState(
+    () => readStoredConversation(conversationStorageKey)?.id || null
+  );
   const [historyPage, setHistoryPage] = useState(0);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
   const [historyError, setHistoryError] = useState('');
-  const [conversationLoading, setConversationLoading] = useState(false);
+  const [conversationLoading, setConversationLoading] = useState(
+    () => Boolean(readStoredConversation(conversationStorageKey))
+  );
   const [conversationError, setConversationError] = useState('');
   const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [failedSend, setFailedSend] = useState(null);
   const [loading, setLoading] = useState(false);
   const messagesRef = useRef(null);
   const conversationRequestRef = useRef(0);
+  const conversationAbortRef = useRef(null);
   const shouldScrollToBottomRef = useRef(true);
   const sendingRef = useRef(false);
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
+
+  useEffect(() => {
+    const requestId = ++conversationRequestRef.current;
+    const controller = new AbortController();
+    conversationAbortRef.current?.abort();
+    conversationAbortRef.current = controller;
+    const storedConversation = readStoredConversation(conversationStorageKey);
+
+    async function restoreConversation() {
+      if (!storedConversation) {
+        return;
+      }
+
+      try {
+        const firstPage = await listConversationMessages(
+          storedConversation.id,
+          0,
+          { signal: controller.signal }
+        );
+        if (!Array.isArray(firstPage?.items)) {
+          throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+        }
+
+        const lastPageNumber = Math.max(
+          0,
+          Math.ceil(firstPage.total / MESSAGE_PAGE_SIZE) - 1
+        );
+        const lastPage = lastPageNumber === 0
+          ? firstPage
+          : await listConversationMessages(
+              storedConversation.id,
+              lastPageNumber,
+              { signal: controller.signal }
+            );
+
+        if (requestId !== conversationRequestRef.current) {
+          return;
+        }
+
+        setChats([{
+          ...storedConversation,
+          messages: lastPage.items.map(toUiMessage),
+          messagesPage: lastPageNumber,
+          totalMessages: firstPage.total,
+        }]);
+      } catch (error) {
+        if (!controller.signal.aborted && requestId === conversationRequestRef.current) {
+          console.error('Impossible de restaurer la conversation Bandy :', error);
+          setConversationError(error.message || 'Impossible de restaurer la conversation.');
+        }
+      } finally {
+        if (requestId === conversationRequestRef.current) {
+          setConversationLoading(false);
+        }
+      }
+    }
+
+    void restoreConversation();
+
+    return () => {
+      controller.abort();
+      if (conversationAbortRef.current === controller) {
+        conversationAbortRef.current = null;
+      }
+      if (conversationRequestRef.current === requestId) {
+        conversationRequestRef.current += 1;
+      }
+    };
+  }, [conversationStorageKey]);
 
   useEffect(() => {
     if (messagesRef.current && shouldScrollToBottomRef.current) {
@@ -78,10 +238,13 @@ export default function AssistantFloating({ user }) {
 
   function startNewChat() {
     conversationRequestRef.current += 1;
+    conversationAbortRef.current?.abort();
+    clearStoredConversation(conversationStorageKey);
     setActiveChatId(null);
     setMessage('');
     setPendingInitialMessage('');
     setSendError('');
+    setFailedSend(null);
     setConversationError('');
     setConversationLoading(false);
     setHistoryOpen(false);
@@ -132,16 +295,25 @@ export default function AssistantFloating({ user }) {
 
   async function selectConversation(chatId) {
     const requestId = ++conversationRequestRef.current;
+    conversationAbortRef.current?.abort();
+    const controller = new AbortController();
+    conversationAbortRef.current = controller;
+    const selectedConversation = chats.find((chat) => chat.id === chatId);
+    storeConversation(conversationStorageKey, selectedConversation);
     setActiveChatId(chatId);
     setPendingInitialMessage('');
     setHistoryOpen(false);
     setSendError('');
+    setFailedSend(null);
     setConversationError('');
     setConversationLoading(true);
+    setLoadingEarlier(false);
     shouldScrollToBottomRef.current = true;
 
     try {
-      const firstPage = await listConversationMessages(chatId, 0);
+      const firstPage = await listConversationMessages(chatId, 0, {
+        signal: controller.signal,
+      });
       if (!Array.isArray(firstPage?.items)) {
         throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
       }
@@ -152,7 +324,9 @@ export default function AssistantFloating({ user }) {
       );
       const lastPage = lastPageNumber === 0
         ? firstPage
-        : await listConversationMessages(chatId, lastPageNumber);
+        : await listConversationMessages(chatId, lastPageNumber, {
+            signal: controller.signal,
+          });
 
       if (requestId !== conversationRequestRef.current) {
         return;
@@ -170,13 +344,16 @@ export default function AssistantFloating({ user }) {
           : chat
       )));
     } catch (error) {
-      if (requestId === conversationRequestRef.current) {
+      if (!controller.signal.aborted && requestId === conversationRequestRef.current) {
         console.error('Impossible de charger cette conversation Bandy :', error);
         setConversationError(error.message || 'Impossible de charger cette conversation.');
       }
     } finally {
       if (requestId === conversationRequestRef.current) {
         setConversationLoading(false);
+        if (conversationAbortRef.current === controller) {
+          conversationAbortRef.current = null;
+        }
       }
     }
   }
@@ -217,22 +394,21 @@ export default function AssistantFloating({ user }) {
     event?.preventDefault();
 
     const text = message.trim();
-    if (!text || sendingRef.current || activeChat?.status === 'ARCHIVED') {
+    if (!text || sendingRef.current || failedSend
+      || activeChat?.status === 'ARCHIVED') {
       return;
     }
 
     sendingRef.current = true;
     const idempotencyKey = crypto.randomUUID();
-    if (!activeChatId) {
-      setPendingInitialMessage(text);
-    }
+    let conversationId = activeChatId;
+    let optimisticMessageAdded = false;
+    setPendingInitialMessage(text);
     setLoading(true);
     setSendError('');
     shouldScrollToBottomRef.current = true;
 
     try {
-      let conversationId = activeChatId;
-
       if (!conversationId) {
         const conversation = await createConversation();
         if (!conversation?.id) {
@@ -240,6 +416,10 @@ export default function AssistantFloating({ user }) {
         }
 
         conversationId = String(conversation.id);
+        storeConversation(conversationStorageKey, {
+          ...conversation,
+          id: conversationId,
+        });
         setActiveChatId(conversationId);
         setChats((previous) => [
           {
@@ -269,42 +449,131 @@ export default function AssistantFloating({ user }) {
             }
           : chat
       )));
+      optimisticMessageAdded = true;
       setPendingInitialMessage('');
       setMessage('');
 
-      const response = await sendConversationMessage(
-        conversationId,
-        text,
-        idempotencyKey
-      );
-      if (typeof response?.message !== 'string') {
-        throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
-      }
-
-      shouldScrollToBottomRef.current = true;
-      setChats((previous) => previous.map((chat) => (
-        chat.id === conversationId
-          ? {
-              ...chat,
-              messages: [
-                ...chat.messages,
-                {
-                  id: crypto.randomUUID(),
-                  role: 'assistant',
-                  content: response.message,
-                },
-              ],
-              totalMessages: (chat.totalMessages || 0) + 1,
-              lastActivityAt: new Date().toISOString(),
-            }
-          : chat
-      )));
+      await completeSend(conversationId, text, idempotencyKey);
     } catch (error) {
       console.error('Erreur assistant SYGPERS :', error);
       setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
+      setFailedSend({
+        conversationId,
+        idempotencyKey,
+        text,
+        optimisticMessageAdded,
+      });
+      if (!optimisticMessageAdded) {
+        setMessage(text);
+      }
     } finally {
       sendingRef.current = false;
       setPendingInitialMessage('');
+      setLoading(false);
+    }
+  }
+
+  async function completeSend(conversationId, text, idempotencyKey) {
+    const response = await sendConversationMessage(
+      conversationId,
+      text,
+      idempotencyKey
+    );
+    if (typeof response?.message !== 'string') {
+      throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
+    }
+    if (String(response.conversationId) !== conversationId) {
+      throw new Error('La réponse de Bandy ne correspond pas à la conversation active.');
+    }
+
+    shouldScrollToBottomRef.current = true;
+    setChats((previous) => previous.map((chat) => (
+      chat.id === conversationId
+        ? {
+            ...chat,
+            messages: [
+              ...chat.messages,
+              {
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content: response.message,
+              },
+            ],
+            totalMessages: (chat.totalMessages || 0) + 1,
+            lastActivityAt: new Date().toISOString(),
+          }
+        : chat
+    )));
+    setFailedSend(null);
+    setSendError('');
+  }
+
+  async function retryFailedSend() {
+    if (!failedSend || sendingRef.current) {
+      return;
+    }
+
+    sendingRef.current = true;
+    setLoading(true);
+    setSendError('');
+
+    let conversationId = failedSend.conversationId;
+    try {
+      if (!conversationId) {
+        const conversation = await createConversation();
+        if (!conversation?.id) {
+          throw new Error('Bandy n’a pas renvoyé l’identifiant de la conversation créée.');
+        }
+
+        conversationId = String(conversation.id);
+        storeConversation(conversationStorageKey, {
+          ...conversation,
+          id: conversationId,
+        });
+        setActiveChatId(conversationId);
+        setChats((previous) => [
+          {
+            ...conversation,
+            id: conversationId,
+            messages: EMPTY_MESSAGES,
+            messagesPage: 0,
+            totalMessages: 0,
+          },
+          ...previous.filter((chat) => chat.id !== conversationId),
+        ]);
+      }
+
+      if (!failedSend.optimisticMessageAdded) {
+        setChats((previous) => previous.map((chat) => (
+          chat.id === conversationId
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  {
+                    id: failedSend.idempotencyKey,
+                    role: 'user',
+                    content: failedSend.text,
+                  },
+                ],
+                totalMessages: (chat.totalMessages || 0) + 1,
+              }
+            : chat
+        )));
+        setMessage('');
+      }
+
+      await completeSend(
+        conversationId,
+        failedSend.text,
+        failedSend.idempotencyKey
+      );
+    } catch (error) {
+      console.error('Nouvelle tentative assistant échouée :', error);
+      setSendError(error.message || 'Impossible de renvoyer le message à Bandy.');
+      setFailedSend({ ...failedSend, conversationId });
+    } finally {
+      sendingRef.current = false;
       setLoading(false);
     }
   }
@@ -466,15 +735,7 @@ export default function AssistantFloating({ user }) {
                   </button>
                 )}
                 {messages.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`assistant-message ${item.role === 'user' ? 'assistant-message-user' : 'assistant-message-bot'}`}
-                  >
-                    {item.role === 'assistant' && (
-                      <div className="assistant-message-avatar"><Bot size={14} /></div>
-                    )}
-                    <div className="assistant-message-content">{item.content}</div>
-                  </div>
+                  <AssistantMessage key={item.id} item={item} />
                 ))}
                 {pendingInitialMessage && (
                   <div className="assistant-message assistant-message-user">
@@ -506,10 +767,10 @@ export default function AssistantFloating({ user }) {
                       onKeyDown={handleKeyDown}
                       placeholder="Posez votre question sur les agents, services ou procédures..."
                       rows={2}
-                      disabled={loading}
+                      disabled={loading || Boolean(failedSend)}
                       aria-label="Message à l'assistant SYGPERS"
                     />
-                    <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
+                    <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
                       <Send size={17} />
                     </button>
                   </form>
@@ -519,7 +780,14 @@ export default function AssistantFloating({ user }) {
           </div>
 
           {sendError && !historyOpen && (
-            <div className="assistant-send-error" role="alert">{sendError}</div>
+            <div className="assistant-send-error" role="alert">
+              <span>{sendError}</span>
+              {failedSend && (
+                <button type="button" onClick={() => void retryFailedSend()} disabled={loading}>
+                  Réessayer
+                </button>
+              )}
+            </div>
           )}
 
           {!historyOpen && messages.length > 0 && (
@@ -533,10 +801,10 @@ export default function AssistantFloating({ user }) {
                   onKeyDown={handleKeyDown}
                   placeholder="Écrivez votre demande..."
                   rows={1}
-                  disabled={loading}
+                  disabled={loading || Boolean(failedSend)}
                   aria-label="Message à l'assistant SYGPERS"
                 />
-                <button type="submit" disabled={!message.trim() || loading} aria-label="Envoyer" title="Envoyer">
+                <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
                   <Send size={17} />
                 </button>
               </form>

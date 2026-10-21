@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles, Send, X, Maximize2, Minimize2, ChevronRight } from 'lucide-react';
 import { COLORS, accentGradient, accentGradientSoft } from '../../theme';
-import { BANDY_API_URL, getAuthHeaders } from '../../api/client';
+import { createConversation, sendConversationMessage } from '../../api/assistant';
 
 
 const SIZES = ['small', 'wide', 'full'];
@@ -95,6 +95,8 @@ export default function AssistantPanel({
   const [size, setSize] = useState('small');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
+  const sendingRef = useRef(false);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -118,64 +120,53 @@ export default function AssistantPanel({
   // ENVOI AU BACKEND
   // ==========================================================
   const send = async (text) => {
-    if (sending) return;
+    if (sendingRef.current) return;
     const query = (text ?? input).trim();
     if (!query) return;
 
+    sendingRef.current = true;
     setSending(true);
-
-    setMessages((m) => [
-      ...m,
-      { role: 'user', text: query }
-    ]);
+    const responseId = crypto.randomUUID();
     setInput('');
-
-    setMessages((m) => [
-      ...m,
-      { role: 'assistant', text: 'Analyse de votre demande...' }
+    setMessages((current) => [
+      ...current,
+      { id: crypto.randomUUID(), role: 'user', text: query },
+      { id: responseId, role: 'assistant', text: 'Analyse de votre demande...' },
     ]);
 
     try {
-      const response = await fetch(`${BANDY_API_URL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: query })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+      let targetConversationId = conversationId;
+      if (!targetConversationId) {
+        const conversation = await createConversation();
+        if (!conversation?.id) {
+          throw new Error('Bandy n’a pas renvoyé l’identifiant de la conversation créée.');
+        }
+        targetConversationId = String(conversation.id);
+        setConversationId(targetConversationId);
       }
 
-      const payload = await response.json();
-      const reply =
-        typeof payload === 'string'
-          ? payload
-          : payload?.data?.message ||
-            payload?.message ||
-            payload?.data ||
-            "Je n'ai pas reçu de réponse exploitable.";
+      const payload = await sendConversationMessage(
+        targetConversationId,
+        query,
+        crypto.randomUUID()
+      );
+      if (typeof payload?.message !== 'string') {
+        throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
+      }
 
-      setMessages((m) => [
-        ...m.slice(0, -1),
-        {
-          role: 'assistant',
-          text: typeof reply === 'string' ? reply : JSON.stringify(reply)
-        }
-      ]);
+      setMessages((current) => current.map((item) => (
+        item.id === responseId ? { ...item, text: payload.message } : item
+      )));
     } catch (error) {
-      console.error('Erreur lors de la communication avec le backend :', error);
+      console.error('Erreur lors de la communication avec Bandy :', error);
 
-      setMessages((m) => [
-        ...m.slice(0, -1),
-        {
-          role: 'assistant',
-          text: "Je n'arrive pas Ã  communiquer avec le serveur RH."
-        }
-      ]);
+      setMessages((current) => current.map((item) => (
+        item.id === responseId
+          ? { ...item, text: error.message || 'Impossible de communiquer avec Bandy.' }
+          : item
+      )));
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   };
@@ -233,7 +224,7 @@ export default function AssistantPanel({
       <div style={styles.feed} ref={feedRef}>
         {messages.map((msg, i) => (
           <div
-            key={i}
+            key={msg.id || i}
             style={msg.role === 'user' ? styles.userRow : styles.botRow}
           >
             <div style={msg.role === 'user' ? styles.userBubble : styles.botBubble}>

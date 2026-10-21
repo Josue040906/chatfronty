@@ -32,7 +32,7 @@ export default function AppLayout({
       </div>
 
       {/* Assistant disponible sur toutes les pages protégées */}
-      <AssistantFloating user={user} />
+      <AssistantFloating key={user?.userId || 'anonymous'} user={user} />
     </div>
   );
 }
