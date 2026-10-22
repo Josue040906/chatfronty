@@ -126,12 +126,10 @@ export default function AssistantPanel({
 
     sendingRef.current = true;
     setSending(true);
-    const responseId = crypto.randomUUID();
     setInput('');
     setMessages((current) => [
       ...current,
       { id: crypto.randomUUID(), role: 'user', text: query },
-      { id: responseId, role: 'assistant', text: 'Analyse de votre demande...' },
     ]);
 
     try {
@@ -154,17 +152,21 @@ export default function AssistantPanel({
         throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
       }
 
-      setMessages((current) => current.map((item) => (
-        item.id === responseId ? { ...item, text: payload.message } : item
-      )));
+      setMessages((current) => [
+        ...current,
+        { id: crypto.randomUUID(), role: 'assistant', text: payload.message },
+      ]);
     } catch (error) {
       console.error('Erreur lors de la communication avec Bandy :', error);
 
-      setMessages((current) => current.map((item) => (
-        item.id === responseId
-          ? { ...item, text: error.message || 'Impossible de communiquer avec Bandy.' }
-          : item
-      )));
+      setMessages((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          text: error.message || 'Impossible de communiquer avec Bandy.',
+        },
+      ]);
     } finally {
       sendingRef.current = false;
       setSending(false);
@@ -260,6 +262,11 @@ export default function AssistantPanel({
             )}
           </div>
         ))}
+        {sending && (
+          <div style={styles.botRow} role="status" aria-label="Bandy réfléchit">
+            <div style={styles.botBubble}>…</div>
+          </div>
+        )}
       </div>
 
       {/* SUGGESTIONS */}
