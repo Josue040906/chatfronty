@@ -17,6 +17,12 @@ côté serveur.
 - `POST /api/conversations/{id}/messages` reçoit `{ "message": "..." }` et
   renvoie un `ChatResponse` JSON avec `message`, `toolResults` et
   `conversationId`.
+- `searchEmployeesApproximately` renvoie les agents les plus proches, triés
+  par `score_correspondance` décroissant. Ce score de similarité textuelle de
+  0 à 1 n'est pas une probabilité d'identité. Si au moins deux agents sont
+  disponibles, l'API renvoie au moins les deux premiers, même si leur score
+  est inférieur au seuil habituel. Les filtres optionnels `service`, `poste`
+  et `direction` permettent d'affiner la même recherche lors d'un suivi.
 - Les réponses et messages persistés sont chargés depuis Bandy. Le navigateur
   ne transmet aucun identifiant de propriétaire : Bandy valide le jeton,
   dérive le propriétaire du `sub` signé, puis vérifie son accès à chaque

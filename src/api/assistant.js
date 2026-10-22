@@ -24,6 +24,14 @@ async function request(
     timeoutMillis = DEFAULT_TIMEOUT_MILLIS,
   } = {}
 ) {
+  const authHeaders = getAuthHeaders();
+  if (!authHeaders.Authorization) {
+    throw new BandyApiError(
+      'Connectez-vous à votre compte RH pour utiliser Bandy.',
+      401
+    );
+  }
+
   const controller = new AbortController();
   let timedOut = false;
   const timeout = setTimeout(() => {
@@ -41,7 +49,7 @@ async function request(
     const response = await fetch(`${baseUrl}${path}`, {
       method,
       headers: {
-        ...getAuthHeaders(),
+        ...authHeaders,
         ...(body === undefined
           ? {}
           : { 'Content-Type': 'application/json; charset=utf-8' }),
@@ -52,9 +60,18 @@ async function request(
     });
 
     const contentType = response.headers.get('content-type') || '';
-    const data = contentType.includes('application/json')
-      ? await response.json()
-      : null;
+    let data = null;
+    if (contentType.includes('application/json')) {
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new BandyApiError(
+          'Bandy a renvoyé une réponse JSON invalide.',
+          response.status,
+          error
+        );
+      }
+    }
 
     if (!response.ok) {
       const message = response.status === 401

@@ -287,6 +287,35 @@
   font-size: 14px;
 }
 
+.assistant-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0 0;
+}
+
+.assistant-suggestions button {
+  padding: 7px 10px;
+  border: 1px solid #e8dfd8;
+  border-radius: 999px;
+  background: #fff;
+  color: #5f5149;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistant-suggestions button:hover:not(:disabled) {
+  border-color: #bd796e;
+  background: #fff7f4;
+}
+
+.assistant-suggestions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .assistant-history {
   width: min(760px, calc(100% - 40px));
   margin: 0 auto;
@@ -550,6 +579,46 @@
   padding: 9px 11px;
 
   border-radius: 12px;
+}
+
+.assistant-message-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(78%, 680px);
+  margin: -7px 0 0 34px;
+}
+
+.assistant-message-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #e8dfd8;
+  border-radius: 10px;
+  background: #fff;
+  color: #5f5149;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistant-message-action:hover {
+  border-color: #bd796e;
+  background: #fff7f4;
+}
+
+.assistant-message-action span {
+  min-width: 0;
+}
+
+.assistant-message-action small {
+  display: block;
+  margin-top: 2px;
+  color: #8a7c6e;
+  font-size: 11px;
 }
 
 .assistant-message-bot

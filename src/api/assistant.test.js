@@ -50,6 +50,18 @@ describe('Bandy conversation API', () => {
     );
   });
 
+  it('rejects calls without an RH session before contacting Bandy', async () => {
+    sessionStorage.delete('user');
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(api.createConversation()).rejects.toMatchObject({
+      message: 'Connectez-vous à votre compte RH pour utiliser Bandy.',
+      status: 401,
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('uses Bandy pagination defaults and the maximum message page size', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ items: [], page: 0, size: 20, total: 0 }))
@@ -106,6 +118,55 @@ describe('Bandy conversation API', () => {
     await expect(api.listConversations()).rejects.toMatchObject({
       message,
       status,
+    });
+  });
+
+  it('reuses the same conversation for follow-up messages', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({
+        conversationId: 'conversation-1',
+        message: 'Première réponse',
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        conversationId: 'conversation-1',
+        message: 'Réponse de suivi',
+      }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.sendConversationMessage(
+      'conversation-1',
+      'Question initiale',
+      '6f1f4c16-2c0d-4cd2-a702-5fd05011b707'
+    );
+    await api.sendConversationMessage(
+      'conversation-1',
+      'Question de suivi',
+      'e8b9a1bb-5b48-4f07-9f37-31c2ed9ced1b'
+    );
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      'https://bandy.example/api/conversations/conversation-1/messages',
+      'https://bandy.example/api/conversations/conversation-1/messages',
+    ]);
+    expect(fetchMock.mock.calls.map(([, options]) => JSON.parse(options.body).message))
+      .toEqual(['Question initiale', 'Question de suivi']);
+  });
+
+  it('reports server errors and malformed JSON responses explicitly', async () => {
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(jsonResponse({}, 503))
+      .mockResolvedValueOnce(new Response('{', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })));
+
+    await expect(api.listConversations()).rejects.toMatchObject({
+      message: 'Le service Bandy est indisponible (HTTP 503).',
+      status: 503,
+    });
+    await expect(api.listConversations()).rejects.toMatchObject({
+      message: 'Bandy a renvoyé une réponse JSON invalide.',
+      status: 200,
     });
   });
 

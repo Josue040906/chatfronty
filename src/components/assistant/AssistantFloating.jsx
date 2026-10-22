@@ -1,6 +1,8 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Bot,
+  ChevronRight,
   Clock3,
   Maximize2,
   Minimize2,
@@ -17,10 +19,16 @@ import {
   MESSAGE_PAGE_SIZE,
   sendConversationMessage,
 } from '../../api/assistant';
+import { getNavigableAgents } from './assistant-agents';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
 const CONVERSATION_ID_PATTERN = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
+const SUGGESTIONS = [
+  'Affiche les agents du SGEAE',
+  'Combien d’agents par service ?',
+  'Ouvre la fiche de Jean RAKOTO',
+];
 
 function getConversationStorageKey(userId) {
   return userId ? `bandy-active-conversation:${userId}` : null;
@@ -108,7 +116,7 @@ function toUiMessage(message) {
   };
 }
 
-const AssistantMessage = memo(function AssistantMessage({ item }) {
+const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
   return (
     <div
       className={`assistant-message ${item.role === 'user' ? 'assistant-message-user' : 'assistant-message-bot'}`}
@@ -117,11 +125,33 @@ const AssistantMessage = memo(function AssistantMessage({ item }) {
         <div className="assistant-message-avatar"><Bot size={14} /></div>
       )}
       <div className="assistant-message-content">{item.content}</div>
+      {item.agents?.length > 0 && (
+        <div className="assistant-message-actions">
+          {item.agents.map((agent) => (
+            <button
+              key={agent.id}
+              type="button"
+              className="assistant-message-action"
+              onClick={() => onOpenAgent(agent.id)}
+            >
+              <span>
+                Ouvrir la fiche de {agent.name}
+                {agent.meta && <small>{agent.meta}</small>}
+                {agent.similarityPercent !== null && (
+                  <small>Similarité du nom : {agent.similarityPercent}%</small>
+                )}
+              </span>
+              <ChevronRight size={15} />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 });
 
 export default function AssistantFloating({ user }) {
+  const navigate = useNavigate();
   const userId = user?.userId;
   const conversationStorageKey = getConversationStorageKey(userId);
   const [open, setOpen] = useState(false);
@@ -159,6 +189,12 @@ export default function AssistantFloating({ user }) {
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
+  const openAgentProfile = useCallback((agentId) => {
+    setOpen(false);
+    setExpanded(false);
+    setHistoryOpen(false);
+    navigate(`/agents/${encodeURIComponent(agentId)}`);
+  }, [navigate]);
 
   useEffect(() => {
     const requestId = ++conversationRequestRef.current;
@@ -390,10 +426,10 @@ export default function AssistantFloating({ user }) {
     }
   }
 
-  async function handleSend(event) {
+  async function handleSend(event, suggestedMessage) {
     event?.preventDefault();
 
-    const text = message.trim();
+    const text = (suggestedMessage ?? message).trim();
     if (!text || sendingRef.current || failedSend
       || activeChat?.status === 'ARCHIVED') {
       return;
@@ -497,6 +533,7 @@ export default function AssistantFloating({ user }) {
                 id: crypto.randomUUID(),
                 role: 'assistant',
                 content: response.message,
+                agents: getNavigableAgents(response.toolResults),
               },
             ],
             totalMessages: (chat.totalMessages || 0) + 1,
@@ -735,7 +772,11 @@ export default function AssistantFloating({ user }) {
                   </button>
                 )}
                 {messages.map((item) => (
-                  <AssistantMessage key={item.id} item={item} />
+                  <AssistantMessage
+                    key={item.id}
+                    item={item}
+                    onOpenAgent={openAgentProfile}
+                  />
                 ))}
                 {pendingInitialMessage && (
                   <div className="assistant-message assistant-message-user">
@@ -760,20 +801,34 @@ export default function AssistantFloating({ user }) {
                     : 'Que souhaitez-vous savoir aujourd’hui ?'}
                 </p>
                 {!archivedConversation && (
-                  <form className="assistant-panel-input assistant-panel-input-centered" onSubmit={handleSend}>
-                    <textarea
-                      value={message}
-                      onChange={(event) => setMessage(event.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Posez votre question sur les agents, services ou procédures..."
-                      rows={2}
-                      disabled={loading || Boolean(failedSend)}
-                      aria-label="Message à l'assistant SYGPERS"
-                    />
-                    <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
-                      <Send size={17} />
-                    </button>
-                  </form>
+                  <>
+                    <div className="assistant-suggestions" aria-label="Suggestions">
+                      {SUGGESTIONS.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          disabled={loading || Boolean(failedSend)}
+                          onClick={() => void handleSend(undefined, suggestion)}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                    <form className="assistant-panel-input assistant-panel-input-centered" onSubmit={handleSend}>
+                      <textarea
+                        value={message}
+                        onChange={(event) => setMessage(event.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Posez votre question sur les agents, services ou procédures..."
+                        rows={2}
+                        disabled={loading || Boolean(failedSend)}
+                        aria-label="Message à l'assistant SYGPERS"
+                      />
+                      <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
+                        <Send size={17} />
+                      </button>
+                    </form>
+                  </>
                 )}
               </div>
             )}
