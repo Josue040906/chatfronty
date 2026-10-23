@@ -1,13 +1,13 @@
 {
   "planHash": "15da2c9c3cbd8fa62ca9470f9575a4b0c0a0c6d0c049ab45edcfe3da20305e84",
   "phase": "standalone",
-  "recordedAtUtc": "2026-10-22T08:26:52.9413302Z",
+  "recordedAtUtc": "2026-10-22T22:54:13.5992137Z",
   "retryCount": 0,
   "resetBaseline": false,
   "complete": true,
   "result": {
     "setupSucceeded": true,
-    "setupDurationMs": 135812,
+    "setupDurationMs": 101276,
     "setupFailureOutput": null,
     "assertions": [
       {
@@ -19,8 +19,8 @@
         "skipped": false,
         "skippedReason": null,
         "exitCode": 0,
-        "outputSample": "\r\n\u003E chatfronty@0.0.0 build\r\n\u003E vite build\r\n\r\n\u001B[36mvite v8.3.0 \u001B[32mbuilding client environment for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u2713 2194 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/index.html                   0.67 kB \u2502 gzip:   0.40 kB\r\ndist/assets/index-DGE1nWNE.css  198.49 kB \u2502 gzip:  33.23 kB\r\ndist/assets/index-DgfEe_g9.js   926.32 kB \u2502 gzip: 249.99 kB\r\n\r\n\u001B[32m\u2713 built in 3.52s\u001B[39m\r\n\u001B[33m[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001B[39m\r\n",
-        "durationMs": 6890
+        "outputSample": "\r\n\u003E chatfronty@0.0.0 build\r\n\u003E vite build\r\n\r\n\u001B[36mvite v8.3.0 \u001B[32mbuilding client environment for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u2713 2195 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/index.html                   0.67 kB \u2502 gzip:   0.40 kB\r\ndist/assets/index-DGE1nWNE.css  198.49 kB \u2502 gzip:  33.23 kB\r\ndist/assets/index-BMDaOBXA.js   926.54 kB \u2502 gzip: 250.08 kB\r\n\r\n\u001B[32m\u2713 built in 2.43s\u001B[39m\r\n\u001B[33m[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001B[39m\r\n",
+        "durationMs": 4621
       },
       {
         "name": "full-eslint",
@@ -32,7 +32,7 @@
         "skippedReason": null,
         "exitCode": 1,
         "outputSample": "\r\n\u003E chatfronty@0.0.0 lint\r\n\u003E eslint .\r\n\r\n\r\nD:\\Projets\\chatfronty\\src\\pages\\Administration\\DirectionsPage.jsx\r\n  68:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders\r\n\r\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\r\n* Update external systems with the latest state from React.\r\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\r\n\r\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\r\n\r\n  66 |\r\n  67 |   useEffect(() =\u003E {\r\n\u003E 68 |     loadDirections();\r\n     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\r\n  69 |   }, []);\r\n  70 |\r\n  71 |   function resetForm() {  react-hooks/set-state-in-effect\r\n\r\nD:\\Projets\\chatfronty\\src\\pages\\Administration\\PostesPage.jsx\r\n  74:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders\r\n\r\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\r\n* Update external systems with the latest state from React.\r\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\r\n\r\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\r\n\r\n  72 |\r\n  73 |   useEffect(() =\u003E {\r\n\u003E 74 |     loadData();\r\n     |     ^^^^^^^^ Avoid calling setState() directly within an effect\r\n  75 |   }, []);\r\n  76 |\r\n  77 |   function resetForm() {  react-hooks/set-state-in-effect\r\n\r\nD:\\Projets\\chatfronty\\src\\pages\\Administration\\ReglesRhPage.jsx\r\n  129:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders\r\n\r\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\r\n* Update external systems with the latest state from React.\r\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\r\n\r\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\r\n\r\n  127 |\r\n  128 |   useEffect(() =\u003E {\r\n\u003E 129 |     loadRegles();\r\n      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect\r\n  130 |   }, []);\r\n  131 |\r\n  132 |   function resetForm() {  react-hooks/set-state-in-effect\r\n\r\nD:\\Projets\\chatfronty\\src\\pages\\Administration\\ServicesPage.jsx\r\n  76:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders\r\n\r\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\r\n* Update external systems with the latest state from React.\r\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\r\n\r\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\r\n\r\n  74 |\r\n  75 |   useEffect(() =\u003E {\r\n\u003E 76 |     loadData();\r\n     |     ^^^^^^^^ Avoid calling setState() directly within an effect\r\n  77 |   }, []);\r\n  78 |\r\n  79 |   function openCreateModal() {  react-hooks/set-state-in-effect\r\n\r\nD:\\\n\u2026[truncated]",
-        "durationMs": 31312
+        "durationMs": 17757
       },
       {
         "name": "tests-pass",
@@ -43,13 +43,13 @@
         "skipped": false,
         "skippedReason": null,
         "exitCode": 0,
-        "outputSample": "\r\n\u003E chatfronty@0.0.0 test\r\n\u003E vitest run\r\n\r\n\r\n RUN  v4.1.12 D:/Projets/chatfronty\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  13 passed (13)\r\n   Start at  11:26:46\r\n   Duration  1.01s (transform 224ms, setup 0ms, import 248ms, tests 254ms, environment 0ms)\r\n\r\n",
-        "durationMs": 3211,
+        "outputSample": "\r\n\u003E chatfronty@0.0.0 test\r\n\u003E vitest run\r\n\r\n\r\n RUN  v4.1.12 D:/Projets/chatfronty\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  17 passed (17)\r\n   Start at  01:54:10\r\n   Duration  1.07s (transform 356ms, setup 0ms, import 406ms, tests 346ms, environment 1ms)\r\n\r\n",
+        "durationMs": 2645,
         "testResults": {
           "testFramework": "vitest",
           "runnerDetectedFrom": "package_json",
-          "testsTotal": 13,
-          "testsPassed": 13,
+          "testsTotal": 17,
+          "testsPassed": 17,
           "testsFailed": 0,
           "testsSkipped": 0,
           "parseFailed": false
@@ -64,8 +64,8 @@
         "skipped": false,
         "skippedReason": null,
         "exitCode": null,
-        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\n\u003Chtml lang=\u0022fr\u0022\u003E\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\n    \u003Clink rel=\u0022icon\u0022 type=\u0022image/svg\u002Bxml\u0022 href=\u0022/favicon.svg\u0022 /\u003E\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\n    \u003Clink rel=\u0022preconnect\u0022 href=\u0022https://fonts.googleapis.com\u0022 /\u003E\n    \u003Clink href=\u0022https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700\u0026family=Public\u002BSans:wght@400;500;600;700\u0026display=swap\u0022 rel=\u0022stylesheet\u0022 /\u003E\n    \u003Ctitle\u003ESYGPERS\u003C/title\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\n    \u003Cscript type=\u0022module\u0022 src=\u0022/src/main.jsx\u0022\u003E\u003C/script\u003E\n  \u003C/body\u003E\n\u003C/html\u003E\n--- server output ---\n\r\n\u003E chatfronty@0.0.0 dev\r\n\u003E vite\r\n\r\n\r\n  \u001B[32m\u001B[1mVITE\u001B[22m v8.3.0\u001B[39m  \u001B[2mready in \u001B[0m\u001B[1m598\u001B[22m\u001B[2m\u001B[0m ms\u001B[22m\r\n\r\n  \u001B[32m\u279C\u001B[39m  \u001B[1mLocal\u001B[22m:   \u001B[36mhttp://localhost:\u001B[1m5173\u001B[22m/\u001B[39m\r\n\u001B[2m  \u001B[32m\u279C\u001B[39m  \u001B[1mNetwork\u001B[22m\u001B[2m: use \u001B[22m\u001B[1m--host\u001B[22m\u001B[2m to expose\u001B[22m\r\n\u001B[2m11:26:51\u001B[22m \u001B[36m\u001B[1m[vite]\u001B[22m\u001B[39m \u001B[90m\u001B[2m(client)\u001B[22m\u001B[39m [optimizer] bundling dependencies...\r\n",
-        "durationMs": 4198
+        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\n\u003Chtml lang=\u0022fr\u0022\u003E\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\n    \u003Clink rel=\u0022icon\u0022 type=\u0022image/svg\u002Bxml\u0022 href=\u0022/favicon.svg\u0022 /\u003E\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\n    \u003Clink rel=\u0022preconnect\u0022 href=\u0022https://fonts.googleapis.com\u0022 /\u003E\n    \u003Clink href=\u0022https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700\u0026family=Public\u002BSans:wght@400;500;600;700\u0026display=swap\u0022 rel=\u0022stylesheet\u0022 /\u003E\n    \u003Ctitle\u003ESYGPERS\u003C/title\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\n    \u003Cscript type=\u0022module\u0022 src=\u0022/src/main.jsx\u0022\u003E\u003C/script\u003E\n  \u003C/body\u003E\n\u003C/html\u003E\n--- server output ---\n\r\n\u003E chatfronty@0.0.0 dev\r\n\u003E vite\r\n\r\n\r\n  \u001B[32m\u001B[1mVITE\u001B[22m v8.3.0\u001B[39m  \u001B[2mready in \u001B[0m\u001B[1m532\u001B[22m\u001B[2m\u001B[0m ms\u001B[22m\r\n\r\n  \u001B[32m\u279C\u001B[39m  \u001B[1mLocal\u001B[22m:   \u001B[36mhttp://localhost:\u001B[1m5173\u001B[22m/\u001B[39m\r\n\u001B[2m  \u001B[32m\u279C\u001B[39m  \u001B[1mNetwork\u001B[22m\u001B[2m: use \u001B[22m\u001B[1m--host\u001B[22m\u001B[2m to expose\u001B[22m\r\n",
+        "durationMs": 1664
       }
     ],
     "executions": [

@@ -20,6 +20,7 @@ import {
   sendConversationMessage,
 } from '../../api/assistant';
 import { getNavigableAgents } from './assistant-agents';
+import { toUiMessages } from './assistant-history';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
@@ -106,14 +107,6 @@ function formatChatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
-}
-
-function toUiMessage(message) {
-  return {
-    id: message.id,
-    role: message.role.toLowerCase() === 'user' ? 'user' : 'assistant',
-    content: message.content,
-  };
 }
 
 const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
@@ -236,12 +229,16 @@ export default function AssistantFloating({ user }) {
 
         setChats([{
           ...storedConversation,
-          messages: lastPage.items.map(toUiMessage),
+          messages: toUiMessages(lastPage.items),
           messagesPage: lastPageNumber,
           totalMessages: firstPage.total,
         }]);
       } catch (error) {
-        if (!controller.signal.aborted && requestId === conversationRequestRef.current) {
+        if (
+          error.status !== 401 &&
+          !controller.signal.aborted &&
+          requestId === conversationRequestRef.current
+        ) {
           console.error('Impossible de restaurer la conversation Bandy :', error);
           setConversationError(error.message || 'Impossible de restaurer la conversation.');
         }
@@ -321,8 +318,10 @@ export default function AssistantFloating({ user }) {
       setHistoryPage(page);
       setHistoryTotal(data.total);
     } catch (error) {
-      console.error('Impossible de charger l’historique Bandy :', error);
-      setHistoryError(error.message || 'Impossible de charger les conversations.');
+      if (error.status !== 401) {
+        console.error('Impossible de charger l’historique Bandy :', error);
+        setHistoryError(error.message || 'Impossible de charger les conversations.');
+      }
     } finally {
       setHistoryLoading(false);
       setHistoryLoadingMore(false);
@@ -373,14 +372,18 @@ export default function AssistantFloating({ user }) {
         chat.id === chatId
           ? {
               ...chat,
-              messages: lastPage.items.map(toUiMessage),
+              messages: toUiMessages(lastPage.items),
               messagesPage: lastPageNumber,
               totalMessages: firstPage.total,
             }
           : chat
       )));
     } catch (error) {
-      if (!controller.signal.aborted && requestId === conversationRequestRef.current) {
+      if (
+        error.status !== 401 &&
+        !controller.signal.aborted &&
+        requestId === conversationRequestRef.current
+      ) {
         console.error('Impossible de charger cette conversation Bandy :', error);
         setConversationError(error.message || 'Impossible de charger cette conversation.');
       }
@@ -412,15 +415,17 @@ export default function AssistantFloating({ user }) {
         chat.id === activeChat.id
           ? {
               ...chat,
-              messages: [...data.items.map(toUiMessage), ...chat.messages],
+              messages: [...toUiMessages(data.items), ...chat.messages],
               messagesPage: pageNumber,
               totalMessages: data.total,
             }
           : chat
       )));
     } catch (error) {
-      console.error('Impossible de charger les messages précédents :', error);
-      setConversationError(error.message || 'Impossible de charger les messages précédents.');
+      if (error.status !== 401) {
+        console.error('Impossible de charger les messages précédents :', error);
+        setConversationError(error.message || 'Impossible de charger les messages précédents.');
+      }
     } finally {
       setLoadingEarlier(false);
     }
@@ -491,16 +496,18 @@ export default function AssistantFloating({ user }) {
 
       await completeSend(conversationId, text, idempotencyKey);
     } catch (error) {
-      console.error('Erreur assistant SYGPERS :', error);
-      setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
-      setFailedSend({
-        conversationId,
-        idempotencyKey,
-        text,
-        optimisticMessageAdded,
-      });
-      if (!optimisticMessageAdded) {
-        setMessage(text);
+      if (error.status !== 401) {
+        console.error('Erreur assistant SYGPERS :', error);
+        setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
+        setFailedSend({
+          conversationId,
+          idempotencyKey,
+          text,
+          optimisticMessageAdded,
+        });
+        if (!optimisticMessageAdded) {
+          setMessage(text);
+        }
       }
     } finally {
       sendingRef.current = false;
@@ -606,9 +613,11 @@ export default function AssistantFloating({ user }) {
         failedSend.idempotencyKey
       );
     } catch (error) {
-      console.error('Nouvelle tentative assistant échouée :', error);
-      setSendError(error.message || 'Impossible de renvoyer le message à Bandy.');
-      setFailedSend({ ...failedSend, conversationId });
+      if (error.status !== 401) {
+        console.error('Nouvelle tentative assistant échouée :', error);
+        setSendError(error.message || 'Impossible de renvoyer le message à Bandy.');
+        setFailedSend({ ...failedSend, conversationId });
+      }
     } finally {
       sendingRef.current = false;
       setLoading(false);

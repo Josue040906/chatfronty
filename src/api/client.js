@@ -33,10 +33,20 @@ async function parseResponse(response) {
   return null;
 }
 
+export function notifySessionExpired() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('auth:session-expired'));
+  }
+}
+
 async function handleResponse(response) {
   const data = await parseResponse(response);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      notifySessionExpired();
+    }
+
     const message =
       data?.message ||
       `Erreur API ${response.status}: ${response.statusText}`;

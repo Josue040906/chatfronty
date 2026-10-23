@@ -1,4 +1,8 @@
-import { BANDY_API_URL, getAuthHeaders } from './client';
+import {
+  BANDY_API_URL,
+  getAuthHeaders,
+  notifySessionExpired,
+} from './client';
 
 const CONVERSATIONS_URL = `${BANDY_API_URL}/api/conversations`;
 const MESSAGE_PAGE_SIZE = 100;
@@ -74,6 +78,9 @@ async function request(
     }
 
     if (!response.ok) {
+      if (response.status === 401) {
+        notifySessionExpired();
+      }
       const message = response.status === 401
         ? 'Votre session a expiré. Reconnectez-vous pour continuer.'
         : response.status === 403

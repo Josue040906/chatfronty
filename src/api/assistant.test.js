@@ -121,6 +121,20 @@ describe('Bandy conversation API', () => {
     });
   });
 
+  it('signals the auth provider when Bandy rejects an expired RH session', async () => {
+    const dispatchEvent = vi.fn();
+    vi.stubGlobal('window', { dispatchEvent });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({}, 401)));
+
+    await expect(api.listConversations()).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(dispatchEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'auth:session-expired' })
+    );
+  });
+
   it('reuses the same conversation for follow-up messages', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({

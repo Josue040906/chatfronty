@@ -691,12 +691,22 @@ export default function OrganisationPage() {
   const totalDirectors = organisation.directions.length;
   const totalServices = data.services.length;
   const fitDiagram = useCallback(() => {
-    flowRef.current?.fitView({ padding: 0.18, duration: 350 });
+    flowRef.current?.fitView({
+      padding: 0.1,
+      minZoom: 0.18,
+      maxZoom: 1.05,
+      duration: 350,
+    });
   }, []);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      flowRef.current?.fitView({ padding: 0.18, duration: 280 });
+      flowRef.current?.fitView({
+        padding: 0.1,
+        minZoom: 0.18,
+        maxZoom: 1.05,
+        duration: 280,
+      });
     });
     return () => cancelAnimationFrame(frame);
   }, [structureQuery]);
@@ -817,7 +827,7 @@ export default function OrganisationPage() {
                 }
               }}
               fitView
-              fitViewOptions={{ padding: 0.18, minZoom: 0.18, maxZoom: 0.9 }}
+              fitViewOptions={{ padding: 0.1, minZoom: 0.18, maxZoom: 1.05 }}
               minZoom={0.12}
               maxZoom={1.5}
               nodesDraggable={false}

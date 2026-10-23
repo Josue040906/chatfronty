@@ -61,6 +61,7 @@ export default function Header({
 
   const notificationsRef = useRef(null);
   const userMenuRef = useRef(null);
+  const markingAllReadRef = useRef(false);
   const userId = user?.userId;
   const avatarUrl = getEmployeePhotoUrl(user?.photo);
   const displayName =
@@ -89,7 +90,11 @@ export default function Header({
       setNotifications(data.notifications);
       setUnreadCount(data.nonLues);
       setNotificationsError('');
+      return data;
     } catch (error) {
+      if (error.status === 401) {
+        return null;
+      }
       if (error.name !== 'AbortError') {
         console.error(
           'Erreur lors du chargement des notifications :',
@@ -102,6 +107,7 @@ export default function Header({
           )
         );
       }
+      return null;
     } finally {
       if (showLoading && !signal?.aborted) {
         setNotificationsLoading(false);
@@ -184,11 +190,12 @@ export default function Header({
     }
   };
 
-  const marquerToutesCommeLues = async () => {
-    if (unreadCount === 0 || markingAllRead) {
+  const marquerToutesCommeLues = async (force = false) => {
+    if ((!force && unreadCount === 0) || markingAllReadRef.current) {
       return;
     }
 
+    markingAllReadRef.current = true;
     setNotificationActionError('');
     setMarkingAllRead(true);
 
@@ -213,7 +220,22 @@ export default function Header({
         )
       );
     } finally {
+      markingAllReadRef.current = false;
       setMarkingAllRead(false);
+    }
+  };
+
+  const basculerNotifications = async () => {
+    if (notificationsOpen) {
+      setNotificationsOpen(false);
+      return;
+    }
+
+    setNotificationsOpen(true);
+    setNotificationActionError('');
+    const data = await chargerNotifications(undefined, true);
+    if (data?.nonLues > 0) {
+      await marquerToutesCommeLues(true);
     }
   };
 
@@ -253,10 +275,7 @@ export default function Header({
               ? `, ${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
               : ''}`}
             aria-expanded={notificationsOpen}
-            onClick={() => {
-              setNotificationsOpen((current) => !current);
-              setNotificationActionError('');
-            }}
+            onClick={() => void basculerNotifications()}
           >
             <Bell size={18} />
 

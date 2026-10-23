@@ -28,6 +28,18 @@ export function useAuth() {
   const [user, setUser] = useState(getStoredUser);
 
   useEffect(() => {
+    const expireSession = () => {
+      localStorage.removeItem('user');
+      setUser(null);
+    };
+
+    window.addEventListener('auth:session-expired', expireSession);
+    return () => {
+      window.removeEventListener('auth:session-expired', expireSession);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!user?.userId) {
       return undefined;
     }
@@ -56,6 +68,9 @@ export function useAuth() {
           return updatedUser;
         });
       } catch (error) {
+        if (error.status === 401) {
+          return;
+        }
         console.error('Impossible de synchroniser la photo utilisateur.', error);
       }
     }

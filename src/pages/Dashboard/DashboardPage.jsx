@@ -3,6 +3,8 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Building2,
+  ChartNoAxesColumnIncreasing,
+  ChartPie,
   Search,
   Users,
 } from 'lucide-react';
@@ -12,7 +14,185 @@ import EmployeePhoto from '../../components/EmployeePhoto';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
-} from '../../utils/employee';  
+} from '../../utils/employee';
+import {
+  getEmployeeDistribution,
+  getEmployeesByHiringYear,
+  getPieSlices,
+  getPieSlicePath,
+} from './dashboard-metrics';
+
+const CHART_COLORS = [
+  '#6e4b32',
+  '#b8874a',
+  '#4e7768',
+  '#8b657b',
+  '#517a91',
+  '#b86b50',
+  '#8b8052',
+  '#6a718b',
+  '#a27e61',
+  '#66817e',
+];
+const NUMBER_FORMATTER = new Intl.NumberFormat('fr-FR');
+
+function EmployeePieChart({ items }) {
+  const total = items.reduce((sum, item) => sum + item.value, 0);
+  const slices = total > 0 ? getPieSlices(items, total) : [];
+
+  return (
+    <div className="dashboard-pie-layout">
+      {total === 0 ? (
+        <div className="dashboard-chart-empty">
+          Aucune donnée d’effectif à représenter.
+        </div>
+      ) : (
+        <svg
+          className="dashboard-pie-chart"
+          viewBox="0 0 220 220"
+          role="img"
+          aria-label={`Répartition de ${NUMBER_FORMATTER.format(total)} agents`}
+        >
+          {slices.map((item, index) => {
+            const isWholeCircle = item.value === total;
+
+            return isWholeCircle ? (
+              <circle
+                key={item.label}
+                cx="110"
+                cy="110"
+                r="104"
+                fill={CHART_COLORS[index % CHART_COLORS.length]}
+                stroke="#fbf8f2"
+                strokeWidth="2"
+              />
+            ) : (
+              <path
+                key={item.label}
+                d={getPieSlicePath(item.startAngle, item.endAngle, 104)}
+                transform="translate(6 6)"
+                fill={CHART_COLORS[index % CHART_COLORS.length]}
+                stroke="#fbf8f2"
+                strokeWidth="2"
+              >
+                <title>
+                  {item.label}: {NUMBER_FORMATTER.format(item.value)} agents
+                  {' '}({Math.round(item.value / total * 100)} %)
+                </title>
+              </path>
+            );
+          })}
+        </svg>
+      )}
+
+      <ul className="dashboard-chart-legend">
+        {items.map((item, index) => (
+          <li key={item.label}>
+            <span
+              className="dashboard-chart-swatch"
+              style={{ '--chart-color': CHART_COLORS[index % CHART_COLORS.length] }}
+              aria-hidden="true"
+            />
+            <span className="dashboard-chart-legend-label" title={item.label}>
+              {item.label}
+            </span>
+            <strong>{NUMBER_FORMATTER.format(item.value)}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function HiringYearBarChart({ items }) {
+  if (items.length === 0) {
+    return (
+      <div className="dashboard-chart-empty">
+        Aucune date d’embauche valide n’est disponible.
+      </div>
+    );
+  }
+
+  const chartHeight = 240;
+  const chartWidth = Math.max(580, items.length * 54 + 80);
+  const left = 48;
+  const right = chartWidth - 18;
+  const top = 22;
+  const bottom = 194;
+  const plotHeight = bottom - top;
+  const maximum = Math.max(...items.map((item) => item.value), 1);
+  const slotWidth = (right - left) / items.length;
+  const barWidth = Math.min(38, slotWidth * 0.62);
+  const ticks = 4;
+
+  return (
+    <div className="dashboard-bar-scroll">
+      <svg
+        className="dashboard-bar-chart"
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        width={chartWidth}
+        role="img"
+        aria-label="Nombre d’agents recrutés par année"
+      >
+        {Array.from({ length: ticks + 1 }, (_, index) => {
+          const value = Math.round(maximum * (ticks - index) / ticks);
+          const y = top + plotHeight * index / ticks;
+
+          return (
+            <g key={index}>
+              <line
+                x1={left}
+                y1={y}
+                x2={right}
+                y2={y}
+                className="dashboard-chart-gridline"
+              />
+              <text x={left - 10} y={y + 4} textAnchor="end">
+                {NUMBER_FORMATTER.format(value)}
+              </text>
+            </g>
+          );
+        })}
+        {items.map((item, index) => {
+          const height = item.value / maximum * plotHeight;
+          const x = left + index * slotWidth + (slotWidth - barWidth) / 2;
+          const y = bottom - height;
+
+          return (
+            <g key={item.year}>
+              <rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={height}
+                rx="5"
+                className="dashboard-bar"
+              >
+                <title>{item.year} : {NUMBER_FORMATTER.format(item.value)} agents</title>
+              </rect>
+              <text
+                x={x + barWidth / 2}
+                y={Math.max(top - 3, y - 7)}
+                textAnchor="middle"
+                className="dashboard-bar-value"
+              >
+                {NUMBER_FORMATTER.format(item.value)}
+              </text>
+              <text
+                x={x + barWidth / 2}
+                y={bottom + 22}
+                textAnchor="middle"
+                className="dashboard-bar-year"
+              >
+                {item.year}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
 
 function formatName(employee) {
   return `${employee.prenom || ''} ${employee.nom || ''}`.trim();
@@ -27,6 +207,7 @@ export default function DashboardPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [distributionBy, setDistributionBy] = useState('service');
 
   useEffect(() => {
     let cancelled = false;
@@ -62,22 +243,14 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const serviceStats = useMemo(() => {
-    return data.services
-      .map((service) => {
-        const employees = data.employees.filter(
-          (employee) =>
-            employee.code_service === service.code
-        );
-
-        return {
-          ...service,
-          employeeCount: employees.length,
-        };
-      })
-      .sort((a, b) => b.employeeCount - a.employeeCount);
-  }, [data.services, data.employees]);
-
+  const distributionStats = useMemo(
+    () => getEmployeeDistribution(data.employees, distributionBy),
+    [data.employees, distributionBy]
+  );
+  const hiringYearStats = useMemo(
+    () => getEmployeesByHiringYear(data.employees),
+    [data.employees]
+  );
   const recentEmployees = data.employees.slice(0, 5);
 
   if (loading) {
@@ -166,51 +339,64 @@ export default function DashboardPage() {
         </article>
       </section>
 
-      <section className="dashboard-main-grid">
-        <article className="dashboard-card dashboard-organisation-card">
+      <section className="dashboard-chart-grid">
+        <article className="dashboard-card dashboard-chart-card">
           <div className="dashboard-card-header">
             <div>
               <p className="dashboard-card-eyebrow">
                 ORGANISATION
               </p>
 
-              <h2>Répartition par service</h2>
+              <h2>Effectifs par {distributionBy === 'service' ? 'service' : 'direction'}</h2>
             </div>
+            <ChartPie size={19} aria-hidden="true" />
           </div>
 
-          <div className="dashboard-service-list">
-            {serviceStats.map((service) => (
-              <div
-                className="dashboard-service-row"
-                key={service.id}
-              >
-                <div className="dashboard-service-info">
-                  <strong>{service.code}</strong>
-
-                  <span>{service.nom}</span>
-                </div>
-
-                <div className="dashboard-service-count">
-                  {service.employeeCount}
-                </div>
-              </div>
-            ))}
+          <div className="dashboard-chart-switch" aria-label="Grouper les effectifs">
+            <button
+              type="button"
+              aria-pressed={distributionBy === 'service'}
+              onClick={() => setDistributionBy('service')}
+            >
+              Par service
+            </button>
+            <button
+              type="button"
+              aria-pressed={distributionBy === 'direction'}
+              onClick={() => setDistributionBy('direction')}
+            >
+              Par direction
+            </button>
           </div>
+
+          <EmployeePieChart items={distributionStats} />
         </article>
 
-        <article className="dashboard-card">
+        <article className="dashboard-card dashboard-chart-card">
           <div className="dashboard-card-header">
             <div>
               <p className="dashboard-card-eyebrow">
-                AGENTS
+                RECRUTEMENT
               </p>
 
-              <h2>Agents enregistrés</h2>
+              <h2>Agents recrutés par année</h2>
             </div>
-
-            <Search size={18} />
+            <ChartNoAxesColumnIncreasing size={19} aria-hidden="true" />
           </div>
 
+          <HiringYearBarChart items={hiringYearStats} />
+        </article>
+      </section>
+
+      <section className="dashboard-main-grid">
+        <article className="dashboard-card">
+          <div className="dashboard-card-header">
+            <div>
+              <p className="dashboard-card-eyebrow">AGENTS</p>
+              <h2>Agents enregistrés</h2>
+            </div>
+            <Search size={18} />
+          </div>
           <div className="dashboard-employee-list">
             {recentEmployees.map((employee) => (
               <div
