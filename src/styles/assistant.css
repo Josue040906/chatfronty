@@ -339,14 +339,21 @@
   font-size: 12px;
 }
 
+.assistant-history-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #e9e0d6;
+}
+
 .assistant-history-item {
-  width: 100%;
+  min-width: 0;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 13px;
   padding: 14px 12px;
   border: 0;
-  border-top: 1px solid #e9e0d6;
   background: transparent;
   color: #8b6643;
   text-align: left;
@@ -383,6 +390,56 @@
 .assistant-history-item-active,
 .assistant-history-item-active:hover {
   background: #f3eee6;
+}
+
+.assistant-history-actions,
+.assistant-history-rename {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.assistant-history-actions button,
+.assistant-history-rename button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #75462c;
+  cursor: pointer;
+}
+
+.assistant-history-actions button:hover:not(:disabled),
+.assistant-history-rename button:hover:not(:disabled) {
+  border-color: #e4d7c8;
+  background: #fff;
+}
+
+.assistant-history-actions button:disabled,
+.assistant-history-rename button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.assistant-history-rename {
+  width: 100%;
+  padding: 8px 6px;
+  border-bottom: 1px solid #e9e0d6;
+}
+
+.assistant-history-rename input {
+  min-width: 0;
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid #d9c8b6;
+  border-radius: 8px;
+  color: #3a2a1e;
+  font: inherit;
+  font-size: 13px;
 }
 
 .assistant-history-more {

@@ -14,15 +14,26 @@ côté serveur.
   `{ conversationId, items, page, size, total }`. Bandy accepte au maximum
   100 messages par page ; chaque message expose notamment `id`, `role`,
   `content` et `createdAt`.
-- `POST /api/conversations/{id}/messages` reçoit `{ "message": "..." }` et
-  renvoie un `ChatResponse` JSON avec `message`, `toolResults` et
-  `conversationId`.
-- `searchEmployeesApproximately` renvoie les agents les plus proches, triés
-  par `score_correspondance` décroissant. Ce score de similarité textuelle de
-  0 à 1 n'est pas une probabilité d'identité. Si au moins deux agents sont
-  disponibles, l'API renvoie au moins les deux premiers, même si leur score
-  est inférieur au seuil habituel. Les filtres optionnels `service`, `poste`
-  et `direction` permettent d'affiner la même recherche lors d'un suivi.
+- `PATCH /api/conversations/{id}` renomme une conversation avec
+  `{ "label": "..." }`. `DELETE /api/conversations/{id}` supprime
+  définitivement la conversation et ses messages; le frontend demande une
+  confirmation avant cette action. Une suppression est refusée avec `409`
+  tant que la conversation traite un message.
+- `POST /api/conversations/{id}/messages/stream` reçoit
+  `{ "message": "..." }` et renvoie un flux SSE. Les événements `token`
+  contiennent un fragment `{ "text": "..." }`, `done` contient le
+  `ChatResponse` final (`message`, `toolResults`, `conversationId`), et
+  `error` contient un message explicite si le traitement échoue après
+  l'ouverture du flux. Le endpoint JSON `/messages` reste disponible pour les
+  clients historiques.
+- Bandy ne transmet à Gemini qu'un seul outil, `get_agent_profile`. Cet outil
+  renvoie un profil structuré (identité professionnelle, âge, diplômes,
+  parcours et poste actuel). Les compétences sont indiquées comme indisponibles
+  lorsque l'API RH ne possède aucune donnée à leur sujet.
+- Le profil et les derniers messages sont réutilisés depuis le contexte de la
+  conversation. Bandy conserve les rôles utilisateur/assistant lors de leur
+  envoi au modèle ; le navigateur ne renvoie pas une copie supplémentaire de
+  l'historique.
 - Les réponses et messages persistés sont chargés depuis Bandy. Le navigateur
   ne transmet aucun identifiant de propriétaire : Bandy valide le jeton,
   dérive le propriétaire du `sub` signé, puis vérifie son accès à chaque
@@ -50,8 +61,8 @@ dans le chat.
   même valeur. Ne jamais l'ajouter aux variables `VITE_*`.
 - Bandy nécessite sa base PostgreSQL et ses migrations Flyway, ainsi que la
   configuration Gemini indiquée dans son README.
-- Pour les réponses utilisant les données RH, Bandy doit avoir les outils
-  `assistant-rh-api` enregistrés avec une URL joignable depuis le serveur
+- Pour les réponses utilisant les données RH, Bandy doit avoir l'outil
+  `get_agent_profile` enregistré avec une URL joignable depuis le serveur
   Bandy. Bandy transmet le jeton Bearer utilisateur à cette API ; celle-ci
   applique ses propres contrôles d'accès.
 

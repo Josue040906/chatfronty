@@ -132,6 +132,7 @@ export default function AssistantPanel({
       { id: crypto.randomUUID(), role: 'user', text: query },
     ]);
 
+    let assistantMessageId = null;
     try {
       let targetConversationId = conversationId;
       if (!targetConversationId) {
@@ -143,21 +144,41 @@ export default function AssistantPanel({
         setConversationId(targetConversationId);
       }
 
+      assistantMessageId = crypto.randomUUID();
+      setMessages((current) => [
+        ...current,
+        { id: assistantMessageId, role: 'assistant', text: '' },
+      ]);
       const payload = await sendConversationMessage(
         targetConversationId,
         query,
-        crypto.randomUUID()
+        crypto.randomUUID(),
+        {
+          onToken: (token) => {
+            setMessages((current) => current.map((item) => (
+              item.id === assistantMessageId
+                ? { ...item, text: item.text + token }
+                : item
+            )));
+          },
+        }
       );
       if (typeof payload?.message !== 'string') {
         throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
       }
 
-      setMessages((current) => [
-        ...current,
-        { id: crypto.randomUUID(), role: 'assistant', text: payload.message },
-      ]);
+      setMessages((current) => current.map((item) => (
+        item.id === assistantMessageId
+          ? { ...item, text: payload.message }
+          : item
+      )));
     } catch (error) {
       console.error('Erreur lors de la communication avec Bandy :', error);
+      if (assistantMessageId) {
+        setMessages((current) => current.filter(
+          (item) => item.id !== assistantMessageId
+        ));
+      }
 
       setMessages((current) => [
         ...current,

@@ -85,6 +85,34 @@ describe('Bandy conversation API', () => {
     );
   });
 
+  it('renames and permanently deletes an owned conversation through Bandy', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(api.renameConversation('conversation-1', 'Suivi carrière'))
+      .resolves.toBeNull();
+    await expect(api.deleteConversation('conversation-1')).resolves.toBeNull();
+
+    expect(fetchMock.mock.calls.map(([url, options]) => ({
+      url,
+      method: options.method,
+      body: options.body,
+    }))).toEqual([
+      {
+        url: 'https://bandy.example/api/conversations/conversation-1',
+        method: 'PATCH',
+        body: JSON.stringify({ label: 'Suivi carrière' }),
+      },
+      {
+        url: 'https://bandy.example/api/conversations/conversation-1',
+        method: 'DELETE',
+        body: undefined,
+      },
+    ]);
+  });
+
   it('sends the message body and UUID idempotency key without replacing the request', async () => {
     const response = { conversationId: 'conversation-1', message: 'Réponse Bandy' };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(response));
@@ -97,7 +125,7 @@ describe('Bandy conversation API', () => {
     )).resolves.toEqual(response);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://bandy.example/api/conversations/conversation-1/messages',
+      'https://bandy.example/api/conversations/conversation-1/messages/stream',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ message: 'Question RH' }),
@@ -107,6 +135,39 @@ describe('Bandy conversation API', () => {
         }),
       })
     );
+    expect(fetchMock.mock.calls[0][1].headers.Accept).toBe('text/event-stream');
+  });
+
+  it('consumes server-sent tokens and returns the final response event', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response([
+      'event: token',
+      'data: {"text":"Bonjour"}',
+      '',
+      'event: token',
+      'data: {"text":" !"}',
+      '',
+      'event: done',
+      'data: {"conversationId":"conversation-1","message":"Bonjour !","toolResults":[]}',
+      '',
+      '',
+    ].join('\n'), {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    }));
+    const onToken = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(api.sendConversationMessage(
+      'conversation-1',
+      'Bonjour',
+      '6f1f4c16-2c0d-4cd2-a702-5fd05011b707',
+      { onToken }
+    )).resolves.toMatchObject({
+      message: 'Bonjour !',
+      conversationId: 'conversation-1',
+    });
+
+    expect(onToken.mock.calls).toEqual([['Bonjour'], [' !']]);
   });
 
   it.each([
@@ -159,8 +220,8 @@ describe('Bandy conversation API', () => {
     );
 
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      'https://bandy.example/api/conversations/conversation-1/messages',
-      'https://bandy.example/api/conversations/conversation-1/messages',
+      'https://bandy.example/api/conversations/conversation-1/messages/stream',
+      'https://bandy.example/api/conversations/conversation-1/messages/stream',
     ]);
     expect(fetchMock.mock.calls.map(([, options]) => JSON.parse(options.body).message))
       .toEqual(['Question initiale', 'Question de suivi']);
@@ -181,6 +242,18 @@ describe('Bandy conversation API', () => {
     await expect(api.listConversations()).rejects.toMatchObject({
       message: 'Bandy a renvoyé une réponse JSON invalide.',
       status: 200,
+    });
+  });
+
+  it('preserves the actionable quota message from Bandy', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({
+      status: 429,
+      message: 'Gemini a refusé la requête : quota ou limite de débit atteint.',
+    }, 429)));
+
+    await expect(api.listConversations()).rejects.toMatchObject({
+      status: 429,
+      message: 'Gemini a refusé la requête : quota ou limite de débit atteint.',
     });
   });
 

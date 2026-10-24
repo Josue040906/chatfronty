@@ -6,7 +6,7 @@
     {
       "command": "npm",
       "args": [
-        "ci",
+        "install",
         "--offline",
         "--ignore-scripts",
         "--no-audit",

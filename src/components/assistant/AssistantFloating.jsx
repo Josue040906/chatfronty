@@ -4,19 +4,24 @@ import {
   Bot,
   ChevronRight,
   Clock3,
+  Check,
   Maximize2,
   Minimize2,
   MessageSquareText,
+  Pencil,
   Plus,
   Send,
   Sparkles,
+  Trash2,
   X,
 } from 'lucide-react';
 import {
   createConversation,
+  deleteConversation,
   listConversationMessages,
   listConversations,
   MESSAGE_PAGE_SIZE,
+  renameConversation,
   sendConversationMessage,
 } from '../../api/assistant';
 import { getNavigableAgents } from './assistant-agents';
@@ -30,6 +35,10 @@ const SUGGESTIONS = [
   'Combien d’agents par service ?',
   'Ouvre la fiche de Jean RAKOTO',
 ];
+
+function getMonotonicTime() {
+  return performance.now();
+}
 
 function getConversationStorageKey(userId) {
   return userId ? `bandy-active-conversation:${userId}` : null;
@@ -166,6 +175,9 @@ export default function AssistantFloating({ user }) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyLoadingMore, setHistoryLoadingMore] = useState(false);
   const [historyError, setHistoryError] = useState('');
+  const [editingConversationId, setEditingConversationId] = useState(null);
+  const [editingLabel, setEditingLabel] = useState('');
+  const [historyActionId, setHistoryActionId] = useState(null);
   const [conversationLoading, setConversationLoading] = useState(
     () => Boolean(readStoredConversation(conversationStorageKey))
   );
@@ -328,6 +340,77 @@ export default function AssistantFloating({ user }) {
     }
   }
 
+  function beginRenameConversation(chat) {
+    setEditingConversationId(chat.id);
+    setEditingLabel(chat.label || '');
+    setHistoryError('');
+  }
+
+  async function saveConversationName(event, chat) {
+    event.preventDefault();
+    const label = editingLabel.trim();
+    if (!label) {
+      setHistoryError('Le nom de la conversation ne peut pas être vide.');
+      return;
+    }
+
+    setHistoryActionId(chat.id);
+    setHistoryError('');
+    try {
+      await renameConversation(chat.id, label);
+      setChats((previous) => previous.map((item) => (
+        item.id === chat.id ? { ...item, label } : item
+      )));
+      if (chat.id === activeChatId) {
+        storeConversation(conversationStorageKey, { ...chat, label });
+      }
+      setEditingConversationId(null);
+      setEditingLabel('');
+    } catch (error) {
+      console.error('Impossible de renommer cette conversation Bandy :', error);
+      setHistoryError(error.message || 'Impossible de renommer cette conversation.');
+    } finally {
+      setHistoryActionId(null);
+    }
+  }
+
+  async function removeConversation(chat) {
+    const confirmed = window.confirm(
+      `Supprimer définitivement « ${chat.label || 'Nouvelle conversation'} » et tous ses messages ? Cette action est irréversible.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setHistoryActionId(chat.id);
+    setHistoryError('');
+    try {
+      await deleteConversation(chat.id);
+      setChats((previous) => previous.filter((item) => item.id !== chat.id));
+      setHistoryTotal((total) => Math.max(0, total - 1));
+      if (chat.id === activeChatId) {
+        conversationRequestRef.current += 1;
+        conversationAbortRef.current?.abort();
+        clearStoredConversation(conversationStorageKey);
+        setActiveChatId(null);
+        setPendingInitialMessage('');
+        setConversationError('');
+        setConversationLoading(false);
+        setFailedSend(null);
+        setSendError('');
+      }
+      if (editingConversationId === chat.id) {
+        setEditingConversationId(null);
+        setEditingLabel('');
+      }
+    } catch (error) {
+      console.error('Impossible de supprimer cette conversation Bandy :', error);
+      setHistoryError(error.message || 'Impossible de supprimer cette conversation.');
+    } finally {
+      setHistoryActionId(null);
+    }
+  }
+
   async function selectConversation(chatId) {
     const requestId = ++conversationRequestRef.current;
     conversationAbortRef.current?.abort();
@@ -442,8 +525,11 @@ export default function AssistantFloating({ user }) {
 
     sendingRef.current = true;
     const idempotencyKey = crypto.randomUUID();
+    const sendStartedAt = getMonotonicTime();
     let conversationId = activeChatId;
     let optimisticMessageAdded = false;
+    let sendOutcome = 'success';
+    let sendStatus = null;
     setPendingInitialMessage(text);
     setLoading(true);
     setSendError('');
@@ -496,6 +582,8 @@ export default function AssistantFloating({ user }) {
 
       await completeSend(conversationId, text, idempotencyKey);
     } catch (error) {
+      sendOutcome = error.status ? 'http_error' : 'client_or_network_error';
+      sendStatus = error.status || null;
       if (error.status !== 401) {
         console.error('Erreur assistant SYGPERS :', error);
         setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
@@ -510,6 +598,14 @@ export default function AssistantFloating({ user }) {
         }
       }
     } finally {
+      if (import.meta.env.DEV) {
+        console.info('bandy_frontend event=assistant_send_flow', {
+          request_id: idempotencyKey,
+          duration_ms: Math.round(getMonotonicTime() - sendStartedAt),
+          status: sendStatus,
+          outcome: sendOutcome,
+        });
+      }
       sendingRef.current = false;
       setPendingInitialMessage('');
       setLoading(false);
@@ -517,18 +613,7 @@ export default function AssistantFloating({ user }) {
   }
 
   async function completeSend(conversationId, text, idempotencyKey) {
-    const response = await sendConversationMessage(
-      conversationId,
-      text,
-      idempotencyKey
-    );
-    if (typeof response?.message !== 'string') {
-      throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
-    }
-    if (String(response.conversationId) !== conversationId) {
-      throw new Error('La réponse de Bandy ne correspond pas à la conversation active.');
-    }
-
+    const assistantMessageId = crypto.randomUUID();
     shouldScrollToBottomRef.current = true;
     setChats((previous) => previous.map((chat) => (
       chat.id === conversationId
@@ -537,19 +622,77 @@ export default function AssistantFloating({ user }) {
             messages: [
               ...chat.messages,
               {
-                id: crypto.randomUUID(),
+                id: assistantMessageId,
                 role: 'assistant',
-                content: response.message,
-                agents: getNavigableAgents(response.toolResults),
+                content: '',
               },
             ],
-            totalMessages: (chat.totalMessages || 0) + 1,
-            lastActivityAt: new Date().toISOString(),
           }
         : chat
     )));
-    setFailedSend(null);
-    setSendError('');
+
+    try {
+      const response = await sendConversationMessage(
+        conversationId,
+        text,
+        idempotencyKey,
+        {
+          onToken: (token) => {
+            setChats((previous) => previous.map((chat) => (
+              chat.id === conversationId
+                ? {
+                    ...chat,
+                    messages: chat.messages.map((item) => (
+                      item.id === assistantMessageId
+                        ? { ...item, content: item.content + token }
+                        : item
+                    )),
+                  }
+                : chat
+            )));
+          },
+        }
+      );
+      if (typeof response?.message !== 'string') {
+        throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
+      }
+      if (String(response.conversationId) !== conversationId) {
+        throw new Error('La réponse de Bandy ne correspond pas à la conversation active.');
+      }
+
+      setChats((previous) => previous.map((chat) => (
+        chat.id === conversationId
+          ? {
+              ...chat,
+              messages: chat.messages.map((item) => (
+                item.id === assistantMessageId
+                  ? {
+                      ...item,
+                      content: response.message,
+                      agents: getNavigableAgents(response.toolResults),
+                    }
+                  : item
+              )),
+              totalMessages: (chat.totalMessages || 0) + 1,
+              lastActivityAt: new Date().toISOString(),
+            }
+          : chat
+      )));
+      setFailedSend(null);
+      setSendError('');
+    } catch (error) {
+      setChats((previous) => previous.map((chat) => (
+        chat.id === conversationId
+          ? {
+              ...chat,
+              messages: chat.messages.filter(
+                (item) => item.id !== assistantMessageId
+              ),
+            }
+          : chat
+      )));
+      throw error;
+    }
   }
 
   async function retryFailedSend() {
@@ -715,7 +858,7 @@ export default function AssistantFloating({ user }) {
                 </div>
                 {historyLoading ? (
                   <p className="assistant-history-status" role="status">Chargement de l’historique…</p>
-                ) : historyError ? (
+                ) : historyError && chats.length === 0 ? (
                   <div className="assistant-inline-error" role="alert">
                     <span>{historyError}</span>
                     <button type="button" onClick={() => void loadHistory(0)}>Réessayer</button>
@@ -724,22 +867,89 @@ export default function AssistantFloating({ user }) {
                   <p className="assistant-history-empty">Aucune conversation enregistrée.</p>
                 ) : (
                   <>
+                    {historyError && (
+                      <div className="assistant-inline-error" role="alert">
+                        <span>{historyError}</span>
+                        <button type="button" onClick={() => setHistoryError('')}>Fermer</button>
+                      </div>
+                    )}
                     {chats.map((chat) => (
-                      <button
-                        key={chat.id}
-                        type="button"
-                        className={`assistant-history-item${chat.id === activeChatId ? ' assistant-history-item-active' : ''}`}
-                        onClick={() => void selectConversation(chat.id)}
-                      >
-                        <MessageSquareText size={17} />
-                        <span className="assistant-history-copy">
-                          <strong>{chat.label || 'Nouvelle conversation'}</strong>
-                          <small>
-                            {chat.status === 'ARCHIVED' ? 'Archivée · ' : ''}
-                            {formatChatDate(chat.lastActivityAt || chat.createdAt)}
-                          </small>
-                        </span>
-                      </button>
+                      <div className="assistant-history-row" key={chat.id}>
+                        {editingConversationId === chat.id ? (
+                          <form
+                            className="assistant-history-rename"
+                            onSubmit={(event) => void saveConversationName(event, chat)}
+                          >
+                            <input
+                              aria-label="Nom de la conversation"
+                              autoFocus
+                              maxLength={200}
+                              value={editingLabel}
+                              onChange={(event) => setEditingLabel(event.target.value)}
+                            />
+                            <button
+                              type="submit"
+                              aria-label="Enregistrer le nom"
+                              title="Enregistrer"
+                              disabled={historyActionId === chat.id}
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label="Annuler le renommage"
+                              title="Annuler"
+                              disabled={historyActionId === chat.id}
+                              onClick={() => {
+                                setEditingConversationId(null);
+                                setEditingLabel('');
+                              }}
+                            >
+                              <X size={16} />
+                            </button>
+                          </form>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className={`assistant-history-item${chat.id === activeChatId ? ' assistant-history-item-active' : ''}`}
+                              onClick={() => void selectConversation(chat.id)}
+                            >
+                              <MessageSquareText size={17} />
+                              <span className="assistant-history-copy">
+                                <strong>{chat.label || 'Nouvelle conversation'}</strong>
+                                <small>
+                                  {chat.status === 'ARCHIVED' ? 'Archivée · ' : ''}
+                                  {formatChatDate(chat.lastActivityAt || chat.createdAt)}
+                                </small>
+                              </span>
+                            </button>
+                            <div className="assistant-history-actions">
+                              <button
+                                type="button"
+                                aria-label={`Renommer ${chat.label || 'la conversation'}`}
+                                title="Renommer"
+                                disabled={historyActionId === chat.id}
+                                onClick={() => beginRenameConversation(chat)}
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                aria-label={`Supprimer ${chat.label || 'la conversation'}`}
+                                title="Supprimer définitivement"
+                                disabled={
+                                  historyActionId === chat.id
+                                  || (chat.id === activeChatId && loading)
+                                }
+                                onClick={() => void removeConversation(chat)}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     ))}
                     {hasMoreConversations && (
                       <button
