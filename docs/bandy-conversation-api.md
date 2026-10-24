@@ -26,14 +26,17 @@ côté serveur.
   `error` contient un message explicite si le traitement échoue après
   l'ouverture du flux. Le endpoint JSON `/messages` reste disponible pour les
   clients historiques.
-- Bandy ne transmet à Gemini qu'un seul outil, `get_agent_profile`. Cet outil
-  renvoie un profil structuré (identité professionnelle, âge, diplômes,
-  parcours et poste actuel). Les compétences sont indiquées comme indisponibles
-  lorsque l'API RH ne possède aucune donnée à leur sujet.
-- Le profil et les derniers messages sont réutilisés depuis le contexte de la
-  conversation. Bandy conserve les rôles utilisateur/assistant lors de leur
-  envoi au modèle ; le navigateur ne renvoie pas une copie supplémentaire de
-  l'historique.
+- Bandy transmet à Gemini uniquement les outils explicitement autorisés :
+  `search_agents` pour les critères RH et comptages exacts,
+  `get_agent_profile` pour le profil d'un agent identifié, et
+  `get_organization_info` pour les rattachements et descriptions organisationnels
+  disponibles. Ces outils ne changent pas le contrat public des routes de
+  conversation ci-dessus.
+- Bandy conserve les rôles utilisateur/assistant et les critères de recherche
+  utiles pour les suivis ; le navigateur ne renvoie pas une copie supplémentaire
+  de l'historique. Les résultats bruts des outils de profil/recherche sont
+  traités comme sensibles et ne sont pas enregistrés dans les références de
+  conversation.
 - Les réponses et messages persistés sont chargés depuis Bandy. Le navigateur
   ne transmet aucun identifiant de propriétaire : Bandy valide le jeton,
   dérive le propriétaire du `sub` signé, puis vérifie son accès à chaque
