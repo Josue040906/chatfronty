@@ -25,11 +25,16 @@ import {
   sendConversationMessage,
 } from '../../api/assistant';
 import { getNavigableAgents } from './assistant-agents';
+import {
+  clearStoredConversation,
+  getConversationStorageKey,
+  readStoredConversation,
+  storeConversation,
+} from './assistant-conversation-storage';
 import { toUiMessages } from './assistant-history';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
-const CONVERSATION_ID_PATTERN = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
 const SUGGESTIONS = [
   'Affiche les agents du SGEAE',
   'Combien d’agents par service ?',
@@ -38,70 +43,6 @@ const SUGGESTIONS = [
 
 function getMonotonicTime() {
   return performance.now();
-}
-
-function getConversationStorageKey(userId) {
-  return userId ? `bandy-active-conversation:${userId}` : null;
-}
-
-function readStoredConversation(storageKey) {
-  if (!storageKey) {
-    return null;
-  }
-
-  try {
-    const storedValue = localStorage.getItem(storageKey);
-    if (!storedValue) {
-      return null;
-    }
-
-    const conversation = JSON.parse(storedValue);
-    if (!CONVERSATION_ID_PATTERN.test(conversation?.id || '')) {
-      localStorage.removeItem(storageKey);
-      return null;
-    }
-
-    return {
-      id: conversation.id,
-      label: conversation.label,
-      status: conversation.status,
-      createdAt: conversation.createdAt,
-      lastActivityAt: conversation.lastActivityAt,
-    };
-  } catch (error) {
-    console.error('Impossible de restaurer la conversation Bandy enregistrée.', error);
-    return null;
-  }
-}
-
-function storeConversation(storageKey, conversation) {
-  if (!storageKey || !conversation?.id) {
-    return;
-  }
-
-  try {
-    localStorage.setItem(storageKey, JSON.stringify({
-      id: conversation.id,
-      label: conversation.label,
-      status: conversation.status,
-      createdAt: conversation.createdAt,
-      lastActivityAt: conversation.lastActivityAt,
-    }));
-  } catch (error) {
-    console.error('Impossible d’enregistrer la conversation Bandy active.', error);
-  }
-}
-
-function clearStoredConversation(storageKey) {
-  if (!storageKey) {
-    return;
-  }
-
-  try {
-    localStorage.removeItem(storageKey);
-  } catch (error) {
-    console.error('Impossible d’effacer la conversation Bandy active.', error);
-  }
 }
 
 function formatChatDate(value) {
