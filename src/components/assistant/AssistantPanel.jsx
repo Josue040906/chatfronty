@@ -88,7 +88,17 @@ function FormattedText({ text }) {
 const BANDY_API_URL = (import.meta.env.VITE_BANDY_API_URL || 'http://localhost:8090').replace(/\/$/, '');
 
 function readUserAccessToken() {
+  // Session créée par le formulaire de connexion SYGPERS.
   try {
+    const sygpersSession = localStorage.getItem('sygpers.session');
+    if (sygpersSession) {
+      const session = JSON.parse(sygpersSession);
+      if (typeof session?.accessToken === 'string' && session.accessToken.trim()) {
+        return session.accessToken.trim();
+      }
+    }
+
+    // Compatibilité avec d'anciennes sessions éventuellement déjà stockées.
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const user = JSON.parse(storedUser);
