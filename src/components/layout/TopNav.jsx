@@ -11,7 +11,8 @@ export default function TopNav({ activeSection, onNavigate, notifications, onMar
   const unread = notifications.filter((n) => !n.lue).length;
 
   const toggle = (panel) => setOpenPanel((p) => (p === panel ? null : panel));
-  const displayUser = { prenom: sessionUser?.prenom || currentUser.prenom, nom: sessionUser?.nom || currentUser.nom, matricule: sessionUser?.matricule || currentUser.matricule, email: sessionUser?.email || '' };\n  const initials = `${displayUser.prenom?.[0] || ''}${displayUser.nom?.[0] || ''}`.toUpperCase();
+  const displayUser = { prenom: sessionUser?.prenom || currentUser.prenom, nom: sessionUser?.nom || currentUser.nom, matricule: sessionUser?.matricule || currentUser.matricule, email: sessionUser?.email || '' };
+  const initials = `${displayUser.prenom?.[0] || ''}${displayUser.nom?.[0] || ''}`.toUpperCase();
 
   return (
     <header style={styles.nav}>
