@@ -85,6 +85,26 @@ function FormattedText({ text }) {
 // ============================================================
 // PANNEAU ASSISTANT
 // ============================================================
+const BANDY_API_URL = (import.meta.env.VITE_BANDY_API_URL || 'http://localhost:8090').replace(/\/$/, '');
+
+function readUserAccessToken() {
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      const token = user?.accessToken || user?.access_token || user?.token || user?.jwt;
+      if (typeof token === 'string' && token.trim()) return token.trim();
+    }
+  } catch (error) {
+    console.warn('Impossible de lire la session utilisateur pour Bandy Akama.', error);
+  }
+  for (const key of ['accessToken', 'access_token', 'token', 'jwt']) {
+    const token = localStorage.getItem(key);
+    if (token && token.trim()) return token.trim();
+  }
+  return null;
+}
+
 export default function AssistantPanel({
   open,
   onOpen,
@@ -97,6 +117,7 @@ export default function AssistantPanel({
   const [size, setSize] = useState('small');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -138,33 +159,54 @@ export default function AssistantPanel({
     ]);
 
     try {
-      const response = await fetch('http://localhost:8080/api/chat', {
+      const accessToken = readUserAccessToken();
+      if (!accessToken) {
+        throw new Error('SESSION_TOKEN_MISSING');
+      }
+
+      const response = await fetch(`${BANDY_API_URL}/api/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+          'Idempotency-Key': crypto.randomUUID()
         },
-        body: JSON.stringify({ message: query })
+        body: JSON.stringify({
+          message: query,
+          ...(conversationId ? { conversationId } : {})
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('SESSION_TOKEN_INVALID');
+        }
+        const errorBody = await response.text().catch(() => '');
+        throw new Error(`Erreur HTTP ${response.status}${errorBody ? `: ${errorBody.slice(0, 200)}` : ''}`);
       }
 
-      const reply = await response.text();
+      const data = await response.json();
+      if (data?.conversationId) setConversationId(data.conversationId);
+      const reply = typeof data?.message === 'string'
+        ? data.message
+        : 'La réponse du serveur ne contient pas de message exploitable.';
 
       setMessages((m) => [
         ...m.slice(0, -1),
         { role: 'assistant', text: reply }
       ]);
     } catch (error) {
-      console.error('Erreur lors de la communication avec le backend :', error);
+      console.error('Erreur lors de la communication avec Bandy Akama :', error);
+
+      const message = error?.message === 'SESSION_TOKEN_MISSING'
+        ? "Votre session ne contient pas de jeton d’accès. Connectez-vous à l’application RH pour utiliser Bandy Akama."
+        : error?.message === 'SESSION_TOKEN_INVALID'
+          ? "Votre session a expiré ou n’est plus valide. Reconnectez-vous, puis réessayez."
+          : "Je n'arrive pas à communiquer avec Bandy Akama. Vérifiez que le serveur est démarré sur le port 8090.";
 
       setMessages((m) => [
         ...m.slice(0, -1),
-        {
-          role: 'assistant',
-          text: "Je n'arrive pas à communiquer avec le serveur RH."
-        }
+        { role: 'assistant', text: message }
       ]);
     } finally {
       setSending(false);
