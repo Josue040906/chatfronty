@@ -5,13 +5,13 @@ import { NAV_SECTIONS } from '../../crudSchema';
 
 // Barre de navigation horizontale de l'application : identité à gauche,
 // rubriques au centre, notifications / thème / profil à droite.
-export default function TopNav({ activeSection, onNavigate, notifications, onMarkAllRead, currentUser, darkMode, setDarkMode }) {
+export default function TopNav({ activeSection, onNavigate, notifications, onMarkAllRead, currentUser, darkMode, setDarkMode, sessionUser, onLogout }) {
   const styles = getStyles(darkMode);
   const [openPanel, setOpenPanel] = useState(null); // 'notif' | 'profile' | null
   const unread = notifications.filter((n) => !n.lue).length;
 
   const toggle = (panel) => setOpenPanel((p) => (p === panel ? null : panel));
-  const initials = `${currentUser.prenom?.[0] || ''}${currentUser.nom?.[0] || ''}`.toUpperCase();
+  const displayUser = { prenom: sessionUser?.prenom || currentUser.prenom, nom: sessionUser?.nom || currentUser.nom, matricule: sessionUser?.matricule || currentUser.matricule, email: sessionUser?.email || '' };\n  const initials = `${displayUser.prenom?.[0] || ''}${displayUser.nom?.[0] || ''}`.toUpperCase();
 
   return (
     <header style={styles.nav}>
@@ -74,7 +74,7 @@ export default function TopNav({ activeSection, onNavigate, notifications, onMar
         <div style={styles.relative}>
           <button style={styles.profileBtn} onClick={() => toggle('profile')}>
             <span style={styles.avatar}>{initials}</span>
-            <span style={styles.profileName}>{currentUser.prenom} {currentUser.nom}</span>
+            <span style={styles.profileName}>{displayUser.prenom} {displayUser.nom}</span>
             <ChevronDown size={14} />
           </button>
 
@@ -84,12 +84,12 @@ export default function TopNav({ activeSection, onNavigate, notifications, onMar
                 <span style={styles.avatarLarge}>{initials}</span>
                 <div>
                   <p style={styles.profileFullName}>{currentUser.prenom} {currentUser.nom}</p>
-                  <p style={styles.profileMeta}>{currentUser.matricule}</p>
+                  <p style={styles.profileMeta}>{displayUser.matricule || displayUser.email}</p>
                 </div>
               </div>
               <button style={styles.menuRow}><User size={15} /> Mon profil</button>
               <button style={styles.menuRow}><Settings size={15} /> Paramètres</button>
-              <button style={styles.menuRow}><LogOut size={15} /> Se déconnecter</button>
+              <button style={styles.menuRow} onClick={() => { setOpenPanel(null); onLogout?.(); }}><LogOut size={15} /> Se déconnecter</button>
             </div>
           )}
         </div>
