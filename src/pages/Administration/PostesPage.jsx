@@ -69,7 +69,7 @@ export default function PostesPage() {
   }
 
   useEffect(() => {
-    loadData();
+    void Promise.resolve().then(() => loadData());
   }, []);
 
   function resetForm() {
