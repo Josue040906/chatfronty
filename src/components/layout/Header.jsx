@@ -3,11 +3,13 @@ import {
   Bell,
   ChevronDown,
   Menu,
+  Trash2,
   UserRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   getNotifications,
+  deleteNotification,
   markAllNotificationsRead,
   markNotificationRead,
 } from '../../api/notifications';
@@ -190,6 +192,33 @@ export default function Header({
     }
   };
 
+  const supprimerNotification = async (notification) => {
+    if (!notification?.id || updatingNotificationIds.includes(notification.id)) {
+      return;
+    }
+
+    setNotificationActionError('');
+    setUpdatingNotificationIds((current) => [...current, notification.id]);
+
+    try {
+      await deleteNotification(notification.id);
+      setNotifications((current) => current.filter((item) => item.id !== notification.id));
+      if (!notification.lueLe) {
+        setUnreadCount((current) => Math.max(current - 1, 0));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la notification :', error);
+      setNotificationActionError(
+        getNotificationErrorMessage(
+          error,
+          'Impossible de supprimer cette notification.'
+        )
+      );
+    } finally {
+      setUpdatingNotificationIds((current) => current.filter((id) => id !== notification.id));
+    }
+  };
+
   const marquerToutesCommeLues = async (force = false) => {
     if ((!force && unreadCount === 0) || markingAllReadRef.current) {
       return;
@@ -233,7 +262,10 @@ export default function Header({
 
     setNotificationsOpen(true);
     setNotificationActionError('');
-    await chargerNotifications(undefined, true);
+    const data = await chargerNotifications(undefined, true);
+    if (data && data.nonLues > 0) {
+      await marquerToutesCommeLues(true);
+    }
   };
 
   const ouvrirProfil = () => {
@@ -341,33 +373,44 @@ export default function Header({
                     const isUpdating = updatingNotificationIds.includes(notification.id);
 
                     return (
-                      <button
-                        type="button"
-                        key={notification.id}
-                        className={`notification-item ${
-                          isRead ? 'notification-read' : 'notification-unread'
-                        }`}
-                        onClick={() => marquerCommeLue(notification)}
-                        disabled={isRead || isUpdating}
-                      >
-                        <span className="notification-item-icon">
-                          <Bell size={16} />
-                        </span>
-
-                        <span className="notification-item-content">
-                          <strong>{notification.titre}</strong>
-                          <span className="notification-message">
-                            {notification.message}
+                      <div className="notification-row" key={notification.id}>
+                        <button
+                          type="button"
+                          className={`notification-item ${
+                            isRead ? 'notification-read' : 'notification-unread'
+                          }`}
+                          onClick={() => marquerCommeLue(notification)}
+                          disabled={isRead || isUpdating}
+                        >
+                          <span className="notification-item-icon">
+                            <Bell size={16} />
                           </span>
-                          <span>
-                            {formatNotificationDate(notification.creeLe)}
-                          </span>
-                        </span>
 
-                        {!isRead && (
-                          <span className="notification-unread-dot" />
-                        )}
-                      </button>
+                          <span className="notification-item-content">
+                            <strong>{notification.titre}</strong>
+                            <span className="notification-message">
+                              {notification.message}
+                            </span>
+                            <span>
+                              {formatNotificationDate(notification.creeLe)}
+                            </span>
+                          </span>
+
+                          {!isRead && (
+                            <span className="notification-unread-dot" />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          className="notification-delete-button"
+                          aria-label={`Supprimer la notification : ${notification.titre}`}
+                          title="Supprimer cette notification"
+                          onClick={() => void supprimerNotification(notification)}
+                          disabled={isUpdating}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     );
                   })
                 )}
