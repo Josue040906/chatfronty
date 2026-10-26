@@ -74,10 +74,9 @@ export default function StatutsPage() {
 
   async function loadStatuts() {
     try {
-      setLoading(true);
-      setError('');
-
       const data = await getStatuts();
+
+      setError('');
       setStatuts(data);
     } catch (err) {
       console.error(err);
