@@ -103,14 +103,12 @@ export default function ReglesRhPage() {
 
   async function loadRegles() {
     try {
-      setLoading(true);
-      setError('');
-
       const [reglesData, typesData] = await Promise.all([
         getReglesRh(),
         getTypesReglesRh(),
       ]);
 
+      setError('');
       setRegles(reglesData);
       setTypesRegles(typesData);
     } catch (err) {
