@@ -89,7 +89,7 @@ export default function StatutsPage() {
   }
 
   useEffect(() => {
-    loadStatuts();
+    void Promise.resolve().then(() => loadStatuts());
   }, []);
 
   function openCreateModal() {
