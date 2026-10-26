@@ -71,7 +71,7 @@ export default function ServicesPage() {
   }
 
   useEffect(() => {
-    loadData();
+    void Promise.resolve().then(() => loadData());
   }, []);
 
   function openCreateModal() {
