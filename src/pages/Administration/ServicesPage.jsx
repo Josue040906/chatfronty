@@ -51,14 +51,12 @@ export default function ServicesPage() {
 
   async function loadData() {
     try {
-      setLoading(true);
-      setError('');
-
       const [servicesData, directionsData] = await Promise.all([
         getServices(),
         getDirections(),
       ]);
 
+      setError('');
       setServices(servicesData);
       setDirections(directionsData);
     } catch (err) {
