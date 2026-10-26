@@ -63,7 +63,7 @@ export default function DirectionsPage() {
   }
 
   useEffect(() => {
-    loadDirections();
+    void Promise.resolve().then(() => loadDirections());
   }, []);
 
   function resetForm() {
