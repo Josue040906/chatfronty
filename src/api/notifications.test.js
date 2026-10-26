@@ -58,6 +58,21 @@ describe('notifications API', () => {
     );
   });
 
+  it('deletes only the selected notification through the RH API', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(null, { status: 204 })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const { deleteNotification } = await import('./notifications');
+
+    await expect(deleteNotification(42)).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/notifications/42'),
+      expect.objectContaining({ method: 'DELETE' })
+    );
+  });
+
   it('surfaces server failures instead of reporting a successful read', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
       jsonResponse({ message: 'Refusé' }, 403)
