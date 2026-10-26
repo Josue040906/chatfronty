@@ -124,7 +124,7 @@ export default function ReglesRhPage() {
   }
 
   useEffect(() => {
-    loadRegles();
+    void Promise.resolve().then(() => loadRegles());
   }, []);
 
   function resetForm() {
