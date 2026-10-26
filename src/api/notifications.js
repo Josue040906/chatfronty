@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from './client';
+import { apiDelete, apiGet, apiPatch } from './client';
 
 export async function getNotifications(signal) {
   const response = await apiGet('/api/notifications?limite=50', { signal });
@@ -24,4 +24,10 @@ export function markNotificationRead(notificationId) {
 
 export function markAllNotificationsRead() {
   return apiPatch('/api/notifications/lues');
+}
+
+export function deleteNotification(notificationId) {
+  return apiDelete(
+    `/api/notifications/${encodeURIComponent(notificationId)}`
+  );
 }
