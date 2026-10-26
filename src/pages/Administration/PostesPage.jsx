@@ -49,14 +49,12 @@ export default function PostesPage() {
 
   async function loadData() {
     try {
-      setLoading(true);
-      setError('');
-
       const [postesData, servicesData] = await Promise.all([
         getPostes(),
         getServices(),
       ]);
 
+      setError('');
       setPostes(postesData);
       setServices(servicesData);
     } catch (err) {
