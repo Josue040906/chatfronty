@@ -81,7 +81,7 @@ export default function DocumentDetailsPage() {
   }, [id]);
 
   useEffect(() => {
-    void chargerDocument();
+    void Promise.resolve().then(() => chargerDocument());
   }, [chargerDocument]);
 
   function extraireDate(value) {
