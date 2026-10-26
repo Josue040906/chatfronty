@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Archive,
@@ -42,11 +42,7 @@ export default function DocumentDetailsPage() {
     dateDocument: '',
   });
 
-  useEffect(() => {
-    chargerDocument();
-  }, [id]);
-
-  async function chargerDocument() {
+  const chargerDocument = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -82,7 +78,11 @@ export default function DocumentDetailsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void chargerDocument();
+  }, [chargerDocument]);
 
   function extraireDate(value) {
     if (!value) {
