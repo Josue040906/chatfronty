@@ -233,10 +233,7 @@ export default function Header({
 
     setNotificationsOpen(true);
     setNotificationActionError('');
-    const data = await chargerNotifications(undefined, true);
-    if (data?.nonLues > 0) {
-      await marquerToutesCommeLues(true);
-    }
+    await chargerNotifications(undefined, true);
   };
 
   const ouvrirProfil = () => {
