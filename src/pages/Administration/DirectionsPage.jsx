@@ -46,11 +46,9 @@ export default function DirectionsPage() {
 
   async function loadDirections() {
     try {
-      setLoading(true);
-      setError('');
-
       const data = await getDirections();
 
+      setError('');
       setDirections(data);
     } catch (err) {
       console.error(err);
