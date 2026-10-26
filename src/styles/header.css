@@ -344,6 +344,43 @@
   background: transparent;
 }
 
+.notification-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #f0ebe5;
+}
+
+.notification-row .notification-item {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.notification-delete-button {
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  color: #a0958a;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.notification-delete-button:hover {
+  background: #fbefeb;
+  color: #a6432e;
+}
+
+.notification-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .notification-item {
   position: relative;
 
