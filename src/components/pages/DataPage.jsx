@@ -10,7 +10,7 @@ import DetailPanel from '../crud/DetailPanel';
 // Page générique de consultation et de gestion d'une table.
 // La navigation entre rubriques est assurée par la barre du haut : cette page
 // ne s'occupe que de la table qu'on lui passe via `tableKey`.
-export default function DataPage({ tableKey, tables, setTables, focusRecordId, onFocusHandled, darkMode }) {
+export default function DataPage({ tableKey, tables, setTables, focusRecordId, onFocusHandled, darkMode, accessToken }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [view, setView] = useState('list'); // 'list' | 'add'
   const [addDraft, setAddDraft] = useState({});
@@ -270,7 +270,7 @@ export default function DataPage({ tableKey, tables, setTables, focusRecordId, o
 
       {detailRow && (
         <Modal title="Fiche détaillée" onClose={() => setDetailRow(null)} darkMode={darkMode} maxWidth="640px">
-          <DetailPanel tableKey={tableKey} row={detailRow} tables={tables} updateJunction={updateTableByKey} darkMode={darkMode} />
+          <DetailPanel tableKey={tableKey} row={detailRow} tables={tables} updateJunction={updateTableByKey} darkMode={darkMode} accessToken={accessToken} />
         </Modal>
       )}
     </div>
