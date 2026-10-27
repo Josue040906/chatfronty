@@ -86,6 +86,14 @@ export default function ReclassementPanel({ row, accessToken, darkMode }) {
         `${API_URL}/api/profil/agent?query=${encodeURIComponent(String(row.matricule).trim())}`,
         accessToken
       );
+      const requestedMatricule = String(row.matricule).trim().toLocaleUpperCase();
+      const returnedMatricule = String(profile?.matricule || '').trim().toLocaleUpperCase();
+      // L'endpoint de profil accepte aussi les recherches partielles : vérifier
+      // l'égalité exacte du matricule évite d'agir sur un autre agent.
+      if (!returnedMatricule || returnedMatricule !== requestedMatricule) {
+        throw new Error("Le matricule recherché ne correspond pas exactement à l'agent retourné par le serveur. Aucune opération n'a été exécutée.");
+      }
+
       const employeeId = Number(profile?.id);
       if (!Number.isInteger(employeeId) || employeeId <= 0) {
         throw new Error("Le backend n'a pas retourné d'identifiant d'agent valide pour ce matricule.");
