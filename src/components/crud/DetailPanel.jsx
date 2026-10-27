@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { DETAIL_CONFIG } from '../../crudSchema';
 import { COLORS, accentGradient } from '../../theme';
@@ -21,15 +21,15 @@ export default function DetailPanel({ tableKey, row, tables, updateJunction, dar
       </div>
 
       {tableKey === 'employe' && (
-        <ReclassementPanel row={row} accessToken={accessToken} darkMode={darkMode} />
+        <ReclassementPanel key={row.id ?? row.matricule} row={row} accessToken={accessToken} darkMode={darkMode} />
       )}
 
       {(config.editableRelations || []).map((rel) => (
-        <EditableRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} darkMode={darkMode} styles={styles} />
+        <EditableRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} styles={styles} />
       ))}
 
       {(config.logRelations || []).map((rel) => (
-        <LogRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} darkMode={darkMode} styles={styles} />
+        <LogRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} styles={styles} />
       ))}
 
       {(config.readonlyRelations || []).map((rel) => (
@@ -39,7 +39,7 @@ export default function DetailPanel({ tableKey, row, tables, updateJunction, dar
   );
 }
 
-function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
+function EditableRelation({ rel, row, tables, updateJunction, styles }) {
   const [selected, setSelected] = useState('');
   const [extraValue, setExtraValue] = useState(rel.extraField ? rel.extraField.default : null);
 
@@ -115,7 +115,7 @@ function EditableRelation({ rel, row, tables, updateJunction, darkMode, styles }
 // (date, événement, situation avant/après). On peut en ajouter et en
 // supprimer, mais jamais les modifier après coup — un historique ne s'édite
 // pas, il se complète.
-function LogRelation({ rel, row, tables, updateJunction, darkMode, styles }) {
+function LogRelation({ rel, row, tables, updateJunction, styles }) {
   const blank = {};
   rel.fields.forEach((f) => (blank[f.key] = ''));
   const [draft, setDraft] = useState(blank);
