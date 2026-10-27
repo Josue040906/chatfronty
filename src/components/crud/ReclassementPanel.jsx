@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { AlertCircle, CheckCircle2, GraduationCap, RefreshCw, ShieldCheck } from 'lucide-react';
 import { COLORS, accentGradient } from '../../theme';
 
@@ -161,13 +161,6 @@ export default function ReclassementPanel({ row, accessToken, darkMode }) {
       setConfirming(false);
     }
   };
-
-  useEffect(() => {
-    setProposal(null);
-    setHistory([]);
-    setMessage('');
-    setError('');
-  }, [row?.id, row?.matricule]);
 
   return (
     <section style={styles.section} aria-label="Analyse du reclassement">
