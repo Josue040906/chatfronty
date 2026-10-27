@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { DETAIL_CONFIG } from '../../crudSchema';
 import { COLORS, accentGradient } from '../../theme';
+import ReclassementPanel from './ReclassementPanel';
 
 // Contenu de la fiche "Détails" : identité de l'enregistrement + ses relations.
 // Les relations éditables (ex. compétences d'un employé) se gèrent ici,
 // directement, sans jamais montrer à l'utilisateur la table de jonction brute
 // (employe_competence, poste_competence, domaine_competence_relation).
-export default function DetailPanel({ tableKey, row, tables, updateJunction, darkMode }) {
+export default function DetailPanel({ tableKey, row, tables, updateJunction, darkMode, accessToken }) {
   const config = DETAIL_CONFIG[tableKey];
   const styles = getStyles(darkMode);
   if (!config) return null;
@@ -18,6 +19,10 @@ export default function DetailPanel({ tableKey, row, tables, updateJunction, dar
         <p style={styles.identityTitle}>{config.title(row)}</p>
         {config.subtitle && config.subtitle(row) && <p style={styles.identitySubtitle}>{config.subtitle(row)}</p>}
       </div>
+
+      {tableKey === 'employe' && (
+        <ReclassementPanel row={row} accessToken={accessToken} darkMode={darkMode} />
+      )}
 
       {(config.editableRelations || []).map((rel) => (
         <EditableRelation key={rel.title} rel={rel} row={row} tables={tables} updateJunction={updateJunction} darkMode={darkMode} styles={styles} />
