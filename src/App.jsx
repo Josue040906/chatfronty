@@ -131,6 +131,7 @@ export default function App() {
             focusRecordId={focusRecord?.table === section ? focusRecord.id : null}
             onFocusHandled={() => setFocusRecord(null)}
             darkMode={darkMode}
+            accessToken={session.accessToken}
           />
         )}
       </main>
