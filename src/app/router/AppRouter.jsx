@@ -23,10 +23,8 @@ import ServicesPage from '../../pages/Administration/ServicesPage';
 import PostesPage from '../../pages/Administration/PostesPage';
 import GradesPage from '../../pages/Administration/GradesPage';
 import StatutsPage from '../../pages/Administration/StatutsPage';
-import ReglesRhPage from '../../pages/Administration/ReglesRhPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
-import ReclassementRulesPage from '../../pages/Administration/ReclassementRulesPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -227,10 +225,6 @@ export default function AppRouter({
           path="/administration/statuts"
           element={<StatutsPage />}
         />
-        <Route
-        path="/administration/regles-rh"
-        element={<ReglesRhPage />}
-        />
 
         <Route
           path="/administration"
@@ -242,14 +236,6 @@ export default function AppRouter({
           element={
             <AdminOnly user={user}>
               <DemandesInscriptionPage />
-            </AdminOnly>
-          }
-        />
-        <Route
-          path="/administration/reclassements"
-          element={
-            <AdminOnly user={user}>
-              <ReclassementRulesPage />
             </AdminOnly>
           }
         />
