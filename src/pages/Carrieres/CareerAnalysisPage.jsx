@@ -32,6 +32,7 @@ import {
   getDiplomaOptions,
   getEmployeeDiplomas,
   getReclassementProposal,
+  getReclassementHistory,
   proposeEstablishment,
 } from '../../api/carrieres';
 import {
@@ -197,6 +198,8 @@ export default function CareerAnalysisPage({ user }) {
   const [agent, setAgent] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [history, setHistory] = useState([]);
+  const [reclassementHistory, setReclassementHistory] = useState([]);
+  const [reclassementHistoryError, setReclassementHistoryError] = useState('');
   const [diplomas, setDiplomas] = useState([]);
   const [diplomaOptions, setDiplomaOptions] = useState(EMPTY_DIPLOMA_OPTIONS);
   const [assignmentServices, setAssignmentServices] = useState([]);
@@ -312,6 +315,32 @@ export default function CareerAnalysisPage({ user }) {
     }
 
     loadDiplomas();
+    return () => {
+      cancelled = true;
+    };
+  }, [canManageHr, id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadReclassementHistory() {
+      if (!canManageHr) return;
+      setReclassementHistoryError('');
+      try {
+        const result = await getReclassementHistory(id);
+        if (!cancelled) {
+          setReclassementHistory(Array.isArray(result) ? result : []);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setReclassementHistoryError(
+            loadError.message || 'Impossible de charger l’historique des reclassements.'
+          );
+        }
+      }
+    }
+
+    loadReclassementHistory();
     return () => {
       cancelled = true;
     };
@@ -646,7 +675,7 @@ export default function CareerAnalysisPage({ user }) {
       setProposal(null);
       setFeedback(successMessage);
       try {
-        await Promise.all([refreshCareerData(), refreshDiplomas()]);
+        await Promise.all([refreshCareerData(), refreshDiplomas(), getReclassementHistory(id).then((result) => setReclassementHistory(Array.isArray(result) ? result : []))]);
       } catch (refreshError) {
         console.error(refreshError);
         setFeedback(
@@ -901,6 +930,38 @@ export default function CareerAnalysisPage({ user }) {
           <div className="career-next-result neutral"><XCircle size={20} /><div><span>Évolution identifiée</span><strong>Aucune évolution suivante identifiée.</strong></div></div>
         )}
       </section>
+
+      {canManageHr && (
+        <section className="career-panel career-history-panel">
+          <div className="career-panel-header">
+            <div className="career-panel-icon"><History size={19} /></div>
+            <div>
+              <h2>Historique des reclassements</h2>
+              <p>Opérations réellement enregistrées par le backend.</p>
+            </div>
+          </div>
+          {reclassementHistoryError ? (
+            <div className="career-inline-error" role="alert">{reclassementHistoryError}</div>
+          ) : reclassementHistory.length === 0 ? (
+            <div className="career-history-empty">Aucun reclassement enregistré pour cet agent.</div>
+          ) : (
+            <div className="career-timeline">
+              {reclassementHistory.map((item) => (
+                <div className="career-timeline-item" key={item.id}>
+                  <div className="career-timeline-marker" />
+                  <div className="career-timeline-content">
+                    <div className="career-timeline-top">
+                      <strong>{item.categorie_avant || '—'} → {item.categorie_apres || '—'}</strong>
+                      <span>{formatDate(item.date_effet)}</span>
+                    </div>
+                    <p>{item.activite_description || 'Reclassement enregistré'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="career-history-grid">
         <section className="career-panel career-history-panel">
@@ -1213,7 +1274,7 @@ export default function CareerAnalysisPage({ user }) {
 
             {(dialog === 'reclassement' || dialog === 'avancement') && (
               <form className="career-form" onSubmit={handleCareerConfirmation}>
-                {proposalLoading ? <p>Vérification des règles et des données de carrière…</p> : proposal && (
+                {proposalLoading ? <p>Vérification des données de carrière et du diplôme de référence…</p> : proposal && (
                   <>
                     {dialog === 'reclassement' ? (
                       <>
