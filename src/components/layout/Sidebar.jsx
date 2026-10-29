@@ -10,7 +10,6 @@
   Users,
   X,
   Plus,
-  GraduationCap,
 } from 'lucide-react';
 
 import { NavLink } from 'react-router-dom';
@@ -187,15 +186,6 @@ function NavigationItem({ item, onClose }) {
                     label: 'Demandes d’inscription',
                     icon: ShieldCheck,
                     path: '/administration/demandes-inscription',
-                  }}
-                  onClose={onClose}
-                />
-                <NavigationItem
-                  item={{
-                    id: 'regles-reclassement',
-                    label: 'Règles de reclassement',
-                    icon: GraduationCap,
-                    path: '/administration/reclassements',
                   }}
                   onClose={onClose}
                 />
