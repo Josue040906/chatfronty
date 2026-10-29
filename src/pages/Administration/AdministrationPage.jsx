@@ -1,7 +1,6 @@
 import {
   Building2,
   BriefcaseBusiness,
-  FileCog,
   GraduationCap,
   Landmark,
   ShieldCheck,
@@ -52,19 +51,6 @@ const administrationSections = [
       },
     ],
   },
-  {
-    id: 'regles',
-    title: 'Règles RH',
-    description:
-      'Configurez les règles utilisées pour l’analyse des situations RH.',
-    items: [
-      {
-        label: 'Règles RH',
-        description: 'Consulter et gérer les règles applicables',
-        icon: FileCog,
-      },
-    ],
-  },
 ];
 export default function AdministrationPage() {
     const navigate = useNavigate();
@@ -84,9 +70,6 @@ export default function AdministrationPage() {
         }
         if (item.label === 'Statuts') {
             navigate('/administration/statuts');
-        }
-        if (item.label === 'Règles RH') {
-             navigate('/administration/regles-rh');
         }
 
     }
