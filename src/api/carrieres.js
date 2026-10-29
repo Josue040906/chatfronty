@@ -67,6 +67,13 @@ export async function proposeEstablishment(data) {
   return apiPost('/api/referentiels/etablissements/demandes', data);
 }
 
+export async function getReclassementHistory(employeId) {
+  const response = await apiGet(
+    `/api/carrieres/employes/${employeId}/historique-reclassements`
+  );
+  return normalizeResponse(response);
+}
+
 export async function getReclassementProposal(employeId) {
   return apiGet(`/api/carrieres/employes/${employeId}/reclassement`);
 }
