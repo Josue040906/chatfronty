@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut } from './client';
+import { apiGet, apiPost } from './client';
 
 function normalizeResponse(response) {
   if (Array.isArray(response)) {
@@ -83,24 +83,4 @@ export async function confirmAvancement(employeId, dateEffet) {
   return apiPost(`/api/carrieres/employes/${employeId}/avancement`, {
     dateEffet,
   });
-}
-
-export async function getReclassementRules() {
-  const response = await apiGet('/api/referentiels/reclassements');
-  return Array.isArray(response) ? response : response?.value || [];
-}
-
-export async function getReclassementTargets() {
-  const response = await apiGet('/api/referentiels/reclassements/options');
-  return Array.isArray(response) ? response : response?.value || [];
-}
-
-export async function updateDiplomaLevelOrder(niveauId, ordreAcademique) {
-  return apiPut(`/api/referentiels/niveaux-diplome/${niveauId}/ordre`, {
-    ordreAcademique,
-  });
-}
-
-export async function saveReclassementRule(niveauId, data) {
-  return apiPut(`/api/referentiels/reclassements/${niveauId}`, data);
 }
