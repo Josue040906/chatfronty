@@ -111,8 +111,10 @@ export default function AppRouter({
   return (
     <Routes>
       {import.meta.env.DEV && (
-        <Route path="/design-preview" element={<DesignPreviewPage />} />
-        <Route path="/design-preview/agents" element={<AgentsPreviewPage />} />
+        <>
+          <Route path="/design-preview" element={<DesignPreviewPage />} />
+          <Route path="/design-preview/agents" element={<AgentsPreviewPage />} />
+        </>
       )}
 
       <Route
