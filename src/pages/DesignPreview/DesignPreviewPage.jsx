@@ -1,5 +1,6 @@
 import { ArrowRight, Building2, Briefcase, ChartNoAxesColumnIncreasing, FileText, Layers3, Users } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
+import PreviewStatCard from './components/ui/PreviewStatCard';
 import './DesignPreviewPage.css';
 
 export default function DesignPreviewPage() {
@@ -13,10 +14,10 @@ export default function DesignPreviewPage() {
           </section>
 
           <section className="dp-stats">
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Agents</span><span className="dp-stat-icon"><Users size={18}/></span></div><div className="dp-stat-value">32</div><div className="dp-stat-foot"><span>Agents enregistrés</span></div></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Directions</span><span className="dp-stat-icon"><Building2 size={18}/></span></div><div className="dp-stat-value">3</div><div className="dp-stat-foot"><span>Directions dans l’organigramme</span></div></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Services</span><span className="dp-stat-icon"><Layers3 size={18}/></span></div><div className="dp-stat-value">8</div><div className="dp-stat-foot"><span>Services référencés</span></div></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Postes</span><span className="dp-stat-icon"><Briefcase size={18}/></span></div><div className="dp-stat-value">34</div><div className="dp-stat-foot"><span>Postes référencés</span></div></article>
+            <PreviewStatCard className="dp-stat-card" label="Agents" value="32" icon={<Users size={18}/>} foot={<span>Agents enregistrés</span>}/>
+            <PreviewStatCard className="dp-stat-card" label="Directions" value="3" icon={<Building2 size={18}/>} foot={<span>Directions dans l’organigramme</span>}/>
+            <PreviewStatCard className="dp-stat-card" label="Services" value="8" icon={<Layers3 size={18}/>} foot={<span>Services référencés</span>}/>
+            <PreviewStatCard className="dp-stat-card" label="Postes" value="34" icon={<Briefcase size={18}/>} foot={<span>Postes référencés</span>}/>
           </section>
 
           <section className="dp-main-grid dp-reference-grid">
