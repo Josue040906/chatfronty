@@ -23,7 +23,7 @@ export default function AgentCreatePreviewPage(){
   <div className="acp-page">
    <button className="acp-back" onClick={()=>navigate('/design-preview/agents')}><ArrowLeft size={15}/> Retour aux agents</button>
    <div className="acp-heading"><div><span className="acp-eyebrow"><i/> RESSOURCES HUMAINES · DOSSIER AGENT</span><h1>Ajouter un agent</h1><p>Créez un dossier individuel et renseignez les informations nécessaires à son suivi administratif.</p></div><div className="acp-step-indicator"><span>01</span><div><b>Création du dossier</b><small>Informations initiales de l’agent</small></div></div></div>
-   <form className="acp-form" onSubmit={submit}>
+   <form id="acp-form" className="acp-form" onSubmit={submit}>
     <div className="acp-form-main">
      <section className="acp-card"><header><div className="acp-icon"><UserRound size={17}/></div><div><h2>Identité</h2><p>Les informations permettant d’identifier l’agent.</p></div><span className="acp-section-number">01</span></header>
       <div className="acp-photo-row"><div className="acp-photo-preview">{photo?<img src={photo} alt="Aperçu de la photo sélectionnée"/>:<PreviewAvatar initials="?" large/>}</div><div className="acp-photo-copy"><b>Photo de profil</b><span>Ajoutez une photo pour faciliter l’identification dans le dossier.</span><label className="acp-upload"><Upload size={14}/> Choisir une photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={file}/></label>{photoName&&<small>{photoName}</small>}<small>JPG, PNG ou WEBP · 5 Mo maximum</small></div></div>
@@ -42,8 +42,8 @@ export default function AgentCreatePreviewPage(){
      <section className="acp-side-card"><span className="acp-side-label">APERÇU DU DOSSIER</span><div className="acp-side-avatar">{photo?<img src={photo} alt=""/>:<PreviewAvatar initials={(form.prenom?.[0]||'')+(form.nom?.[0]||'')||'?'} large/>}</div><h3>{[form.prenom,form.nom].filter(Boolean).join(' ')||'Nom de l’agent'}</h3><code>{form.matricule||'Matricule à renseigner'}</code><div className="acp-side-divider"/><div className="acp-side-line"><span>Service</span><b>{form.serviceId||'À définir'}</b></div><div className="acp-side-line"><span>Poste</span><b>{form.posteId||'À définir'}</b></div><div className="acp-side-line"><span>Date d’embauche</span><b>{form.dateEmbauche||'À définir'}</b></div></section>
      <section className="acp-help-card"><div><CheckCircle2 size={17}/><b>À retenir</b></div><p>La création du dossier enregistre les informations initiales. Le suivi de carrière et les diplômes pourront être complétés ensuite.</p></section>
     </aside>
-   </div>
-   <footer className="acp-actions"><span><ShieldIcon/> Enregistrement sécurisé dans SYGPERS</span><div><button type="button" className="acp-cancel" onClick={()=>navigate('/design-preview/agents')}>Annuler</button><button type="submit" className="acp-submit">Créer l’agent <ArrowRight size={15}/></button></div></footer>
+   </form>
+   <footer className="acp-actions"><span><ShieldIcon/> Enregistrement sécurisé dans SYGPERS</span><div><button type="button" className="acp-cancel" onClick={()=>navigate('/design-preview/agents')}>Annuler</button><button type="submit" form="acp-form" className="acp-submit">Créer l’agent <ArrowRight size={15}/></button></div></footer>
    <p className="acp-disclaimer">Maquette interactive · Données fictives · Aucun enregistrement réel n’est effectué.</p>
   </div>
  </PreviewLayout>;
