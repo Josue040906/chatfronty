@@ -15,3 +15,29 @@
 @media(max-width:850px){.ap-layout{grid-template-columns:1fr}.ap-preview{border-top:1px solid var(--ap-line);border-left:0;min-height:300px}.ap-topbar{padding:0 20px}.ap-list-area{padding:22px 20px}.ap-preview{padding:22px 20px}}
 @media(max-width:560px){.ap-topbar{height:62px;padding:0 13px}.ap-assistant,.ap-user-label,.ap-top-actions>svg{display:none}.ap-layout{min-height:calc(100vh - 62px)}.ap-list-area{padding:18px 12px}.ap-heading-row{align-items:flex-start;flex-direction:column;gap:13px}.ap-heading-row h1{font-size:30px}.ap-add{align-self:flex-end}.ap-toolbar{flex-wrap:wrap}.ap-search{flex-basis:100%}.ap-service-select{flex:1;width:auto}.ap-filter-button{display:grid}.ap-result-count{margin-left:auto}.ap-table th:nth-child(3),.ap-table td:nth-child(3){display:none}.ap-table td{height:59px}.ap-list-foot{gap:7px;flex-direction:column}.ap-preview{padding:20px 17px}}
 @media(prefers-reduced-motion:reduce){.ap-page *,.ap-page *:before,.ap-page *:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Sidebar SYGPERS : reproduction de la navigation de la maquette 04 */
+.ap-app-shell{min-height:100vh;display:flex;background:#faf6ef}
+.ap-sidebar{position:sticky;top:0;z-index:5;width:272px;height:100vh;flex:0 0 272px;display:flex;flex-direction:column;padding:24px 17px 16px;border-radius:0 27px 27px 0;background:linear-gradient(165deg,#35231a 0%,#302018 62%,#291a13 100%);color:#f4e9d8;box-shadow:8px 0 28px #33211812}
+.ap-brand{display:flex;align-items:center;gap:11px;padding:0 3px 27px;color:inherit;text-decoration:none}
+.ap-brand-mark{width:39px;height:39px;flex:0 0 auto;display:grid;place-items:center;border:1px solid #b8863f55;border-radius:11px;background:#795437;color:#f7ead6;font:600 12px Fraunces,serif;box-shadow:inset 0 1px #ffffff18}
+.ap-brand>span:last-child{min-width:0}
+.ap-brand b{display:block;color:#fff8ed;font:600 16px Fraunces,Georgia,serif;letter-spacing:1px}
+.ap-brand small{display:block;margin-top:3px;color:#bca993;font-size:9px;line-height:1.35}
+.ap-side-nav{display:flex;flex-direction:column;gap:4px}
+.ap-side-nav p{margin:3px 2px 9px;color:#b9a58d;font-size:9px;font-weight:700;letter-spacing:1.25px}
+.ap-side-nav a{height:42px;display:flex;align-items:center;gap:11px;padding:0 11px;border:1px solid transparent;border-radius:22px;color:#e8dac8;text-decoration:none;font-size:10px;font-weight:500;transition:background .25s,border-color .25s,color .2s,transform .25s}
+.ap-side-nav a svg{width:16px;height:16px;flex:0 0 auto;stroke-width:1.8}
+.ap-side-nav a:hover{transform:translateX(2px);background:#ffffff0c;color:#fff8ec}
+.ap-side-nav a.active{border-color:#9b754b66;background:linear-gradient(100deg,#9c744633,#ffffff0c);box-shadow:inset 0 1px #ffffff0b;color:#fffaf1}
+.ap-side-nav a.active:before{content:'';width:5px;height:5px;margin-left:-7px;border-radius:50%;background:#d5a65f;box-shadow:0 0 10px #d5a65f88}
+.ap-side-nav .ap-side-section{margin-top:24px}
+.ap-sidebar-footer{display:flex;align-items:center;gap:11px;margin-top:auto;padding:11px;border:1px solid #ffffff16;border-radius:11px;background:#ffffff0b}
+.ap-sidebar-footer>span{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#ffffff12;color:#e8d6bc}
+.ap-sidebar-footer b,.ap-sidebar-footer small{display:block}
+.ap-sidebar-footer b{color:#fff4e5;font-size:10px}
+.ap-sidebar-footer small{margin-top:3px;color:#b8a58e;font-size:9px}
+.ap-app-shell>.ap-page{width:calc(100% - 272px);min-width:0;min-height:100vh;flex:1}
+.ap-page{min-height:100vh}
+@media(max-width:1050px){.ap-sidebar{width:235px;flex-basis:235px}.ap-app-shell>.ap-page{width:calc(100% - 235px)}}
+@media(max-width:760px){.ap-app-shell{display:block}.ap-sidebar{position:relative;width:100%;height:auto;min-height:0;padding:12px 14px;border-radius:0;display:block}.ap-brand{padding:0}.ap-side-nav,.ap-sidebar-footer{display:none}.ap-app-shell>.ap-page{width:100%}}
