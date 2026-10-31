@@ -1,0 +1,6 @@
+
+.pv-coming-soon{padding:42px;min-height:calc(100vh - 72px);background:radial-gradient(ellipse at 82% 4%,rgba(214,190,151,.16),transparent 34%),#faf6ef}
+.pv-coming-soon>span{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:20px;background:#f3e7d1;color:#986b2d;font-size:9px;font-weight:700;letter-spacing:.7px}
+.pv-coming-soon h1{margin:16px 0 8px;color:#332319;font:600 36px Fraunces,Georgia,serif}
+.pv-coming-soon p{max-width:560px;color:#7f7061;font-size:12px;line-height:1.7}
+@media(max-width:560px){.pv-coming-soon{padding:22px 15px}.pv-coming-soon h1{font-size:29px}}
