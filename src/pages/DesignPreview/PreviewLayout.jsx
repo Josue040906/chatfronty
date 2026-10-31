@@ -1,5 +1,5 @@
-import PreviewSidebar from './PreviewSidebar';
-import PreviewTopbar from './PreviewTopbar';
+import PreviewSidebar from './components/layout/PreviewSidebar';
+import PreviewTopbar from './components/layout/PreviewTopbar';
 import './PreviewLayout.css';
 
 export default function PreviewLayout({children,section='Tableau de bord'}){
