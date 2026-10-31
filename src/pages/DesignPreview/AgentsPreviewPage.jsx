@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, Search, SlidersHorizontal, UserRound, Users } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
 import PreviewAvatar from './components/ui/PreviewAvatar';
@@ -22,6 +23,7 @@ const demoAgents = [
 function Avatar({agent,large=false}){return <PreviewAvatar initials={agent.initials} large={large} className={`ap-avatar ap-${agent.tone}`} label={agent.name}/>}
 
 export default function AgentsPreviewPage(){
+ const navigate=useNavigate();
  const [query,setQuery]=useState('');
  const [service,setService]=useState('Tous les services');
  const [selectedId,setSelectedId]=useState('2');
@@ -48,7 +50,7 @@ export default function AgentsPreviewPage(){
     <div className="ap-list-foot"><span>Les données affichées sont fictives.</span><span>SYGPERS <i>·</i> Gestion des ressources humaines</span></div>
    </main>
    <aside className="ap-preview">
-    {selected?<><div className="ap-profile-top"><Avatar agent={selected} large/><span className="ap-online-dot"/></div><h2>{selected.name}</h2><div className="ap-profile-meta"><code>{selected.matricule}</code><span>{selected.poste}</span></div><div className="ap-details"><div><span>Service</span><b>{selected.service}</b></div><div><span>Direction</span><b>{selected.direction}</b></div><div><span>Embauche</span><b>{selected.embauche}</b></div></div><div className="ap-preview-actions"><button className="ap-profile-primary"><UserRound size={16}/> Voir le profil <ArrowRight size={15}/></button><button><BriefcaseBusiness size={16}/> Analyser la carrière</button><button><FileText size={16}/> Rédiger une demande</button></div><div className="ap-preview-note"><CalendarDays size={14}/> Aperçu rapide · Sélectionnez un autre agent dans la liste</div></>:<div className="ap-no-selection"><Users size={26}/><b>Aucun agent sélectionné</b><span>Choisissez un agent dans la liste pour afficher son résumé.</span></div>}
+    {selected?<><div className="ap-profile-top"><Avatar agent={selected} large/><span className="ap-online-dot"/></div><h2>{selected.name}</h2><div className="ap-profile-meta"><code>{selected.matricule}</code><span>{selected.poste}</span></div><div className="ap-details"><div><span>Service</span><b>{selected.service}</b></div><div><span>Direction</span><b>{selected.direction}</b></div><div><span>Embauche</span><b>{selected.embauche}</b></div></div><div className="ap-preview-actions"><button className="ap-profile-primary" onClick={()=>navigate(`/design-preview/agents/${selected.id}`)}><UserRound size={16}/> Voir le profil <ArrowRight size={15}/></button><button><BriefcaseBusiness size={16}/> Analyser la carrière</button><button><FileText size={16}/> Rédiger une demande</button></div><div className="ap-preview-note"><CalendarDays size={14}/> Aperçu rapide · Sélectionnez un autre agent dans la liste</div></>:<div className="ap-no-selection"><Users size={26}/><b>Aucun agent sélectionné</b><span>Choisissez un agent dans la liste pour afficher son résumé.</span></div>}
    </aside>
   </div>
  </PreviewLayout>;
