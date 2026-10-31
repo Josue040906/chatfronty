@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
+import './PreviewSectionPage.css';
 
 const labels={organisation:'Organisation',carrieres:'Carrières',activites:'Mes activités',documents:'Documents RH',administration:'Administration'};
 export default function PreviewSectionPage(){
