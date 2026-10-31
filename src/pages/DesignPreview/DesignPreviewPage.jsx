@@ -52,6 +52,7 @@ export default function DesignPreviewPage() {
             </article>
           </section>
           <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>
+        </div>
     </PreviewLayout>
   );
 }
