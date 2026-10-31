@@ -158,7 +158,7 @@ export default function AppRouter({
 
         <Route
           path="/dashboard"
-          element={<DashboardPage />}
+          element={<DashboardPage user={user} />}
         />
 
         <Route

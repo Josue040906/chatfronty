@@ -6,7 +6,7 @@ import {
   Trash2,
   UserRound,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getNotifications,
   deleteNotification,
@@ -44,12 +44,46 @@ function getNotificationErrorMessage(error, action) {
   return action;
 }
 
+function getPageTitle(pathname) {
+  if (/^\/agents\/[^/]+$/.test(pathname)) {
+    return 'Profil de l’agent';
+  }
+  if (/^\/carrieres\/[^/]+\/analyse$/.test(pathname)) {
+    return 'Analyse de carrière';
+  }
+  if (pathname.startsWith('/documents/') && pathname !== '/documents/nouveau') {
+    return 'Détail du document';
+  }
+
+  const titles = {
+    '/dashboard': 'Tableau de bord',
+    '/organisation': 'Organisation',
+    '/agents': 'Agents',
+    '/carrieres': 'Carrières',
+    '/activites': 'Mes activités',
+    '/documents': 'Documents RH',
+    '/documents/nouveau': 'Nouveau document',
+    '/assistant': 'Assistant RH',
+    '/administration': 'Administration',
+    '/administration/directions': 'Directions',
+    '/administration/services': 'Services',
+    '/administration/postes': 'Postes',
+    '/administration/grades': 'Grades',
+    '/administration/statuts': 'Statuts',
+    '/administration/demandes-inscription': 'Demandes d’inscription',
+    '/profil': 'Mon profil',
+  };
+
+  return titles[pathname] || 'Espace RH';
+}
+
 export default function Header({
   user,
   onMenuClick,
   onLogout,
 }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -292,6 +326,12 @@ export default function Header({
 
         <div className="header-brand-mobile">
           <strong>SYGPERS</strong>
+        </div>
+
+        <div className="header-breadcrumb" aria-label="Fil d’Ariane">
+          <span>Espace RH</span>
+          <span className="header-breadcrumb-separator" aria-hidden="true">/</span>
+          <strong>{getPageTitle(pathname)}</strong>
         </div>
       </div>
 

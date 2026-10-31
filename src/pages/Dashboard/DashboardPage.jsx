@@ -4,7 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   ChartNoAxesColumnIncreasing,
-  ChartPie,
+  Layers3,
   Search,
   Users,
 } from 'lucide-react';
@@ -18,88 +18,40 @@ import {
 import {
   getEmployeeDistribution,
   getEmployeesByHiringYear,
-  getPieSlices,
-  getPieSlicePath,
 } from './dashboard-metrics';
 
-const CHART_COLORS = [
-  '#6e4b32',
-  '#b8874a',
-  '#4e7768',
-  '#8b657b',
-  '#517a91',
-  '#b86b50',
-  '#8b8052',
-  '#6a718b',
-  '#a27e61',
-  '#66817e',
-];
 const NUMBER_FORMATTER = new Intl.NumberFormat('fr-FR');
 
-function EmployeePieChart({ items }) {
+function EmployeeDistributionList({ items }) {
   const total = items.reduce((sum, item) => sum + item.value, 0);
-  const slices = total > 0 ? getPieSlices(items, total) : [];
+  const maximum = Math.max(...items.map((item) => item.value), 1);
 
   return (
-    <div className="dashboard-pie-layout">
+    <div className="dashboard-distribution-list">
       {total === 0 ? (
         <div className="dashboard-chart-empty">
           Aucune donnée d’effectif à représenter.
         </div>
       ) : (
-        <svg
-          className="dashboard-pie-chart"
-          viewBox="0 0 220 220"
-          role="img"
-          aria-label={`Répartition de ${NUMBER_FORMATTER.format(total)} agents`}
-        >
-          {slices.map((item, index) => {
-            const isWholeCircle = item.value === total;
-
-            return isWholeCircle ? (
-              <circle
-                key={item.label}
-                cx="110"
-                cy="110"
-                r="104"
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
-                stroke="#fbf8f2"
-                strokeWidth="2"
-              />
-            ) : (
-              <path
-                key={item.label}
-                d={getPieSlicePath(item.startAngle, item.endAngle, 104)}
-                transform="translate(6 6)"
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
-                stroke="#fbf8f2"
-                strokeWidth="2"
-              >
-                <title>
-                  {item.label}: {NUMBER_FORMATTER.format(item.value)} agents
-                  {' '}({Math.round(item.value / total * 100)} %)
-                </title>
-              </path>
-            );
-          })}
-        </svg>
+        items.map((item) => (
+          <div className="dashboard-distribution-row" key={item.label}>
+            <div className="dashboard-distribution-copy">
+              <span title={item.label}>{item.label}</span>
+              <strong>
+                {NUMBER_FORMATTER.format(item.value)}
+                <small>{Math.round(item.value / total * 100)} %</small>
+              </strong>
+            </div>
+            <div
+              className="dashboard-distribution-track"
+              role="img"
+              aria-label={`${item.label}: ${NUMBER_FORMATTER.format(item.value)} agents`}
+            >
+              <span style={{ width: `${item.value / maximum * 100}%` }} />
+            </div>
+          </div>
+        ))
       )}
-
-      <ul className="dashboard-chart-legend">
-        {items.map((item, index) => (
-          <li key={item.label}>
-            <span
-              className="dashboard-chart-swatch"
-              style={{ '--chart-color': CHART_COLORS[index % CHART_COLORS.length] }}
-              aria-hidden="true"
-            />
-            <span className="dashboard-chart-legend-label" title={item.label}>
-              {item.label}
-            </span>
-            <strong>{NUMBER_FORMATTER.format(item.value)}</strong>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -198,11 +150,21 @@ function formatName(employee) {
   return `${employee.prenom || ''} ${employee.nom || ''}`.trim();
 }
 
-export default function DashboardPage() {
+function getGreetingName(user) {
+  if (user?.prenom?.trim()) {
+    return user.prenom.trim();
+  }
+
+  const name = user?.name?.trim();
+  return name?.split(/\s+/)[0] || user?.email?.split('@')[0] || 'Utilisateur';
+}
+
+export default function DashboardPage({ user }) {
   const [data, setData] = useState({
     employees: [],
     services: [],
     postes: [],
+    directions: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -286,13 +248,23 @@ export default function DashboardPage() {
       <section className="dashboard-heading">
         <div>
           <p className="page-eyebrow">
-            ESPACE DE TRAVAIL
+            {new Intl.DateTimeFormat('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            }).format(new Date()).toLocaleUpperCase('fr-FR')}
+            <span aria-hidden="true"> · </span>
+            ESPACE RH
           </p>
 
-          <h1>Tableau de bord</h1>
+          <h1>
+            Bonjour, {getGreetingName(user)}
+            <span className="dashboard-greeting-accent" aria-hidden="true"> ✦</span>
+          </h1>
 
           <p>
-            Vue d'ensemble de l'environnement RH du ministère.
+            Voici un aperçu de la gestion des ressources humaines aujourd’hui.
           </p>
         </div>
 
@@ -317,6 +289,18 @@ export default function DashboardPage() {
         <article className="dashboard-stat-card">
           <div className="dashboard-stat-icon">
             <Building2 size={20} />
+          </div>
+
+          <div>
+            <span>Directions</span>
+            <strong>{data.directions.length}</strong>
+            <small>directions référencées</small>
+          </div>
+        </article>
+
+        <article className="dashboard-stat-card">
+          <div className="dashboard-stat-icon">
+            <Layers3 size={20} />
           </div>
 
           <div>
@@ -349,7 +333,7 @@ export default function DashboardPage() {
 
               <h2>Effectifs par {distributionBy === 'service' ? 'service' : 'direction'}</h2>
             </div>
-            <ChartPie size={19} aria-hidden="true" />
+            <Building2 size={19} aria-hidden="true" />
           </div>
 
           <div className="dashboard-chart-switch" aria-label="Grouper les effectifs">
@@ -369,7 +353,7 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <EmployeePieChart items={distributionStats} />
+          <EmployeeDistributionList items={distributionStats} />
         </article>
 
         <article className="dashboard-card dashboard-chart-card">

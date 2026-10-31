@@ -5,10 +5,12 @@ export async function getDashboardData() {
     employeesResponse,
     servicesResponse,
     postesResponse,
+    directionsResponse,
   ] = await Promise.all([
     apiGet('/api/employes'),
     apiGet('/api/services'),
     apiGet('/api/postes'),
+    apiGet('/api/directions'),
   ]);
 
   return {
@@ -23,5 +25,9 @@ export async function getDashboardData() {
     postes: Array.isArray(postesResponse)
       ? postesResponse
       : postesResponse.value || [],
+
+    directions: Array.isArray(directionsResponse)
+      ? directionsResponse
+      : directionsResponse.value || [],
   };
 }
