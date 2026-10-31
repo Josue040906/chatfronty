@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, Bell, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, Search, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowRight, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, LayoutDashboard, Search, Settings, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import './AgentsPreviewPage.css';
 
 const demoAgents = [
