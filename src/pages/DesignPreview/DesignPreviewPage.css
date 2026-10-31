@@ -176,3 +176,6 @@
 @keyframes dp-grow-y{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media(max-width:1150px){.dp-main-grid.dp-reference-grid,.dp-bottom-grid{grid-template-columns:1fr}.dp-reference-grid .dp-panel{min-height:360px}}
 @media(max-width:560px){.dp-welcome h1{font-size:29px}.dp-reference-grid .dp-panel,.dp-bottom-grid .dp-panel{padding:16px 13px}.dp-service-row>div{font-size:10px}.dp-bar-chart{gap:2px}.dp-bar-col span{font-size:7px}.dp-todo-item{flex-wrap:wrap}.dp-todo-item>button{margin-left:46px}}
+
+/* Dashboard now lives inside the shared PreviewLayout */
+.dp-content{--ink:#2B1D14;--muted:#6F5D4F;--line:#E8DECF;--paper:#FFFDF9;--canvas:#FAF6EF;background:radial-gradient(ellipse at 82% 4%,rgba(214,190,151,.16),transparent 34%),#FAF6EF;min-height:calc(100vh - 72px)}
