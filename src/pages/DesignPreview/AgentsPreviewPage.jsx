@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Activity, ArrowRight, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, LayoutDashboard, Search, Settings, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './AgentsPreviewPage.css';
 
 const demoAgents = [
@@ -35,18 +35,18 @@ export default function AgentsPreviewPage(){
  const chooseService=v=>{setService(v);setPage(1)};
  return <div className="ap-app-shell">
   <aside className="ap-sidebar" aria-label="Navigation principale">
-   <NavLink to="/design-preview" className="ap-brand"><span className="ap-brand-mark">SY</span><span><b>SYGPERS</b><small>Gestion des ressources<br/>humaines</small></span></NavLink>
+   <Link to="/design-preview" className="ap-brand"><span className="ap-brand-mark">SY</span><span><b>SYGPERS</b><small>Gestion des ressources<br/>humaines</small></span></Link>
    <nav className="ap-side-nav">
     <p>GESTION RH</p>
-    <NavLink to="/design-preview"><LayoutDashboard/><span>Tableau de bord</span></NavLink>
-    <NavLink to="/design-preview"><Building2/><span>Organisation</span></NavLink>
-    <NavLink to="/design-preview/agents" className="active"><Users/><span>Agents</span></NavLink>
-    <NavLink to="/design-preview"><BarChart3/><span>Carrières</span></NavLink>
-    <NavLink to="/design-preview"><Activity/><span>Mes activités</span></NavLink>
+    <Link to="/design-preview"><LayoutDashboard/><span>Tableau de bord</span></Link>
+    <Link to="/design-preview"><Building2/><span>Organisation</span></Link>
+    <Link to="/design-preview/agents" className="active"><Users/><span>Agents</span></Link>
+    <Link to="/design-preview"><BarChart3/><span>Carrières</span></Link>
+    <Link to="/design-preview"><Activity/><span>Mes activités</span></Link>
     <p className="ap-side-section">DOCUMENTS</p>
-    <NavLink to="/design-preview"><FileText/><span>Documents RH</span></NavLink>
+    <Link to="/design-preview"><FileText/><span>Documents RH</span></Link>
     <p className="ap-side-section">CONFIGURATION</p>
-    <NavLink to="/design-preview"><Settings/><span>Administration</span></NavLink>
+    <Link to="/design-preview"><Settings/><span>Administration</span></Link>
    </nav>
    <div className="ap-sidebar-footer"><span><BriefcaseBusiness size={18}/></span><div><b>Espace RH</b><small>MEF Madagascar</small></div></div>
   </aside>
