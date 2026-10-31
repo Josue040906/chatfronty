@@ -1,7 +1,7 @@
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Bell, BriefcaseBusiness,
   Building2, CalendarDays, ChevronDown, CircleHelp, FileText, LayoutDashboard,
-  Search, Settings2, ShieldCheck, Users, WalletCards
+  Search, ShieldCheck, Users, Layers3, Briefcase, ChartNoAxesColumnIncreasing
 } from 'lucide-react';
 import './DesignPreviewPage.css';
 
@@ -62,38 +62,42 @@ export default function DesignPreviewPage() {
           </section>
 
           <section className="dp-stats">
-            <article className="dp-stat-card dp-stat-featured"><div className="dp-stat-top"><span>Effectif total</span><span className="dp-stat-icon"><Users size={18}/></span></div><div className="dp-stat-value">1 284</div><div className="dp-stat-foot"><span className="dp-positive"><ArrowUpRight size={13}/> 3,2 %</span> <span>par rapport à 2025</span></div><div className="dp-stat-decoration"/></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Directions</span><span className="dp-stat-icon"><Building2 size={18}/></span></div><div className="dp-stat-value">12</div><div className="dp-stat-foot"><span>Structures administratives</span></div></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Services</span><span className="dp-stat-icon"><WalletCards size={18}/></span></div><div className="dp-stat-value">48</div><div className="dp-stat-foot"><span>Unités organisationnelles</span></div></article>
-            <article className="dp-stat-card"><div className="dp-stat-top"><span>Documents en cours</span><span className="dp-stat-icon"><FileText size={18}/></span></div><div className="dp-stat-value">36</div><div className="dp-stat-foot"><span className="dp-neutral">À suivre</span><span> demandes récentes</span></div></article>
+            <article className="dp-stat-card"><div className="dp-stat-top"><span>Agents</span><span className="dp-stat-icon"><Users size={18}/></span></div><div className="dp-stat-value">32</div><div className="dp-stat-foot"><span>Agents enregistrés</span></div></article>
+            <article className="dp-stat-card"><div className="dp-stat-top"><span>Directions</span><span className="dp-stat-icon"><Building2 size={18}/></span></div><div className="dp-stat-value">3</div><div className="dp-stat-foot"><span>Directions dans l’organigramme</span></div></article>
+            <article className="dp-stat-card"><div className="dp-stat-top"><span>Services</span><span className="dp-stat-icon"><Layers3 size={18}/></span></div><div className="dp-stat-value">8</div><div className="dp-stat-foot"><span>Services référencés</span></div></article>
+            <article className="dp-stat-card"><div className="dp-stat-top"><span>Postes</span><span className="dp-stat-icon"><Briefcase size={18}/></span></div><div className="dp-stat-value">34</div><div className="dp-stat-foot"><span>Postes référencés</span></div></article>
           </section>
 
-          <section className="dp-main-grid">
-            <article className="dp-panel dp-chart-panel">
-              <div className="dp-panel-heading"><div><p className="dp-eyebrow">VUE STATISTIQUE</p><h2>Répartition des effectifs</h2><p>Distribution des agents par direction</p></div><button className="dp-select">Par direction <ChevronDown size={14}/></button></div>
-              <div className="dp-chart-area">
-                <div className="dp-donut-wrap"><div className="dp-donut"><div><strong>1 284</strong><small>AGENTS</small></div></div></div>
-                <div className="dp-legend">
-                  { [['Administration générale','34 %','brown'],['Budget et finances','26 %','gold'],['Trésor','18 %','sage'],['Économie','13 %','blue'],['Autres directions','9 %','pale']].map(([n,v,c])=><div className="dp-legend-row" key={n}><i className={`dp-dot ${c}`}/><span>{n}</span><b>{v}</b></div>)}
-                </div>
+          <section className="dp-main-grid dp-reference-grid">
+            <article className="dp-panel dp-chart-panel dp-service-panel">
+              <div className="dp-panel-heading"><div><p className="dp-eyebrow">ORGANISATION</p><h2>Effectifs par service</h2></div><div className="dp-tabs"><button className="active">Par service</button><button>Par direction</button></div></div>
+              <div className="dp-service-list">
+                { [['Service du Personnel',11],['Service de l’Administration Générale',6],['Service de la Formation',3],['Service des Infrastructures',3],['Service du Développement',3],['Service de la Comptabilité',2],['Service du Budget',2],['Service non rattaché',2] ].map(([name,value])=><div className="dp-service-row" key={name}><div><span>{name}</span><b>{value}<small>{Math.round(value/32*100)} %</small></b></div><i><span style={{width:(value/11*100)+'%'}}/></i></div>)}
               </div>
-              <div className="dp-panel-foot">Répartition indicative — données de démonstration</div>
             </article>
-            <article className="dp-panel dp-activity-panel">
-              <div className="dp-panel-heading"><div><p className="dp-eyebrow">SUIVI RÉCENT</p><h2>Activité du personnel</h2><p>Évolution des mouvements récents</p></div><button className="dp-more">•••</button></div>
-              <div className="dp-activity-list">
-                <div className="dp-activity-item"><span className="dp-activity-icon sage"><Users size={16}/></span><span><b>Nouvel agent enregistré</b><small>Direction des ressources humaines</small></span><time>Aujourd’hui</time></div>
-                <div className="dp-activity-item"><span className="dp-activity-icon gold"><FileText size={16}/></span><span><b>Document créé</b><small>Demande d’attestation de travail</small></span><time>Hier</time></div>
-                <div className="dp-activity-item"><span className="dp-activity-icon blue"><ShieldCheck size={16}/></span><span><b>Profil mis à jour</b><small>Informations administratives</small></span><time>30 oct.</time></div>
-                <div className="dp-activity-item"><span className="dp-activity-icon rose"><BriefcaseBusiness size={16}/></span><span><b>Évolution de carrière</b><small>Avancement enregistré</small></span><time>29 oct.</time></div>
+            <article className="dp-panel dp-chart-panel dp-hiring-panel">
+              <div className="dp-panel-heading"><div><p className="dp-eyebrow">RECRUTEMENT</p><h2>Agents recrutés par année</h2></div><span className="dp-chart-pill">Pic : 3 par an</span></div>
+              <div className="dp-bar-chart">
+                { [['06',1],['07',0],['08',1],['09',1],['10',2],['11',2],['12',2],['13',2],['14',3],['15',2],['16',3],['17',2],['18',3],['19',2],['20',1],['21',2],['22',1],['23',1],['24',1] ].map(([year,value])=><div className="dp-bar-col" key={year}><b>{value||''}</b><i style={{height:(value/3*100)+'%'}}/><span>’{year}</span></div>)}
               </div>
-              <button className="dp-text-link">Consulter toutes les activités <ArrowRight size={14}/></button>
+              <p className="dp-chart-caption">Les années sans recrutement restent visibles sur l’axe (2007).</p>
             </article>
           </section>
 
-          <section className="dp-panel dp-employees-panel">
-            <div className="dp-panel-heading dp-employee-heading"><div><p className="dp-eyebrow">ANNUAIRE DU PERSONNEL</p><h2>Agents récemment consultés</h2><p>Accès rapide aux fiches individuelles</p></div><button className="dp-outline">Voir tous les agents <ArrowRight size={14}/></button></div>
-            <div className="dp-table-wrap"><table className="dp-table"><thead><tr><th>AGENT</th><th>FONCTION</th><th>SERVICE</th><th>STATUT</th><th/></tr></thead><tbody>{employees.map(e=><tr key={e.name}><td><div className="dp-person"><Avatar initials={e.initials} tone={e.tone} small/><b>{e.name}</b></div></td><td>{e.role}</td><td>{e.service}</td><td><span className="dp-status"><i/>{e.status}</span></td><td><button className="dp-row-action"><ArrowRight size={16}/></button></td></tr>)}</tbody></table></div>
+          <section className="dp-bottom-grid">
+            <article className="dp-panel dp-todo-panel">
+              <div className="dp-panel-heading"><h2>À traiter</h2><span className="dp-count-pill">2 éléments</span></div>
+              <div className="dp-todo-item"><span className="dp-todo-icon amber"><ChartNoAxesColumnIncreasing size={18}/></span><div><b>Condition d’ancienneté remplie</b><p>Andry RAKOTONDRABE · SPERS-004 · 2e classe, échelon 1, éligible le 11/09/2026</p><small>27 oct. 2026, 15:57</small></div><button>Voir la carrière</button></div>
+              <div className="dp-todo-item"><span className="dp-todo-icon blue"><FileText size={18}/></span><div><b>Demande d’avancement en brouillon</b><p>Josette RAZANASOAVINA · DOC-2026-00003</p><small>Créée le 07/10/2026</small></div><button>Ouvrir</button></div>
+            </article>
+            <article className="dp-panel dp-docs-panel">
+              <div className="dp-panel-heading"><h2>Documents récents</h2><button className="dp-text-link">Tout voir <ArrowRight size={14}/></button></div>
+              <table className="dp-doc-table"><thead><tr><th>DOCUMENT</th><th>AGENT</th><th>STATUT</th></tr></thead><tbody>
+                <tr><td><b>Demande d’avancement</b><small>DOC-2026-00003</small></td><td>Josette RAZANASO...</td><td><span>Brouillon</span></td></tr>
+                <tr><td><b>Demande de congé</b><small>DOC-2026-00002</small></td><td>Mialitiana RABE</td><td><span>Brouillon</span></td></tr>
+                <tr><td><b>Demande d’avancement</b><small>DOC-2026-00001</small></td><td>Mialitiana RABE</td><td><span>Brouillon</span></td></tr>
+              </tbody></table>
+            </article>
           </section>
           <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>
         </div>
