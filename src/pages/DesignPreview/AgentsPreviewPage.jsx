@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, Search, SlidersHorizontal, UserRound, Users, X } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
+import PreviewAvatar from './components/ui/PreviewAvatar';
 import './AgentsPreviewPage.css';
 
 const demoAgents = [
@@ -17,7 +18,7 @@ const demoAgents = [
  {id:'11',initials:'TR',name:'Tahina RAKOTOMALALA',matricule:'DEMO-011',poste:'Contrôleur',service:'Trésor',direction:'Direction du Trésor',embauche:'07/07/2013',tone:'blue'},
  {id:'12',initials:'RA',name:'Rija ANDRIANASOLO',matricule:'DEMO-012',poste:'Agent administratif',service:'Personnel',direction:'Direction des Ressources Humaines',embauche:'16/10/2022',tone:'gold'},
 ];
-function Avatar({agent,large=false}){return <span className={`ap-avatar ap-${agent.tone}${large?' ap-avatar-large':''}`}>{agent.initials}</span>}
+function Avatar({agent,large=false}){return <PreviewAvatar initials={agent.initials} large={large} className={`ap-avatar ap-${agent.tone}`} label={agent.name}/>}
 
 export default function AgentsPreviewPage(){
  const [query,setQuery]=useState('');
