@@ -67,5 +67,6 @@ export default function AgentsPreviewPage(){
     {selected?<><div className="ap-profile-top"><Avatar agent={selected} large/><span className="ap-online-dot"/></div><h2>{selected.name}</h2><div className="ap-profile-meta"><code>{selected.matricule}</code><span>{selected.poste}</span></div><div className="ap-details"><div><span>Service</span><b>{selected.service}</b></div><div><span>Direction</span><b>{selected.direction}</b></div><div><span>Embauche</span><b>{selected.embauche}</b></div></div><div className="ap-preview-actions"><button className="ap-profile-primary"><UserRound size={16}/> Voir le profil <ArrowRight size={15}/></button><button><BriefcaseBusiness size={16}/> Analyser la carrière</button><button><FileText size={16}/> Rédiger une demande</button></div><div className="ap-preview-note"><CalendarDays size={14}/> Aperçu rapide · Sélectionnez un autre agent dans la liste</div></>:<div className="ap-no-selection"><Users size={26}/><b>Aucun agent sélectionné</b><span>Choisissez un agent dans la liste pour afficher son résumé.</span></div>}
    </aside>
   </div>
+  </div>
  </div>;
 }
