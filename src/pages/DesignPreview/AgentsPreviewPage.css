@@ -41,3 +41,6 @@
 .ap-page{min-height:100vh}
 @media(max-width:1050px){.ap-sidebar{width:235px;flex-basis:235px}.ap-app-shell>.ap-page{width:calc(100% - 235px)}}
 @media(max-width:760px){.ap-app-shell{display:block}.ap-sidebar{position:relative;width:100%;height:auto;min-height:0;padding:12px 14px;border-radius:0;display:block}.ap-brand{padding:0}.ap-side-nav,.ap-sidebar-footer{display:none}.ap-app-shell>.ap-page{width:100%}}
+
+/* The page content is now nested under the shared topbar. */
+.ap-page{min-height:0}
