@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, SlidersHorizontal, UserRound, Users } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, Search, SlidersHorizontal, UserRound, Users } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
 import PreviewAvatar from './components/ui/PreviewAvatar';
 import PreviewSearchField from './components/ui/PreviewSearchField';
