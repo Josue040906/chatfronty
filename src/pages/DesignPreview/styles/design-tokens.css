@@ -1,0 +1,24 @@
+:root{
+ --sygpers-ink:#34271f;
+ --sygpers-ink-strong:#2b1d14;
+ --sygpers-muted:#897967;
+ --sygpers-muted-soft:#b7a695;
+ --sygpers-line:#e8decf;
+ --sygpers-line-dark:#ffffff15;
+ --sygpers-paper:#fffdf9;
+ --sygpers-canvas:#faf6ef;
+ --sygpers-sidebar-top:#33221a;
+ --sygpers-sidebar-bottom:#241810;
+ --sygpers-gold:#c89c58;
+ --sygpers-gold-light:#f4d9a8;
+ --sygpers-gold-soft:#b8863f;
+ --sygpers-font-body:'Public Sans',system-ui,sans-serif;
+ --sygpers-font-display:'Fraunces',Georgia,serif;
+ --sygpers-radius-sm:8px;
+ --sygpers-radius-md:12px;
+ --sygpers-radius-lg:16px;
+ --sygpers-shadow-sidebar:8px 0 30px #33221a10;
+ --sygpers-shadow-card:0 12px 32px #49372b0a;
+ --sygpers-motion-fast:180ms;
+ --sygpers-motion-normal:240ms;
+}
