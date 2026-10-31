@@ -1,36 +1,10 @@
-import {
-  Activity, ArrowRight, Bell, BriefcaseBusiness,
-  Building2, CalendarDays, ChevronDown, CircleHelp, FileText, LayoutDashboard,
-  Search, Users, Layers3, Briefcase, ChartNoAxesColumnIncreasing
-} from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
 import './DesignPreviewPage.css';
 
-const navGroups = [
-  { title: 'ESPACE RH', items: [
-    ['Vue d’ensemble', LayoutDashboard, true],
-    ['Organisation', Building2],
-    ['Agents', Users],
-    ['Carrières', BriefcaseBusiness],
-  ]},
-  { title: 'SUIVI & DOCUMENTS', items: [
-    ['Documents RH', FileText],
-    ['Activités', Activity],
-  ]},
-];
-const employees = [
-  { initials: 'RA', name: 'RAKOTO Andry', role: 'Directeur des ressources humaines', service: 'Direction des ressources humaines', status: 'En activité', tone: 'sage' },
-  { initials: 'RF', name: 'RAZAFINDRAKOTO Fara', role: 'Chef de service', service: 'Administration générale', status: 'En activité', tone: 'sand' },
-  { initials: 'RA', name: 'RANDRIAMAMPIANINA Aina', role: 'Administrateur civil', service: 'Gestion du personnel', status: 'En activité', tone: 'rose' },
-  { initials: 'MR', name: 'MAMY Rija', role: 'Attaché d’administration', service: 'Solde et pensions', status: 'En activité', tone: 'blue' },
-];
-
-function Avatar({ initials, tone = 'sage', small = false }) {
-  return <span className={`dp-avatar dp-avatar-${tone}${small ? ' dp-avatar-small' : ''}`}>{initials}</span>;
-}
-
 export default function DesignPreviewPage() {
-  return (\n    <PreviewLayout section="Tableau de bord">\n        <div className="dp-content">
+  return (
+    <PreviewLayout section="Tableau de bord">
+        <div className="dp-content">
           <div className="dp-preview-note"><span/> PRÉVISUALISATION DU NOUVEAU DESIGN <span className="dp-note-right">Données de démonstration</span></div>
           <section className="dp-welcome">
             <div><p className="dp-eyebrow">DIMANCHE 1 NOVEMBRE 2026 <span>•</span> ESPACE RH</p><h1>Bonjour, Josué <span>✦</span></h1><p>Voici un aperçu de la gestion des ressources humaines aujourd’hui.</p></div>
@@ -75,4 +49,7 @@ export default function DesignPreviewPage() {
               </tbody></table>
             </article>
           </section>
-          <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>\n    </PreviewLayout>\n  );\n}\n
+          <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>
+    </PreviewLayout>
+  );
+}
