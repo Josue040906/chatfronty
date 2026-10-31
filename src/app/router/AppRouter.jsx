@@ -28,6 +28,7 @@ import DemandesInscriptionPage from '../../pages/Administration/DemandesInscript
 import DesignPreviewPage from '../../pages/DesignPreview/DesignPreviewPage';
 import AgentsPreviewPage from '../../pages/DesignPreview/AgentsPreviewPage';
 import PreviewSectionPage from '../../pages/DesignPreview/PreviewSectionPage';
+import OrganisationPreviewPage from '../../pages/DesignPreview/OrganisationPreviewPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -115,6 +116,7 @@ export default function AppRouter({
         <>
           <Route path="/design-preview" element={<DesignPreviewPage />} />
           <Route path="/design-preview/agents" element={<AgentsPreviewPage />} />
+          <Route path="/design-preview/organisation" element={<OrganisationPreviewPage />} />
           <Route path="/design-preview/:section" element={<PreviewSectionPage />} />
         </>
       )}
