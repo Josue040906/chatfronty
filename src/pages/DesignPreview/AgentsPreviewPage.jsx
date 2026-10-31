@@ -33,7 +33,24 @@ export default function AgentsPreviewPage(){
  const visible=filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
  const selected=filtered.find(a=>a.id===selectedId)||visible[0]||null;
  const chooseService=v=>{setService(v);setPage(1)};
- return <div className="ap-page">
+ return <div className="ap-app-shell">
+  <aside className="ap-sidebar" aria-label="Navigation principale">
+   <NavLink to="/design-preview" className="ap-brand"><span className="ap-brand-mark">SY</span><span><b>SYGPERS</b><small>Gestion des ressources<br/>humaines</small></span></NavLink>
+   <nav className="ap-side-nav">
+    <p>GESTION RH</p>
+    <NavLink to="/design-preview"><LayoutDashboard/><span>Tableau de bord</span></NavLink>
+    <NavLink to="/design-preview"><Building2/><span>Organisation</span></NavLink>
+    <NavLink to="/design-preview/agents" className="active"><Users/><span>Agents</span></NavLink>
+    <NavLink to="/design-preview"><BarChart3/><span>Carrières</span></NavLink>
+    <NavLink to="/design-preview"><Activity/><span>Mes activités</span></NavLink>
+    <p className="ap-side-section">DOCUMENTS</p>
+    <NavLink to="/design-preview"><FileText/><span>Documents RH</span></NavLink>
+    <p className="ap-side-section">CONFIGURATION</p>
+    <NavLink to="/design-preview"><Settings/><span>Administration</span></NavLink>
+   </nav>
+   <div className="ap-sidebar-footer"><span><BriefcaseBusiness size={18}/></span><div><b>Espace RH</b><small>MEF Madagascar</small></div></div>
+  </aside>
+  <div className="ap-page">
   <header className="ap-topbar"><div className="ap-crumb">Gestion RH <span>›</span> <b>Agents</b></div><div className="ap-top-actions"><button className="ap-assistant"><Sparkles size={15}/> Assistant RH</button><button className="ap-top-icon" aria-label="Notifications"><Bell size={17}/><i/></button><span className="ap-user-avatar">J</span><span className="ap-user-label"><b>Jo JOSUE</b><small>Gestionnaire RH</small></span><ChevronDown size={14}/></div></header>
   <div className="ap-layout">
    <main className="ap-list-area">
