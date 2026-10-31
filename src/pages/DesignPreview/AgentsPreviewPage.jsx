@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Activity, ArrowRight, BarChart3, Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, LayoutDashboard, Search, Settings, SlidersHorizontal, Sparkles, UserRound, Users, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, FileText, Search, SlidersHorizontal, UserRound, Users, X } from 'lucide-react';
+import PreviewLayout from './PreviewLayout';
 import './AgentsPreviewPage.css';
 
 const demoAgents = [
@@ -33,26 +33,7 @@ export default function AgentsPreviewPage(){
  const visible=filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
  const selected=filtered.find(a=>a.id===selectedId)||visible[0]||null;
  const chooseService=v=>{setService(v);setPage(1)};
- return <div className="ap-app-shell">
-  <aside className="ap-sidebar" aria-label="Navigation principale">
-   <Link to="/design-preview" className="ap-brand"><span className="ap-brand-mark">SY</span><span><b>SYGPERS</b><small>Gestion des ressources<br/>humaines</small></span></Link>
-   <nav className="ap-side-nav">
-    <p>GESTION RH</p>
-    <Link to="/design-preview"><LayoutDashboard/><span>Tableau de bord</span></Link>
-    <Link to="/design-preview"><Building2/><span>Organisation</span></Link>
-    <Link to="/design-preview/agents" className="active"><Users/><span>Agents</span></Link>
-    <Link to="/design-preview"><BarChart3/><span>Carrières</span></Link>
-    <Link to="/design-preview"><Activity/><span>Mes activités</span></Link>
-    <p className="ap-side-section">DOCUMENTS</p>
-    <Link to="/design-preview"><FileText/><span>Documents RH</span></Link>
-    <p className="ap-side-section">CONFIGURATION</p>
-    <Link to="/design-preview"><Settings/><span>Administration</span></Link>
-   </nav>
-   <div className="ap-sidebar-footer"><span><BriefcaseBusiness size={18}/></span><div><b>Espace RH</b><small>MEF Madagascar</small></div></div>
-  </aside>
-  <div className="ap-page">
-  <header className="ap-topbar"><div className="ap-crumb">Gestion RH <span>›</span> <b>Agents</b></div><div className="ap-top-actions"><button className="ap-assistant"><Sparkles size={15}/> Assistant RH</button><button className="ap-top-icon" aria-label="Notifications"><Bell size={17}/><i/></button><span className="ap-user-avatar">J</span><span className="ap-user-label"><b>Jo JOSUE</b><small>Gestionnaire RH</small></span><ChevronDown size={14}/></div></header>
-  <div className="ap-layout">
+ return <PreviewLayout section="Agents">\n  <div className="ap-layout">
    <main className="ap-list-area">
     <div className="ap-heading-row"><div><span className="ap-eyebrow"><i/> RESSOURCES HUMAINES</span><h1>Agents</h1><p>Sélectionnez un agent pour voir son résumé sans quitter la liste.</p></div><button className="ap-add"><span>＋</span> Ajouter un agent</button></div>
     <div className="ap-toolbar"><label className="ap-search"><Search size={17}/><input value={query} onChange={e=>{setQuery(e.target.value);setPage(1)}} placeholder="Rechercher par nom, matricule, poste..." aria-label="Rechercher un agent"/>{query&&<button onClick={()=>setQuery('')} aria-label="Effacer"><X size={14}/></button>}</label><label className="ap-service-select"><select value={service} onChange={e=>chooseService(e.target.value)} aria-label="Filtrer par service">{services.map(s=><option key={s}>{s}</option>)}</select><ChevronDown size={14}/></label><button className={`ap-filter-button${filtersOpen?' active':''}`} onClick={()=>setFiltersOpen(v=>!v)} aria-label="Filtres avancés"><SlidersHorizontal size={16}/></button><span className="ap-result-count">{filtered.length} résultats</span></div>
@@ -65,8 +46,4 @@ export default function AgentsPreviewPage(){
    </main>
    <aside className="ap-preview">
     {selected?<><div className="ap-profile-top"><Avatar agent={selected} large/><span className="ap-online-dot"/></div><h2>{selected.name}</h2><div className="ap-profile-meta"><code>{selected.matricule}</code><span>{selected.poste}</span></div><div className="ap-details"><div><span>Service</span><b>{selected.service}</b></div><div><span>Direction</span><b>{selected.direction}</b></div><div><span>Embauche</span><b>{selected.embauche}</b></div></div><div className="ap-preview-actions"><button className="ap-profile-primary"><UserRound size={16}/> Voir le profil <ArrowRight size={15}/></button><button><BriefcaseBusiness size={16}/> Analyser la carrière</button><button><FileText size={16}/> Rédiger une demande</button></div><div className="ap-preview-note"><CalendarDays size={14}/> Aperçu rapide · Sélectionnez un autre agent dans la liste</div></>:<div className="ap-no-selection"><Users size={26}/><b>Aucun agent sélectionné</b><span>Choisissez un agent dans la liste pour afficher son résumé.</span></div>}
-   </aside>
-  </div>
-  </div>
- </div>;
-}
+   </aside>\n  </div>\n </PreviewLayout>;\n}\n
