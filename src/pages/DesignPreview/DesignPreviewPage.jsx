@@ -3,6 +3,7 @@ import {
   Building2, CalendarDays, ChevronDown, CircleHelp, FileText, LayoutDashboard,
   Search, Users, Layers3, Briefcase, ChartNoAxesColumnIncreasing
 } from 'lucide-react';
+import PreviewLayout from './PreviewLayout';
 import './DesignPreviewPage.css';
 
 const navGroups = [
@@ -29,32 +30,7 @@ function Avatar({ initials, tone = 'sage', small = false }) {
 }
 
 export default function DesignPreviewPage() {
-  return (
-    <div className="dp-shell">
-      <aside className="dp-sidebar">
-        <div className="dp-brand">
-          <div className="dp-brand-mark">SY</div>
-          <div><strong>SYGPERS</strong><span>GESTION DES RESSOURCES HUMAINES</span></div>
-        </div>
-        <div className="dp-workspace"><span className="dp-workspace-dot" /> MINISTÈRE DE L’ÉCONOMIE<br/> <b>ET DES FINANCES</b></div>
-        <nav className="dp-nav">
-          {navGroups.map(group => <section key={group.title}>
-            <p className="dp-nav-label">{group.title}</p>
-            {group.items.map(([label, Icon, active]) => <div key={label} className={`dp-nav-item${active ? ' is-active' : ''}`}><Icon size={17}/><span>{label}</span>{active && <i/>}</div>)}
-          </section>)}
-        </nav>
-        <div className="dp-sidebar-bottom">
-          <div className="dp-help"><CircleHelp size={17}/><span><b>Besoin d’aide ?</b><small>Consulter le guide SYGPERS</small></span><ArrowRight size={14}/></div>
-          <div className="dp-user"><Avatar initials="JT" tone="gold"/><span><b>Josué TSIVOERY</b><small>Agent du personnel</small></span><ChevronDown size={15}/></div>
-        </div>
-      </aside>
-
-      <main className="dp-main">
-        <header className="dp-topbar">
-          <div className="dp-breadcrumb">Espace RH <span>/</span> <b>Vue d’ensemble</b></div>
-          <div className="dp-top-actions"><span className="dp-date"><CalendarDays size={15}/> Dimanche 1 novembre 2026</span><button className="dp-icon-button" aria-label="Recherche"><Search size={18}/></button><button className="dp-icon-button dp-bell" aria-label="Notifications"><Bell size={18}/><i/></button><span className="dp-top-avatar">JT</span></div>
-        </header>
-        <div className="dp-content">
+  return (\n    <PreviewLayout section="Tableau de bord">\n        <div className="dp-content">
           <div className="dp-preview-note"><span/> PRÉVISUALISATION DU NOUVEAU DESIGN <span className="dp-note-right">Données de démonstration</span></div>
           <section className="dp-welcome">
             <div><p className="dp-eyebrow">DIMANCHE 1 NOVEMBRE 2026 <span>•</span> ESPACE RH</p><h1>Bonjour, Josué <span>✦</span></h1><p>Voici un aperçu de la gestion des ressources humaines aujourd’hui.</p></div>
@@ -99,9 +75,4 @@ export default function DesignPreviewPage() {
               </tbody></table>
             </article>
           </section>
-          <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>
-        </div>
-      </main>
-    </div>
-  );
-}
+          <footer className="dp-footer"><span>SYGPERS <i>•</i> Gestion des ressources humaines</span><span>Ministère de l’Économie et des Finances <b>—</b> Madagascar</span></footer>\n    </PreviewLayout>\n  );\n}\n
