@@ -1,7 +1,7 @@
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Bell, BriefcaseBusiness,
+  Activity, ArrowRight, Bell, BriefcaseBusiness,
   Building2, CalendarDays, ChevronDown, CircleHelp, FileText, LayoutDashboard,
-  Search, ShieldCheck, Users, Layers3, Briefcase, ChartNoAxesColumnIncreasing
+  Search, Users, Layers3, Briefcase, ChartNoAxesColumnIncreasing
 } from 'lucide-react';
 import './DesignPreviewPage.css';
 
