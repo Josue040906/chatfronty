@@ -1,3 +1,4 @@
+import { ArrowRight, Building2, Briefcase, ChartNoAxesColumnIncreasing, FileText, Layers3, Users } from 'lucide-react';
 import PreviewLayout from './PreviewLayout';
 import './DesignPreviewPage.css';
 
