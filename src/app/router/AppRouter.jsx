@@ -25,6 +25,7 @@ import GradesPage from '../../pages/Administration/GradesPage';
 import StatutsPage from '../../pages/Administration/StatutsPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
+import DesignPreviewPage from '../../pages/DesignPreview/DesignPreviewPage';
 
 
 function ProtectedLayout({ user, onLogout }) {
@@ -108,6 +109,10 @@ export default function AppRouter({
 
   return (
     <Routes>
+      {import.meta.env.DEV && (
+        <Route path="/design-preview" element={<DesignPreviewPage />} />
+      )}
+
       <Route
         path="/login"
         element={
