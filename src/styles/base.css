@@ -56,3 +56,62 @@ button {
   font-size: 15px;
 }
 
+
+
+/* =========================================================
+   SYGPERS DESIGN TOKENS — Shell équilibré
+   ========================================================= */
+
+:root {
+  color-scheme: light;
+  --sygpers-espresso: #3A2A1E;
+  --sygpers-espresso-soft: #49382D;
+  --sygpers-ochre: #B8874A;
+  --sygpers-gold: #D6B06D;
+  --sygpers-gold-light: #F2D59E;
+  --sygpers-canvas: #F3EEE3;
+  --sygpers-surface: #FBF8F2;
+  --sygpers-surface-raised: #FFFFFF;
+  --sygpers-border: #E4DBD0;
+  --sygpers-text-muted: #8A7C6E;
+  --sygpers-danger: #A6432E;
+  --sygpers-shadow-soft: 0 8px 24px rgba(58, 42, 30, 0.07);
+  --sygpers-shadow-panel: 0 18px 42px rgba(58, 42, 30, 0.14);
+  --sygpers-radius-sm: 9px;
+  --sygpers-radius-md: 13px;
+  --sygpers-radius-lg: 17px;
+  --sygpers-motion-fast: 160ms;
+  --sygpers-motion-base: 220ms;
+  --sygpers-motion-shell: 280ms;
+  --sygpers-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-color: #C9B9A6 transparent;
+}
+
+body {
+  background: var(--sygpers-canvas);
+  color: var(--sygpers-espresso);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--sygpers-ochre);
+  outline-offset: 3px;
+}
+
+::selection {
+  color: var(--sygpers-espresso);
+  background: rgba(214, 176, 109, 0.34);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
