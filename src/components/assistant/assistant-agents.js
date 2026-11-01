@@ -6,7 +6,7 @@ export function getNavigableAgents(toolResults) {
   const agents = new Map();
   for (const toolResult of toolResults) {
     if (
-      toolResult?.name !== 'searchEmployeesApproximately'
+      !['search_agents', 'searchEmployeesApproximately'].includes(toolResult?.name)
       || !Array.isArray(toolResult.result?.agents)
     ) {
       continue;
