@@ -847,3 +847,150 @@
   }
 }
 
+
+
+/* =========================================================
+   HEADER POLISH — direction artistique C
+   Styles uniquement : logique de notifications inchangée.
+   ========================================================= */
+
+.app-header {
+  min-height: 74px;
+  border-bottom-color: rgba(201, 185, 166, 0.62);
+  background: rgba(251, 248, 242, 0.9);
+  box-shadow: 0 3px 16px rgba(58, 42, 30, 0.035);
+  transition:
+    background var(--sygpers-motion-base) ease,
+    box-shadow var(--sygpers-motion-base) ease;
+}
+
+.header-menu-button,
+.header-icon-button {
+  border-color: var(--sygpers-border);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1px 2px rgba(58, 42, 30, 0.035);
+  transition:
+    transform var(--sygpers-motion-fast) var(--sygpers-ease-out),
+    background var(--sygpers-motion-fast) ease,
+    border-color var(--sygpers-motion-fast) ease,
+    color var(--sygpers-motion-fast) ease,
+    box-shadow var(--sygpers-motion-fast) ease;
+}
+
+.header-menu-button:hover,
+.header-icon-button:hover {
+  transform: translateY(-1px);
+  border-color: #D2B995;
+  background: #FFFDF9;
+  box-shadow: 0 4px 12px rgba(58, 42, 30, 0.08);
+}
+
+.header-menu-button:active,
+.header-icon-button:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.notification-count {
+  box-shadow: 0 0 0 2px var(--sygpers-surface);
+}
+
+.notification-panel,
+.header-user-dropdown {
+  border-color: rgba(201, 185, 166, 0.7);
+  border-radius: var(--sygpers-radius-md);
+  box-shadow: var(--sygpers-shadow-panel);
+  animation: sygpers-panel-enter var(--sygpers-motion-base) var(--sygpers-ease-out) both;
+  transform-origin: top right;
+}
+
+.notification-panel-header {
+  background: linear-gradient(180deg, #FFFCF7, #FBF8F2);
+}
+
+.notification-row {
+  transition: background var(--sygpers-motion-fast) ease;
+}
+
+.notification-item {
+  transition: background var(--sygpers-motion-fast) ease;
+}
+
+.notification-delete-button {
+  transition:
+    background var(--sygpers-motion-fast) ease,
+    color var(--sygpers-motion-fast) ease;
+}
+
+.notification-read-all,
+.header-user-dropdown button {
+  transition:
+    background var(--sygpers-motion-fast) ease,
+    color var(--sygpers-motion-fast) ease;
+}
+
+.header-user-trigger {
+  padding: 5px 8px;
+  transition:
+    background var(--sygpers-motion-fast) ease,
+    color var(--sygpers-motion-fast) ease;
+}
+
+.header-avatar {
+  box-shadow: 0 0 0 2px rgba(214, 176, 109, 0.2);
+  transition: box-shadow var(--sygpers-motion-fast) ease;
+}
+
+.header-user-trigger:hover .header-avatar {
+  box-shadow: 0 0 0 3px rgba(184, 135, 74, 0.24);
+}
+
+.header-chevron-open {
+  transition: transform var(--sygpers-motion-fast) ease;
+}
+
+.header-user-dropdown button {
+  border-radius: 8px;
+}
+
+@keyframes sygpers-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header {
+    min-height: 66px;
+    background: rgba(251, 248, 242, 0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header,
+  .header-menu-button,
+  .header-icon-button,
+  .notification-panel,
+  .header-user-dropdown,
+  .notification-item,
+  .notification-delete-button,
+  .notification-read-all,
+  .header-user-trigger,
+  .header-avatar,
+  .header-chevron-open {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .header-menu-button:hover,
+  .header-icon-button:hover,
+  .header-menu-button:active,
+  .header-icon-button:active {
+    transform: none;
+  }
+}
