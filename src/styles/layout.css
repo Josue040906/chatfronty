@@ -377,3 +377,152 @@
     max-height: calc(100vh - 82px);
   }
 }
+
+
+/* =========================================================
+   SHELL POLISH — direction artistique C
+   Couche additive : aucune règle de navigation ou de métier.
+   ========================================================= */
+
+.app-shell {
+  background:
+    radial-gradient(circle at 92% 4%, rgba(214, 176, 109, 0.09), transparent 26rem),
+    var(--sygpers-canvas);
+}
+
+.app-sidebar {
+  box-shadow: 8px 0 30px rgba(35, 24, 17, 0.09);
+  border-right-color: rgba(255, 255, 255, 0.09);
+}
+
+.sidebar-header {
+  min-height: 86px;
+  padding-inline: 22px;
+}
+
+.sidebar-brand-mark {
+  border-radius: 13px;
+  transition:
+    transform var(--sygpers-motion-base) var(--sygpers-ease-out),
+    box-shadow var(--sygpers-motion-base) ease;
+}
+
+.sidebar-brand:hover .sidebar-brand-mark {
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.sidebar-navigation {
+  padding: 30px 14px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(214, 176, 109, 0.3) transparent;
+}
+
+.sidebar-section-label {
+  letter-spacing: 0.15em;
+}
+
+.sidebar-nav-list {
+  gap: 5px;
+}
+
+.sidebar-nav-item {
+  min-height: 46px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  transition:
+    background var(--sygpers-motion-fast) ease,
+    border-color var(--sygpers-motion-fast) ease,
+    color var(--sygpers-motion-fast) ease,
+    transform var(--sygpers-motion-fast) var(--sygpers-ease-out);
+}
+
+.sidebar-nav-item:hover {
+  transform: translateX(2px);
+  border-color: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.sidebar-nav-item-active {
+  border-color: rgba(214, 176, 109, 0.12);
+  background: linear-gradient(100deg, rgba(184, 135, 74, 0.23), rgba(184, 135, 74, 0.09));
+  color: #F7DFAF;
+}
+
+.sidebar-nav-item-active::before {
+  width: 3px;
+  height: 24px;
+  box-shadow: 0 0 12px rgba(214, 176, 109, 0.3);
+}
+
+.sidebar-footer {
+  padding: 16px 14px;
+}
+
+.sidebar-footer-card {
+  border-color: rgba(214, 176, 109, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
+}
+
+.sidebar-footer-icon {
+  border-radius: 9px;
+}
+
+.app-main {
+  min-height: 100vh;
+}
+
+.app-content {
+  padding-top: 36px;
+  padding-bottom: 42px;
+}
+
+.sidebar-overlay {
+  background: rgba(30, 22, 17, 0.48);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transition:
+    opacity var(--sygpers-motion-base) ease,
+    visibility var(--sygpers-motion-base) ease;
+}
+
+@media (max-width: 900px) {
+  .app-sidebar {
+    box-shadow: 16px 0 42px rgba(24, 17, 12, 0.22);
+    transform: translateX(-100%);
+    transition: transform var(--sygpers-motion-shell) var(--sygpers-ease-out);
+    will-change: transform;
+  }
+
+  .app-sidebar-open {
+    transform: translateX(0);
+  }
+
+  .app-content {
+    padding-top: 28px;
+    padding-bottom: 34px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-content {
+    padding: 22px 14px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-brand-mark,
+  .sidebar-nav-item,
+  .sidebar-overlay,
+  .app-sidebar {
+    transition: none !important;
+  }
+
+  .sidebar-nav-item:hover,
+  .sidebar-brand:hover .sidebar-brand-mark {
+    transform: none;
+  }
+}
