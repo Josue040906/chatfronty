@@ -461,3 +461,375 @@
     min-height: 0;
   }
 }
+
+
+/* =========================================================
+   DASHBOARD EXPERIENCE — composition & interaction
+   Couche visuelle uniquement : données et actions conservées.
+   ========================================================= */
+
+.dashboard-page {
+  animation: sygpers-page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-heading {
+  position: relative;
+  align-items: center;
+  min-height: 118px;
+  margin: -4px 0 25px;
+  padding: 25px 28px;
+  overflow: hidden;
+  border: 1px solid rgba(184, 135, 74, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 88% 12%, rgba(214, 176, 109, 0.19), transparent 34%),
+    linear-gradient(112deg, #fffdf9 0%, #f8f2e8 100%);
+  box-shadow: 0 8px 26px rgba(58, 42, 30, 0.045);
+}
+
+.dashboard-heading::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 34%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(184, 135, 74, 0.72));
+}
+
+.dashboard-heading h1 {
+  margin-top: 7px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(29px, 3vw, 36px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.dashboard-heading p:last-child {
+  color: #786b5f;
+  line-height: 1.6;
+}
+
+.dashboard-heading-mark {
+  width: 54px;
+  height: 54px;
+  border-color: rgba(184, 135, 74, 0.3);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fffaf0, #efe2cc);
+  color: #795634;
+  box-shadow: 0 5px 15px rgba(88, 62, 38, 0.08);
+}
+
+.dashboard-stat-grid {
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.dashboard-stat-card {
+  position: relative;
+  min-height: 128px;
+  padding: 23px 24px;
+  overflow: hidden;
+  border-color: rgba(201, 185, 166, 0.62);
+  border-radius: 15px;
+  background: linear-gradient(145deg, #fffdf9, #faf6ef);
+  box-shadow: 0 3px 12px rgba(58, 42, 30, 0.035);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.dashboard-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 18px;
+  width: 42px;
+  height: 2px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #b8874a, #e3c58f);
+  opacity: 0.7;
+}
+
+.dashboard-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(184, 135, 74, 0.42);
+  box-shadow: 0 12px 25px rgba(58, 42, 30, 0.075);
+}
+
+.dashboard-stat-icon {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(184, 135, 74, 0.13);
+  border-radius: 13px;
+  background: linear-gradient(145deg, #f3eadb, #ead9bf);
+  color: #765333;
+}
+
+.dashboard-stat-card span {
+  color: #796c60;
+  font-size: 11px;
+  letter-spacing: 0.035em;
+}
+
+.dashboard-stat-card strong {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 31px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-stat-card small {
+  color: #9a8d80;
+  font-size: 10px;
+}
+
+.dashboard-chart-grid {
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.dashboard-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(201, 185, 166, 0.68);
+  border-radius: 16px;
+  background: linear-gradient(160deg, #fffdf9 0%, #fbf8f2 100%);
+  box-shadow: 0 4px 16px rgba(58, 42, 30, 0.035);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dashboard-card:hover {
+  border-color: rgba(184, 135, 74, 0.34);
+  box-shadow: 0 10px 26px rgba(58, 42, 30, 0.065);
+}
+
+.dashboard-card-header {
+  min-height: 84px;
+  padding: 20px 22px;
+  border-bottom-color: rgba(221, 212, 201, 0.72);
+  background: linear-gradient(180deg, rgba(255,255,255,0.48), rgba(251,248,242,0));
+}
+
+.dashboard-card-header > svg {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border: 1px solid rgba(184, 135, 74, 0.16);
+  border-radius: 11px;
+  background: #f4ecdf;
+  color: #80613f;
+}
+
+.dashboard-card-header h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+}
+
+.dashboard-chart-switch {
+  gap: 7px;
+  padding-top: 16px;
+}
+
+.dashboard-chart-switch button {
+  min-height: 34px;
+  border-color: #e4dbd0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.56);
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.dashboard-chart-switch button:hover {
+  transform: translateY(-1px);
+  border-color: #cdb38f;
+}
+
+.dashboard-chart-switch button[aria-pressed='true'] {
+  border-color: #6e4b32;
+  background: #6e4b32;
+  box-shadow: 0 3px 8px rgba(78, 54, 36, 0.16);
+}
+
+.dashboard-pie-layout {
+  padding-top: 18px;
+}
+
+.dashboard-pie-chart {
+  filter: drop-shadow(0 5px 8px rgba(58, 42, 30, 0.08));
+}
+
+.dashboard-chart-legend li {
+  min-height: 37px;
+  border-bottom-color: rgba(232, 224, 213, 0.78);
+  transition: padding 160ms ease, background 160ms ease;
+}
+
+.dashboard-chart-legend li:hover {
+  padding-inline: 5px;
+  border-radius: 6px;
+  background: rgba(243, 238, 227, 0.72);
+}
+
+.dashboard-chart-swatch {
+  width: 10px;
+  height: 10px;
+  flex-basis: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(58, 42, 30, 0.035);
+}
+
+.dashboard-chart-legend strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transition: fill 180ms ease, opacity 180ms ease;
+}
+
+.dashboard-bar:hover {
+  opacity: 0.82;
+}
+
+.dashboard-main-grid {
+  gap: 18px;
+}
+
+.dashboard-employee-list {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.dashboard-employee-row {
+  min-height: 68px;
+  padding: 7px 4px;
+  border-bottom-color: rgba(232, 224, 213, 0.82);
+  transition: padding 170ms ease, background 170ms ease;
+}
+
+.dashboard-employee-row:hover {
+  padding-inline: 9px;
+  border-radius: 9px;
+  background: rgba(243, 238, 227, 0.65);
+}
+
+.dashboard-avatar {
+  width: 39px;
+  height: 39px;
+  border: 2px solid #fffdf9;
+  box-shadow: 0 0 0 1px rgba(184, 135, 74, 0.2), 0 3px 8px rgba(58, 42, 30, 0.08);
+}
+
+.dashboard-employee-info strong {
+  color: #3d3026;
+  font-size: 12px;
+}
+
+.dashboard-employee-info span {
+  color: #918477;
+  font-size: 10px;
+}
+
+.dashboard-link-button {
+  min-height: 43px;
+  border-color: rgba(184, 135, 74, 0.27);
+  border-radius: 10px;
+  background: rgba(255, 253, 249, 0.72);
+  transition:
+    color 170ms ease,
+    background 170ms ease,
+    border-color 170ms ease,
+    transform 170ms ease;
+}
+
+.dashboard-link-button:hover {
+  transform: translateY(-1px);
+  border-color: #c6a77d;
+  background: #f2e9dc;
+}
+
+.dashboard-loading,
+.dashboard-error {
+  border-color: rgba(201, 185, 166, 0.7);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fffdf9, #f8f2e8);
+  box-shadow: 0 8px 24px rgba(58, 42, 30, 0.05);
+}
+
+@keyframes sygpers-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 760px) {
+  .dashboard-heading {
+    min-height: 0;
+    padding: 22px 20px;
+  }
+
+  .dashboard-stat-grid {
+    gap: 12px;
+  }
+
+  .dashboard-stat-card {
+    min-height: 112px;
+    padding: 17px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard-heading {
+    align-items: flex-start;
+    padding: 20px 17px;
+    border-radius: 14px;
+  }
+
+  .dashboard-heading-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-stat-card {
+    min-height: 94px;
+  }
+
+  .dashboard-card-header {
+    padding: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page,
+  .dashboard-stat-card,
+  .dashboard-card,
+  .dashboard-chart-switch button,
+  .dashboard-chart-legend li,
+  .dashboard-employee-row,
+  .dashboard-link-button {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .dashboard-stat-card:hover,
+  .dashboard-chart-switch button:hover,
+  .dashboard-link-button:hover {
+    transform: none;
+  }
+}
