@@ -19,6 +19,7 @@ import {
 } from '../../api/services';
 
 import { getDirections } from '../../api/directions';
+import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
   code: '',
@@ -27,7 +28,9 @@ const EMPTY_FORM = {
   directionId: '',
 };
 
-export default function ServicesPage() {
+export default function ServicesPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [services, setServices] = useState([]);
@@ -299,14 +302,16 @@ export default function ServicesPage() {
           />
         </div>
 
-        <button
-          type="button"
-          className="administration-primary-button"
-          onClick={openCreateModal}
-        >
-          <Plus size={17} />
-          Nouveau service
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="administration-primary-button"
+            onClick={openCreateModal}
+          >
+            <Plus size={17} />
+            Nouveau service
+          </button>
+        )}
       </div>
 
 {success && (
@@ -398,56 +403,60 @@ export default function ServicesPage() {
                     marginLeft: '12px',
                   }}
                 >
-                  <button
-                    type="button"
-                    title="Modifier"
-                    onClick={() =>
-                      openEditModal(service)
-                    }
-                    disabled={deletingId === service.id}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '34px',
-                      height: '34px',
-                      border: '1px solid #d9dee7',
-                      borderRadius: '8px',
-                      background: '#fff',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Pencil size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Modifier"
+                      onClick={() =>
+                        openEditModal(service)
+                      }
+                      disabled={deletingId === service.id}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '34px',
+                        height: '34px',
+                        border: '1px solid #d9dee7',
+                        borderRadius: '8px',
+                        background: '#fff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  )}
 
-                  <button
-                    type="button"
-                    title="Supprimer"
-                    onClick={() =>
-                      handleDelete(service)
-                    }
-                    disabled={deletingId === service.id}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '34px',
-                      height: '34px',
-                      border: '1px solid #d9dee7',
-                      borderRadius: '8px',
-                      background: '#fff',
-                      cursor:
-                        deletingId === service.id
-                          ? 'not-allowed'
-                          : 'pointer',
-                      opacity:
-                        deletingId === service.id
-                          ? 0.6
-                          : 1,
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Supprimer"
+                      onClick={() =>
+                        handleDelete(service)
+                      }
+                      disabled={deletingId === service.id}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '34px',
+                        height: '34px',
+                        border: '1px solid #d9dee7',
+                        borderRadius: '8px',
+                        background: '#fff',
+                        cursor:
+                          deletingId === service.id
+                            ? 'not-allowed'
+                            : 'pointer',
+                        opacity:
+                          deletingId === service.id
+                            ? 0.6
+                            : 1,
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

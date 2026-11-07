@@ -15,6 +15,7 @@ import {
   getStatuts,
   updateStatut,
 } from '../../api/statuts';
+import { canManageReferentiels } from '../../utils/roles';
 
 function formatDate(value) {
   if (!value) {
@@ -58,7 +59,9 @@ const EMPTY_FORM = {
   dateFinValidite: '',
 };
 
-export default function StatutsPage() {
+export default function StatutsPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [statuts, setStatuts] = useState([]);
@@ -310,14 +313,16 @@ export default function StatutsPage() {
           />
         </div>
 
-        <button
-          type="button"
-          className="administration-primary-button"
-          onClick={openCreateModal}
-        >
-          <Plus size={17} />
-          Nouveau statut
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="administration-primary-button"
+            onClick={openCreateModal}
+          >
+            <Plus size={17} />
+            Nouveau statut
+          </button>
+        )}
       </div>
 
       {success && (
@@ -400,27 +405,31 @@ export default function StatutsPage() {
                   </span>
 
                   <div className="administration-list-actions">
-                    <button
-                      type="button"
-                      className="administration-icon-button"
-                      title="Modifier"
-                      onClick={() =>
-                        openEditModal(statut)
-                      }
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    {canManage && (
+                      <button
+                        type="button"
+                        className="administration-icon-button"
+                        title="Modifier"
+                        onClick={() =>
+                          openEditModal(statut)
+                        }
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
 
-                    <button
-                      type="button"
-                      className="administration-icon-button administration-icon-button-danger"
-                      title="Supprimer"
-                      onClick={() =>
-                        handleDelete(statut)
-                      }
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canManage && (
+                      <button
+                        type="button"
+                        className="administration-icon-button administration-icon-button-danger"
+                        title="Supprimer"
+                        onClick={() =>
+                          handleDelete(statut)
+                        }
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </article>
               );

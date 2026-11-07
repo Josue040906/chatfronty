@@ -19,6 +19,7 @@ import {
 } from '../../api/postes';
 
 import { getServices } from '../../api/services';
+import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
   intitule: '',
@@ -26,7 +27,9 @@ const EMPTY_FORM = {
   serviceId: '',
 };
 
-export default function PostesPage() {
+export default function PostesPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [postes, setPostes] = useState([]);
@@ -280,14 +283,16 @@ export default function PostesPage() {
           />
         </div>
 
-        <button
-          type="button"
-          className="administration-primary-button"
-          onClick={openCreateForm}
-        >
-          <Plus size={17} />
-          Nouveau poste
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="administration-primary-button"
+            onClick={openCreateForm}
+          >
+            <Plus size={17} />
+            Nouveau poste
+          </button>
+        )}
       </div>
 
       {success && (
@@ -384,57 +389,61 @@ export default function PostesPage() {
                     marginLeft: '16px',
                   }}
                 >
-                  <button
-                    type="button"
-                    title="Modifier"
-                    onClick={() =>
-                      openEditForm(poste)
-                    }
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '9px',
-                      background: '#fff',
-                      color: '#4b5563',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Pencil size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Modifier"
+                      onClick={() =>
+                        openEditForm(poste)
+                      }
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '9px',
+                        background: '#fff',
+                        color: '#4b5563',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  )}
 
-                  <button
-                    type="button"
-                    title="Supprimer"
-                    disabled={deletingId === poste.id}
-                    onClick={() =>
-                      handleDelete(poste)
-                    }
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid #fecaca',
-                      borderRadius: '9px',
-                      background: '#fff',
-                      color: '#dc2626',
-                      cursor:
-                        deletingId === poste.id
-                          ? 'wait'
-                          : 'pointer',
-                      opacity:
-                        deletingId === poste.id
-                          ? 0.5
-                          : 1,
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Supprimer"
+                      disabled={deletingId === poste.id}
+                      onClick={() =>
+                        handleDelete(poste)
+                      }
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #fecaca',
+                        borderRadius: '9px',
+                        background: '#fff',
+                        color: '#dc2626',
+                        cursor:
+                          deletingId === poste.id
+                            ? 'wait'
+                            : 'pointer',
+                        opacity:
+                          deletingId === poste.id
+                            ? 0.5
+                            : 1,
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
 
                 <span className="administration-list-id">

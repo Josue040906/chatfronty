@@ -204,26 +204,26 @@ export default function AppRouter({
         
         <Route
           path="/administration/directions"
-          element={<DirectionsPage />}
+          element={<DirectionsPage user={user} />}
         />
 
         <Route
           path="/administration/services"
-          element={<ServicesPage />}
+          element={<ServicesPage user={user} />}
         />
         <Route
           path="/administration/postes"
-          element={<PostesPage />}
+          element={<PostesPage user={user} />}
         />
 
         <Route
           path="/administration/grades"
-          element={<GradesPage />}
+          element={<GradesPage user={user} />}
         />
 
         <Route
           path="/administration/statuts"
-          element={<StatutsPage />}
+          element={<StatutsPage user={user} />}
         />
 
         <Route

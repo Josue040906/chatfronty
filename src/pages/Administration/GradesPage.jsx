@@ -17,13 +17,16 @@ import {
   getGrades,
   updateGrade,
 } from '../../api/grades';
+import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
   code: '',
   libelle: '',
 };
 
-export default function GradesPage() {
+export default function GradesPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [grades, setGrades] = useState([]);
@@ -310,14 +313,16 @@ export default function GradesPage() {
           />
         </div>
 
-        <button
-          type="button"
-          className="administration-primary-button"
-          onClick={openCreateForm}
-        >
-          <Plus size={17} />
-          Nouveau grade
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="administration-primary-button"
+            onClick={openCreateForm}
+          >
+            <Plus size={17} />
+            Nouveau grade
+          </button>
+        )}
       </div>
 
       {success && (
@@ -400,59 +405,63 @@ export default function GradesPage() {
                     marginLeft: '16px',
                   }}
                 >
-                  <button
-                    type="button"
-                    title="Modifier"
-                    onClick={() =>
-                      openEditForm(grade)
-                    }
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '9px',
-                      background: '#fff',
-                      color: '#4b5563',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Pencil size={16} />
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Modifier"
+                      onClick={() =>
+                        openEditForm(grade)
+                      }
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '9px',
+                        background: '#fff',
+                        color: '#4b5563',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  )}
 
-                  <button
-                    type="button"
-                    title="Supprimer"
-                    disabled={
-                      deletingId === grade.id
-                    }
-                    onClick={() =>
-                      handleDelete(grade)
-                    }
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '1px solid #fecaca',
-                      borderRadius: '9px',
-                      background: '#fff',
-                      color: '#dc2626',
-                      cursor:
+                  {canManage && (
+                    <button
+                      type="button"
+                      title="Supprimer"
+                      disabled={
                         deletingId === grade.id
-                          ? 'wait'
-                          : 'pointer',
-                      opacity:
-                        deletingId === grade.id
-                          ? 0.5
-                          : 1,
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                      }
+                      onClick={() =>
+                        handleDelete(grade)
+                      }
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #fecaca',
+                        borderRadius: '9px',
+                        background: '#fff',
+                        color: '#dc2626',
+                        cursor:
+                          deletingId === grade.id
+                            ? 'wait'
+                            : 'pointer',
+                        opacity:
+                          deletingId === grade.id
+                            ? 0.5
+                            : 1,
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
 
                 <span className="administration-list-id">

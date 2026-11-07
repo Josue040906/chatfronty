@@ -18,13 +18,16 @@ import {
   getDirections,
   updateDirection,
 } from '../../api/directions';
+import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
   nom: '',
   description: '',
 };
 
-export default function DirectionsPage() {
+export default function DirectionsPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [directions, setDirections] = useState([]);
@@ -284,14 +287,16 @@ export default function DirectionsPage() {
           />
         </div>
 
-        <button
-          type="button"
-          className="administration-primary-button"
-          onClick={openCreateForm}
-        >
-          <Plus size={17} />
-          Nouvelle direction
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="administration-primary-button"
+            onClick={openCreateForm}
+          >
+            <Plus size={17} />
+            Nouvelle direction
+          </button>
+        )}
       </div>
 
       {success && (
@@ -375,64 +380,68 @@ export default function DirectionsPage() {
                       marginLeft: '16px',
                     }}
                   >
-                    <button
-                      type="button"
-                      title="Modifier"
-                      onClick={() =>
-                        openEditForm(direction)
-                      }
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border:
-                          '1px solid #e5e7eb',
-                        borderRadius: '9px',
-                        background: '#fff',
-                        color: '#4b5563',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    {canManage && (
+                      <button
+                        type="button"
+                        title="Modifier"
+                        onClick={() =>
+                          openEditForm(direction)
+                        }
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border:
+                            '1px solid #e5e7eb',
+                          borderRadius: '9px',
+                          background: '#fff',
+                          color: '#4b5563',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
 
-                    <button
-                      type="button"
-                      title="Supprimer"
-                      disabled={
-                        deletingId ===
-                        direction.id
-                      }
-                      onClick={() =>
-                        handleDelete(direction)
-                      }
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border:
-                          '1px solid #fecaca',
-                        borderRadius: '9px',
-                        background: '#fff',
-                        color: '#dc2626',
-                        cursor:
+                    {canManage && (
+                      <button
+                        type="button"
+                        title="Supprimer"
+                        disabled={
                           deletingId ===
                           direction.id
-                            ? 'wait'
-                            : 'pointer',
-                        opacity:
-                          deletingId ===
-                          direction.id
-                            ? 0.5
-                            : 1,
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                        }
+                        onClick={() =>
+                          handleDelete(direction)
+                        }
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border:
+                            '1px solid #fecaca',
+                          borderRadius: '9px',
+                          background: '#fff',
+                          color: '#dc2626',
+                          cursor:
+                            deletingId ===
+                            direction.id
+                              ? 'wait'
+                              : 'pointer',
+                          opacity:
+                            deletingId ===
+                            direction.id
+                              ? 0.5
+                              : 1,
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
 
                   <span className="administration-list-id">
