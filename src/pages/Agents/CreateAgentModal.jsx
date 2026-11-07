@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AlertCircle,
+  ArrowLeft,
+  ArrowRight,
   FileImage,
   Plus,
   X,
@@ -12,6 +14,9 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
+import { Avatar } from '../../components/ui';
+
+const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
 
 const EMPTY_FORM = {
   matricule: '',
@@ -45,6 +50,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   const [posteError, setPosteError] = useState('');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState(0);
+  const formRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,8 +176,37 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
     setPhotoFile(file);
   }
 
+  function validateStep(index) {
+    const fieldset = formRef.current?.querySelector(`fieldset[data-step="${index}"]`);
+
+    if (!fieldset) {
+      return true;
+    }
+
+    for (const element of fieldset.elements) {
+      if (element.willValidate && !element.checkValidity()) {
+        element.reportValidity();
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function goToNextStep() {
+    if (validateStep(step)) {
+      setFormError('');
+      setStep((current) => Math.min(current + 1, STEPS.length - 1));
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (step < STEPS.length - 1) {
+      goToNextStep();
+      return;
+    }
 
     if (!isPhoneNumberValid(form.telephone)) {
       setFormError(
@@ -254,7 +290,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
           </button>
         </header>
 
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="agent-create-body">
             {formError && (
               <div className="agent-create-error" role="alert">
@@ -270,11 +306,47 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
               </div>
             )}
 
+            <ol className="agent-create-steps" aria-label="Étapes de création">
+              {STEPS.map((label, index) => (
+                <li
+                  key={label}
+                  className={index < step ? 'is-done' : ''}
+                  aria-current={index === step ? 'step' : undefined}
+                >
+                  <span aria-hidden="true">{index + 1}</span>
+                  {label}
+                </li>
+              ))}
+            </ol>
+
+            <div className="agent-create-preview" aria-live="polite">
+              <Avatar
+                size="lg"
+                initials={`${(form.prenom || '').charAt(0)}${(form.nom || '').charAt(0)}`.toUpperCase() || '?'}
+              />
+              <div>
+                <strong>
+                  {`${form.prenom} ${form.nom}`.trim() || 'Nouvel agent'}
+                </strong>
+                <span>
+                  {form.matricule || 'Matricule à renseigner'}
+                  {' · '}
+                  {postes.find((poste) => String(poste.id) === String(form.posteId))?.intitule
+                    || 'Poste à choisir'}
+                </span>
+              </div>
+            </div>
+
             <p className="agent-create-required-note">
               Les champs marqués d’un astérisque sont obligatoires.
             </p>
 
-            <fieldset className="agent-create-fieldset" disabled={saving || loadingOptions}>
+            <fieldset
+              className="agent-create-fieldset"
+              data-step="0"
+              hidden={step !== 0}
+              disabled={saving || loadingOptions}
+            >
               <legend>Identité</legend>
               <div className="agent-create-grid">
                 <label className="agent-form-field">
@@ -320,7 +392,12 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
               </div>
             </fieldset>
 
-            <fieldset className="agent-create-fieldset" disabled={saving || loadingOptions}>
+            <fieldset
+              className="agent-create-fieldset"
+              data-step="1"
+              hidden={step !== 1}
+              disabled={saving || loadingOptions}
+            >
               <legend>Coordonnées et naissance</legend>
               <div className="agent-create-grid">
                 <label className="agent-form-field">
@@ -372,7 +449,12 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
               </div>
             </fieldset>
 
-            <fieldset className="agent-create-fieldset" disabled={saving || loadingOptions}>
+            <fieldset
+              className="agent-create-fieldset"
+              data-step="2"
+              hidden={step !== 2}
+              disabled={saving || loadingOptions}
+            >
               <legend>Affectation et statut</legend>
               <div className="agent-create-grid">
                 <label className="agent-form-field">
@@ -501,14 +583,40 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
             >
               Annuler
             </button>
-            <button
-              type="submit"
-              className="agent-profile-save-button"
-              disabled={saving || loadingOptions || Boolean(optionsError) || Boolean(posteError)}
-            >
-              <Plus size={16} />
-              {saving ? 'Création...' : 'Créer l’agent'}
-            </button>
+            {step > 0 && (
+              <button
+                key="previous"
+                type="button"
+                className="agent-profile-cancel-button"
+                onClick={() => setStep((current) => current - 1)}
+                disabled={saving}
+              >
+                <ArrowLeft size={16} />
+                Précédent
+              </button>
+            )}
+            {step < STEPS.length - 1 ? (
+              <button
+                key="next"
+                type="button"
+                className="agent-profile-save-button"
+                onClick={goToNextStep}
+                disabled={loadingOptions || Boolean(optionsError)}
+              >
+                Suivant
+                <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button
+                key="submit"
+                type="submit"
+                className="agent-profile-save-button"
+                disabled={saving || loadingOptions || Boolean(optionsError) || Boolean(posteError)}
+              >
+                <Plus size={16} />
+                {saving ? 'Création...' : 'Créer l’agent'}
+              </button>
+            )}
           </footer>
         </form>
       </section>
