@@ -3,199 +3,101 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Building2,
-  ChartNoAxesColumnIncreasing,
-  ChartPie,
-  Search,
   Users,
 } from 'lucide-react';
 
 import { getDashboardData } from '../../api/dashboard';
-import EmployeePhoto from '../../components/EmployeePhoto';
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyState,
+  Eyebrow,
+  PageHeader,
+  Segmented,
+  Skeleton,
+  StatCard,
+} from '../../components/ui';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
 import {
+  fillYearGaps,
+  getHiringSummary,
+} from './dashboard-insights';
+import {
   getEmployeeDistribution,
   getEmployeesByHiringYear,
-  getPieSlices,
-  getPieSlicePath,
 } from './dashboard-metrics';
+import HiringBars from './HiringBars';
+import WorkforceDonut from './WorkforceDonut';
 
-const CHART_COLORS = [
-  '#6e4b32',
-  '#b8874a',
-  '#4e7768',
-  '#8b657b',
-  '#517a91',
-  '#b86b50',
-  '#8b8052',
-  '#6a718b',
-  '#a27e61',
-  '#66817e',
-];
 const NUMBER_FORMATTER = new Intl.NumberFormat('fr-FR');
-
-function EmployeePieChart({ items }) {
-  const total = items.reduce((sum, item) => sum + item.value, 0);
-  const slices = total > 0 ? getPieSlices(items, total) : [];
-
-  return (
-    <div className="dashboard-pie-layout">
-      {total === 0 ? (
-        <div className="dashboard-chart-empty">
-          Aucune donnée d’effectif à représenter.
-        </div>
-      ) : (
-        <svg
-          className="dashboard-pie-chart"
-          viewBox="0 0 220 220"
-          role="img"
-          aria-label={`Répartition de ${NUMBER_FORMATTER.format(total)} agents`}
-        >
-          {slices.map((item, index) => {
-            const isWholeCircle = item.value === total;
-
-            return isWholeCircle ? (
-              <circle
-                key={item.label}
-                cx="110"
-                cy="110"
-                r="104"
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
-                stroke="#fbf8f2"
-                strokeWidth="2"
-              />
-            ) : (
-              <path
-                key={item.label}
-                d={getPieSlicePath(item.startAngle, item.endAngle, 104)}
-                transform="translate(6 6)"
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
-                stroke="#fbf8f2"
-                strokeWidth="2"
-              >
-                <title>
-                  {item.label}: {NUMBER_FORMATTER.format(item.value)} agents
-                  {' '}({Math.round(item.value / total * 100)} %)
-                </title>
-              </path>
-            );
-          })}
-        </svg>
-      )}
-
-      <ul className="dashboard-chart-legend">
-        {items.map((item, index) => (
-          <li key={item.label}>
-            <span
-              className="dashboard-chart-swatch"
-              style={{ '--chart-color': CHART_COLORS[index % CHART_COLORS.length] }}
-              aria-hidden="true"
-            />
-            <span className="dashboard-chart-legend-label" title={item.label}>
-              {item.label}
-            </span>
-            <strong>{NUMBER_FORMATTER.format(item.value)}</strong>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function HiringYearBarChart({ items }) {
-  if (items.length === 0) {
-    return (
-      <div className="dashboard-chart-empty">
-        Aucune date d’embauche valide n’est disponible.
-      </div>
-    );
-  }
-
-  const chartHeight = 240;
-  const chartWidth = Math.max(580, items.length * 54 + 80);
-  const left = 48;
-  const right = chartWidth - 18;
-  const top = 22;
-  const bottom = 194;
-  const plotHeight = bottom - top;
-  const maximum = Math.max(...items.map((item) => item.value), 1);
-  const slotWidth = (right - left) / items.length;
-  const barWidth = Math.min(38, slotWidth * 0.62);
-  const ticks = 4;
-
-  return (
-    <div className="dashboard-bar-scroll">
-      <svg
-        className="dashboard-bar-chart"
-        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-        width={chartWidth}
-        role="img"
-        aria-label="Nombre d’agents recrutés par année"
-      >
-        {Array.from({ length: ticks + 1 }, (_, index) => {
-          const value = Math.round(maximum * (ticks - index) / ticks);
-          const y = top + plotHeight * index / ticks;
-
-          return (
-            <g key={index}>
-              <line
-                x1={left}
-                y1={y}
-                x2={right}
-                y2={y}
-                className="dashboard-chart-gridline"
-              />
-              <text x={left - 10} y={y + 4} textAnchor="end">
-                {NUMBER_FORMATTER.format(value)}
-              </text>
-            </g>
-          );
-        })}
-        {items.map((item, index) => {
-          const height = item.value / maximum * plotHeight;
-          const x = left + index * slotWidth + (slotWidth - barWidth) / 2;
-          const y = bottom - height;
-
-          return (
-            <g key={item.year}>
-              <rect
-                x={x}
-                y={y}
-                width={barWidth}
-                height={height}
-                rx="5"
-                className="dashboard-bar"
-              >
-                <title>{item.year} : {NUMBER_FORMATTER.format(item.value)} agents</title>
-              </rect>
-              <text
-                x={x + barWidth / 2}
-                y={Math.max(top - 3, y - 7)}
-                textAnchor="middle"
-                className="dashboard-bar-value"
-              >
-                {NUMBER_FORMATTER.format(item.value)}
-              </text>
-              <text
-                x={x + barWidth / 2}
-                y={bottom + 22}
-                textAnchor="middle"
-                className="dashboard-bar-year"
-              >
-                {item.year}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
+const AVERAGE_FORMATTER = new Intl.NumberFormat('fr-FR', {
+  maximumFractionDigits: 1,
+});
+const DISTRIBUTION_OPTIONS = [
+  { value: 'service', label: 'Par service' },
+  { value: 'direction', label: 'Par direction' },
+];
+const MAX_RECORD_YEARS = 3;
 
 function formatName(employee) {
   return `${employee.prenom || ''} ${employee.nom || ''}`.trim();
+}
+
+function formatRecordYears(years) {
+  if (years.length === 0) {
+    return '—';
+  }
+
+  const shown = years.slice(0, MAX_RECORD_YEARS).join(' · ');
+  const hidden = years.length - MAX_RECORD_YEARS;
+
+  return hidden > 0 ? `${shown} +${hidden}` : shown;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div
+      className="dashboard-page"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span className="ui-visually-hidden">
+        Chargement du tableau de bord...
+      </span>
+
+      <div className="dash-skeleton-heading" aria-hidden="true">
+        <Skeleton width={150} height={26} radius="999px" />
+        <Skeleton width={320} height={40} />
+        <Skeleton width={420} height={16} />
+      </div>
+
+      <div className="dash-stat-grid" aria-hidden="true">
+        {[0, 1, 2].map((index) => (
+          <Card key={index} className="dash-skeleton-card">
+            <Skeleton width={90} height={16} />
+            <Skeleton width={70} height={36} />
+            <Skeleton width={140} height={14} />
+          </Card>
+        ))}
+      </div>
+
+      <div className="dash-chart-grid" aria-hidden="true">
+        <Card className="dash-skeleton-chart">
+          <Skeleton width={180} height={20} />
+          <Skeleton width="100%" height={230} radius="22px" />
+        </Card>
+        <Card className="dash-skeleton-chart">
+          <Skeleton width={220} height={20} />
+          <Skeleton width="100%" height={230} radius="22px" />
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -248,194 +150,176 @@ export default function DashboardPage() {
     [data.employees, distributionBy]
   );
   const hiringYearStats = useMemo(
-    () => getEmployeesByHiringYear(data.employees),
+    () => fillYearGaps(getEmployeesByHiringYear(data.employees)),
     [data.employees]
+  );
+  const hiringSummary = useMemo(
+    () => getHiringSummary(hiringYearStats),
+    [hiringYearStats]
   );
   const recentEmployees = data.employees.slice(0, 5);
 
   if (loading) {
-    return (
-      <div className="dashboard-page">
-        <div className="dashboard-loading">
-          Chargement du tableau de bord...
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
     return (
       <div className="dashboard-page">
-        <div className="dashboard-error">
-          <h1>Tableau de bord</h1>
-          <p>{error}</p>
+        <PageHeader eyebrow="Espace de travail" title="Tableau de bord" />
 
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
+        <Card as="div">
+          <EmptyState
+            role="alert"
+            title="Chargement impossible"
+            action={(
+              <Button onClick={() => window.location.reload()}>
+                Réessayer
+              </Button>
+            )}
           >
-            Réessayer
-          </button>
-        </div>
+            {error}
+          </EmptyState>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="dashboard-page">
-      <section className="dashboard-heading">
-        <div>
-          <p className="page-eyebrow">
-            ESPACE DE TRAVAIL
-          </p>
+      <PageHeader
+        eyebrow="Espace de travail"
+        title="Tableau de bord"
+        subtitle="Vue d'ensemble de l'environnement RH du ministère."
+      />
 
-          <h1>Tableau de bord</h1>
-
-          <p>
-            Vue d'ensemble de l'environnement RH du ministère.
-          </p>
-        </div>
-
-        <div className="dashboard-heading-mark">
-          <Building2 size={20} />
-        </div>
+      <section className="dash-stat-grid" aria-label="Chiffres clés">
+        <StatCard
+          index={1}
+          icon={Users}
+          label="Agents"
+          value={NUMBER_FORMATTER.format(data.employees.length)}
+          caption="agents enregistrés"
+        />
+        <StatCard
+          index={2}
+          icon={Building2}
+          label="Services"
+          value={NUMBER_FORMATTER.format(data.services.length)}
+          caption="services référencés"
+        />
+        <StatCard
+          index={3}
+          icon={BriefcaseBusiness}
+          label="Postes"
+          value={NUMBER_FORMATTER.format(data.postes.length)}
+          caption="postes référencés"
+        />
       </section>
 
-      <section className="dashboard-stat-grid">
-        <article className="dashboard-stat-card">
-          <div className="dashboard-stat-icon">
-            <Users size={20} />
-          </div>
-
-          <div>
-            <span>Agents</span>
-            <strong>{data.employees.length}</strong>
-            <small>agents enregistrés</small>
-          </div>
-        </article>
-
-        <article className="dashboard-stat-card">
-          <div className="dashboard-stat-icon">
-            <Building2 size={20} />
-          </div>
-
-          <div>
-            <span>Services</span>
-            <strong>{data.services.length}</strong>
-            <small>services référencés</small>
-          </div>
-        </article>
-
-        <article className="dashboard-stat-card">
-          <div className="dashboard-stat-icon">
-            <BriefcaseBusiness size={20} />
-          </div>
-
-          <div>
-            <span>Postes</span>
-            <strong>{data.postes.length}</strong>
-            <small>postes référencés</small>
-          </div>
-        </article>
-      </section>
-
-      <section className="dashboard-chart-grid">
-        <article className="dashboard-card dashboard-chart-card">
-          <div className="dashboard-card-header">
+      <section className="dash-chart-grid">
+        <Card className="dash-panel" index={4}>
+          <div className="dash-panel-header">
             <div>
-              <p className="dashboard-card-eyebrow">
-                ORGANISATION
-              </p>
-
-              <h2>Effectifs par {distributionBy === 'service' ? 'service' : 'direction'}</h2>
+              <Eyebrow>Organisation</Eyebrow>
+              <h2>
+                Effectifs par {distributionBy === 'service' ? 'service' : 'direction'}
+              </h2>
             </div>
-            <ChartPie size={19} aria-hidden="true" />
+
+            <Segmented
+              label="Grouper les effectifs"
+              options={DISTRIBUTION_OPTIONS}
+              value={distributionBy}
+              onChange={setDistributionBy}
+            />
           </div>
 
-          <div className="dashboard-chart-switch" aria-label="Grouper les effectifs">
-            <button
-              type="button"
-              aria-pressed={distributionBy === 'service'}
-              onClick={() => setDistributionBy('service')}
-            >
-              Par service
-            </button>
-            <button
-              type="button"
-              aria-pressed={distributionBy === 'direction'}
-              onClick={() => setDistributionBy('direction')}
-            >
-              Par direction
-            </button>
-          </div>
+          <WorkforceDonut key={distributionBy} items={distributionStats} />
+        </Card>
 
-          <EmployeePieChart items={distributionStats} />
-        </article>
-
-        <article className="dashboard-card dashboard-chart-card">
-          <div className="dashboard-card-header">
+        <Card className="dash-panel" index={5}>
+          <div className="dash-panel-header">
             <div>
-              <p className="dashboard-card-eyebrow">
-                RECRUTEMENT
-              </p>
-
+              <Eyebrow>Recrutement</Eyebrow>
               <h2>Agents recrutés par année</h2>
             </div>
-            <ChartNoAxesColumnIncreasing size={19} aria-hidden="true" />
+
+            {hiringSummary.peak > 0 ? (
+              <span className="dash-peak">
+                Pic : {NUMBER_FORMATTER.format(hiringSummary.peak)} par an
+              </span>
+            ) : null}
           </div>
 
-          <HiringYearBarChart items={hiringYearStats} />
-        </article>
+          {hiringYearStats.length === 0 ? (
+            <div className="dash-chart-empty">
+              Aucune date d’embauche valide n’est disponible.
+            </div>
+          ) : (
+            <>
+              <HiringBars items={hiringYearStats} summary={hiringSummary} />
+
+              <dl className="dash-figures">
+                <div>
+                  <dt>Total</dt>
+                  <dd>{NUMBER_FORMATTER.format(hiringSummary.total)}</dd>
+                </div>
+                <div>
+                  <dt>Moyenne</dt>
+                  <dd>
+                    {AVERAGE_FORMATTER.format(hiringSummary.average)}
+                    <small> / an</small>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Années record</dt>
+                  <dd>{formatRecordYears(hiringSummary.peakYears)}</dd>
+                </div>
+              </dl>
+            </>
+          )}
+        </Card>
       </section>
 
-      <section className="dashboard-main-grid">
-        <article className="dashboard-card">
-          <div className="dashboard-card-header">
+      <section className="dash-main-grid">
+        <Card className="dash-panel" index={6}>
+          <div className="dash-panel-header">
             <div>
-              <p className="dashboard-card-eyebrow">AGENTS</p>
+              <Eyebrow>Agents</Eyebrow>
               <h2>Agents enregistrés</h2>
             </div>
-            <Search size={18} />
           </div>
-          <div className="dashboard-employee-list">
+
+          <ul className="dash-employees">
             {recentEmployees.map((employee) => (
-              <div
-                className="dashboard-employee-row"
-                key={employee.id}
-              >
-              <div className="dashboard-avatar">
-                {getEmployeePhotoUrl(employee.photo) ? (
-                  <EmployeePhoto
-                    src={getEmployeePhotoUrl(employee.photo)}
-                    alt={formatName(employee)}
-                  />
-                ) : (
-                  getEmployeeInitials(employee)
-                )}
-              </div>
+              <li key={employee.id}>
+                <Avatar
+                  src={getEmployeePhotoUrl(employee.photo)}
+                  initials={getEmployeeInitials(employee)}
+                  alt={formatName(employee)}
+                />
 
-                <div className="dashboard-employee-info">
+                <div className="dash-employee-info">
                   <strong>{formatName(employee)}</strong>
-
-                  <span>
-                    {employee.poste || 'Poste non renseigné'}
-                  </span>
+                  <span>{employee.poste || 'Poste non renseigné'}</span>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          <button
-            type="button"
-            className="dashboard-link-button"
+          <Button
+            variant="secondary"
+            size="sm"
+            className="dash-all-agents"
             onClick={() => {
               window.location.href = '/agents';
             }}
           >
             Voir tous les agents
-            <ArrowRight size={15} />
-          </button>
-        </article>
+            <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
+          </Button>
+        </Card>
       </section>
     </div>
   );
