@@ -882,10 +882,6 @@
 }
 
 @media (max-width: 850px) {
-  .agent-profile-page {
-    padding: 24px 18px;
-  }
-
   .agent-profile-grid {
     grid-template-columns: 1fr;
   }
@@ -1036,10 +1032,6 @@
 }
 
 @media (max-width: 560px) {
-  .agent-profile-page {
-    padding: 20px 14px;
-  }
-
   .agent-profile-hero,
   .agent-profile-card {
     padding: 20px;
