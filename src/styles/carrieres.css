@@ -69,7 +69,7 @@
   height: 46px;
   padding: 0 42px 0 44px;
   color: #463427;
-  background: #FFFDF9;
+  background: var(--color-surface);
   border: 1px solid #DED2C4;
   border-radius: 11px;
   outline: none;
@@ -110,7 +110,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #FFFDF9;
+  background: var(--color-surface);
   border: 1px solid #E5DCD1;
   border-radius: 15px;
   transition:
@@ -241,7 +241,7 @@
   justify-content: center;
   gap: 8px;
   color: #958578;
-  background: #FFFDF9;
+  background: var(--color-surface);
   border: 1px solid #E5DCD1;
   border-radius: 15px;
   text-align: center;
