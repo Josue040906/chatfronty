@@ -84,7 +84,7 @@ function NavigationItem({ item, onClose }) {
       }
       onClick={onClose}
     >
-      <Icon size={18} strokeWidth={1.8} />
+      <Icon size={18} strokeWidth={1.75} />
       <span>{item.label}</span>
     </NavLink>
   );

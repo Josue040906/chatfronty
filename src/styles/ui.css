@@ -1,0 +1,407 @@
+/* =========================================================
+   BIBLIOTHÈQUE DE COMPOSANTS PARTAGÉS (src/components/ui)
+   N'utilise que les variables de tokens.css.
+   ========================================================= */
+
+/* ---------- Mouvement commun ---------- */
+
+@keyframes sy-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sy-grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes sy-draw {
+  from { stroke-dashoffset: var(--draw-length, 600); }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sy-shimmer {
+  to { background-position: -200% 0; }
+}
+
+/* Entrée échelonnée : l'élément reçoit style="--i: <rang>" */
+.sy-rise {
+  animation: sy-rise var(--duration-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+/* ---------- Bouton ---------- */
+
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font: 600 var(--text-md) / 1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform var(--duration-base) var(--ease-spring),
+    box-shadow var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
+}
+
+.ui-button-md {
+  height: var(--control-height);
+  padding: 0 var(--space-5);
+}
+
+.ui-button-sm {
+  height: var(--control-height-sm);
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.ui-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.ui-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ui-button-primary {
+  background: linear-gradient(
+    160deg,
+    var(--color-brand),
+    var(--color-brand-strong)
+  );
+  color: var(--color-on-brand);
+  box-shadow: 0 6px 14px -6px rgb(var(--shadow-ink) / 0.5);
+}
+
+.ui-button-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -8px rgb(var(--shadow-ink) / 0.55);
+}
+
+.ui-button-secondary {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.ui-button-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--color-brand);
+}
+
+.ui-button-ghost {
+  background: transparent;
+  color: var(--color-brand);
+}
+
+.ui-button-ghost:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+}
+
+/* ---------- Carte ---------- */
+
+.ui-card {
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.ui-card-interactive {
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.ui-card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* ---------- Étiquette et surtitre ---------- */
+
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font: 600 var(--text-xs) / 1 var(--font-ui);
+  white-space: nowrap;
+}
+
+.ui-badge-neutral {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+}
+
+.ui-badge-accent {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.ui-badge-success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.ui-badge-info {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.ui-badge-danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.ui-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font: 700 var(--text-xs) / 1 var(--font-ui);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ui-eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* ---------- En-tête de page ---------- */
+
+.ui-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.ui-page-title {
+  margin: var(--space-2) 0 var(--space-2);
+  font: 600 var(--text-3xl) / 1.15 var(--font-display);
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.ui-page-title span {
+  padding-bottom: 2px;
+  background: linear-gradient(var(--color-accent), var(--color-accent))
+    0 100% / 100% 3px no-repeat;
+}
+
+.ui-page-subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+}
+
+/* ---------- Choix exclusif ---------- */
+
+.ui-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+}
+
+.ui-segmented button {
+  height: var(--control-height-sm);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 600 var(--text-sm) / 1 var(--font-ui);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    color var(--duration-fast) ease,
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.ui-segmented button[aria-pressed='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 4px rgb(var(--shadow-ink) / 0.16);
+}
+
+/* ---------- Avatar ---------- */
+
+.ui-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font: 700 var(--text-sm) / 1 var(--font-ui);
+}
+
+.ui-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ui-avatar-sm {
+  width: 32px;
+  height: 32px;
+  font-size: var(--text-xs);
+}
+
+.ui-avatar-md {
+  width: 40px;
+  height: 40px;
+}
+
+.ui-avatar-lg {
+  width: 72px;
+  height: 72px;
+  font-size: var(--text-2xl);
+  font-family: var(--font-display);
+}
+
+/* ---------- Squelette de chargement ---------- */
+
+.ui-skeleton {
+  display: block;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+      100deg,
+      var(--color-surface-sunken) 30%,
+      var(--color-surface) 50%,
+      var(--color-surface-sunken) 70%
+    )
+    0 0 / 200% 100%;
+  animation: sy-shimmer 1.4s linear infinite;
+}
+
+/* ---------- État vide ---------- */
+
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+}
+
+.ui-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.ui-empty-title {
+  margin: 0;
+  font: 600 var(--text-xl) / 1.3 var(--font-display);
+}
+
+.ui-empty-text {
+  max-width: 420px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+/* ---------- Carte de chiffre clé ---------- */
+
+.ui-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+}
+
+.ui-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ui-stat-label {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.ui-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+
+.ui-stat-value {
+  margin-top: var(--space-2);
+  font: 600 var(--text-3xl) / 1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-stat-caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 640px) {
+  .ui-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ui-page-title {
+    font-size: var(--text-2xl);
+  }
+}
+
+/* ---------- Texte réservé aux lecteurs d'écran ---------- */
+
+.ui-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

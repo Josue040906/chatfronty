@@ -1,0 +1,183 @@
+/* =========================================================
+   JETONS DE DESIGN (design tokens)
+   Toutes les valeurs de couleur, de taille, de rayon, d'ombre
+   et d'animation partagées par l'interface sont déclarées ici.
+   Aucun composant ne doit répéter une valeur « en dur ».
+
+   Deux thèmes :
+   - chaud (espace RH)         : défini sur :root
+   - « Cèdre & or » (admin)    : défini sur .admin-theme, qui
+     redéfinit uniquement les variables ci-dessous.
+   ========================================================= */
+
+:root {
+  /* ---- Couleurs : thème chaud ---- */
+  --color-bg: #FAF6EF;
+  --color-surface: #FFFDF9;
+  --color-surface-sunken: #F4EDE0;
+  --color-text: #2B1D14;
+  --color-text-muted: #6F5F51;
+  --color-border: rgb(43 29 20 / 0.10);
+  --color-border-strong: rgb(43 29 20 / 0.18);
+
+  --color-brand: #6B4A32;
+  --color-brand-strong: #4E3422;
+  --color-on-brand: #FFFDF9;
+
+  --color-accent: #B8863F;
+  --color-accent-strong: #7C5818;
+  --color-accent-soft: #F3E6CF;
+
+  --color-menu: #33221A;
+  --color-menu-text: rgb(255 253 249 / 0.68);
+  --color-menu-text-strong: #FFFDF9;
+  --color-menu-label: rgb(255 253 249 / 0.42);
+  --color-menu-border: rgb(255 253 249 / 0.08);
+  --color-menu-hover: rgb(255 253 249 / 0.07);
+  --color-menu-active: rgb(184 134 63 / 0.20);
+  --color-menu-accent: #D9B36F;
+
+  --color-success: #2F6B4F;
+  --color-success-soft: #E3F0E8;
+  --color-info: #3E6C8A;
+  --color-info-soft: #E2EDF4;
+  --color-danger: #A63A29;
+  --color-danger-soft: #F8E5E0;
+
+  --color-focus: var(--color-brand);
+
+  /* Palette des graphiques (10 teintes, texte et valeurs toujours affichés
+     à côté : la couleur ne porte jamais seule l'information). */
+  --chart-1: #4A3426;
+  --chart-2: #6B4A32;
+  --chart-3: #9C7A5B;
+  --chart-4: #8A6A1F;
+  --chart-5: #D4A24A;
+  --chart-6: #2F6B4F;
+  --chart-7: #6FA386;
+  --chart-8: #A89A8A;
+  --chart-9: #517A91;
+  --chart-10: #B86B50;
+
+  /* ---- Typographie ---- */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  /* Échelle fixe : 12 · 13 · 14 · 16 · 18 · 24 · 32 */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  /* ---- Espacements ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* ---- Formes ---- */
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+  --radius-pill: 999px;
+
+  /* ---- Contrôles : deux hauteurs de bouton, champs de 40 px ---- */
+  --control-height: 40px;
+  --control-height-sm: 32px;
+
+  /* ---- Ombres douces en couches ---- */
+  --shadow-ink: 43 29 20;
+  --shadow-card:
+    0 1px 1px rgb(var(--shadow-ink) / 0.04),
+    0 3px 8px rgb(var(--shadow-ink) / 0.04),
+    0 16px 32px -18px rgb(var(--shadow-ink) / 0.18);
+  --shadow-lift:
+    0 2px 3px rgb(var(--shadow-ink) / 0.05),
+    0 10px 20px rgb(var(--shadow-ink) / 0.07),
+    0 28px 44px -20px rgb(var(--shadow-ink) / 0.26);
+
+  /* ---- Mouvement ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 280ms;
+  --duration-slow: 700ms;
+  --stagger: 70ms;
+}
+
+/* =========================================================
+   Thème administrateur « Cèdre & or »
+   Même composants, autre palette : seules les variables changent.
+   ========================================================= */
+
+.admin-theme {
+  --color-bg: #F3F6EE;
+  --color-surface: #FCFDF9;
+  --color-surface-sunken: #E9EFE1;
+  --color-text: #14281D;
+  --color-text-muted: #546A5C;
+  --color-border: rgb(20 40 29 / 0.12);
+  --color-border-strong: rgb(20 40 29 / 0.2);
+
+  --color-brand: #2E6047;
+  --color-brand-strong: #214735;
+  --color-on-brand: #FCFDF9;
+
+  --color-accent: #C79B2D;
+  --color-accent-strong: #725200;
+  --color-accent-soft: #F5EBC8;
+
+  --color-menu: #16291F;
+  --color-menu-text: rgb(252 253 249 / 0.7);
+  --color-menu-text-strong: #FCFDF9;
+  --color-menu-label: rgb(252 253 249 / 0.44);
+  --color-menu-border: rgb(252 253 249 / 0.1);
+  --color-menu-hover: rgb(252 253 249 / 0.08);
+  --color-menu-active: rgb(199 155 45 / 0.2);
+  --color-menu-accent: #E0BD63;
+
+  --color-success: #2E6047;
+  --color-success-soft: #DDEBDF;
+
+  --chart-1: #1F4D38;
+  --chart-2: #2E6047;
+  --chart-3: #6FA386;
+  --chart-4: #C79B2D;
+  --chart-5: #E3C675;
+  --chart-6: #8A6D1A;
+  --chart-7: #517A91;
+  --chart-8: #A3AE9F;
+  --chart-9: #B86B50;
+  --chart-10: #6A718B;
+
+  --shadow-ink: 20 40 29;
+}
+
+/* =========================================================
+   Accessibilité : focus visible partout, mouvement réduit
+   ========================================================= */
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
