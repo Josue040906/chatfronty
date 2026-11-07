@@ -882,3 +882,76 @@
     padding: 18px 14px 12px;
   }
 }
+
+/* Tâche confirmée : récapitulatif, puis « Confirmer » ou « Annuler ». */
+.assistant-confirmation {
+  margin-top: 10px;
+  padding: 11px 12px;
+  border: 1px solid #e8dfd8;
+  border-radius: 10px;
+  background: #fffaf7;
+}
+
+.assistant-confirmation-title {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: #7a3b31;
+}
+
+.assistant-confirmation-details {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+}
+
+.assistant-confirmation-details div {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.assistant-confirmation-details dt {
+  min-width: 40%;
+  color: #6b5d57;
+}
+
+.assistant-confirmation-details dd {
+  margin: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.assistant-confirmation-outcome {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+}
+
+.assistant-confirmation-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.assistant-confirmation-buttons button {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assistant-confirmation-confirm {
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #fff;
+}
+
+.assistant-confirmation-cancel {
+  border: 1px solid #e8dfd8;
+  background: #fff;
+  color: #4a3f3a;
+}
+
+.assistant-confirmation-buttons button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

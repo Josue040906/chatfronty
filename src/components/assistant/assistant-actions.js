@@ -22,6 +22,50 @@ function routeLabel(route) {
   return ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
 }
 
+const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
+
+/** « dateEffetSouhaitee » → « Date effet souhaitee » : libellé lisible d'un champ. */
+function fieldLabel(name) {
+  const words = name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * Tâches confirmées : rien n'est exécuté tant que l'utilisateur n'a pas
+ * cliqué « Confirmer ». La carte récapitule ce qui sera envoyé.
+ */
+export function getConfirmationActions(actions) {
+  if (!Array.isArray(actions)) {
+    return [];
+  }
+  return actions
+    .filter((action) => action?.type === 'CONFIRM' && UUID.test(action.confirmationId || ''))
+    .map((action) => ({
+      confirmationId: action.confirmationId,
+      status: 'pending',
+      outcome: '',
+      details: Object.entries(
+        action.fields && typeof action.fields === 'object' && !Array.isArray(action.fields)
+          ? action.fields
+          : {}
+      )
+        .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+        .map(([name, value]) => ({ label: fieldLabel(name), value: String(value) })),
+    }));
+}
+
+/** Message affiché après le clic « Confirmer », d'après la réponse de Bandy. */
+export function confirmationOutcomeMessage(outcome) {
+  if (outcome?.status === 'CONFIRMED') {
+    return 'Action confirmée et exécutée.';
+  }
+  const refusal = outcome?.result?.message;
+  const detail = typeof refusal === 'string'
+    ? refusal
+    : typeof refusal?.message === 'string' ? refusal.message : '';
+  return detail ? `Action refusée : ${detail}` : 'Action refusée par le service RH.';
+}
+
 const PREPARED_LABELS = [
   { pattern: /^\/agents\/\d+$/, label: 'Ouvrir la modification préremplie' },
   { pattern: /^\/documents\/nouveau$/, label: 'Ouvrir le nouveau document prérempli' },

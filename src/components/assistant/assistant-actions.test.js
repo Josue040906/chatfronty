@@ -1,5 +1,54 @@
 import { describe, expect, it } from 'vitest';
-import { getNavigationActions, getPreparedActions, isInternalRoute } from './assistant-actions';
+import {
+  confirmationOutcomeMessage,
+  getConfirmationActions,
+  getNavigationActions,
+  getPreparedActions,
+  isInternalRoute,
+} from './assistant-actions';
+
+describe('getConfirmationActions', () => {
+  const id = '7f1c2a9e-1b2c-4d3e-8f90-123456789abc';
+
+  it('summarises what will be sent, pending the user click', () => {
+    expect(getConfirmationActions([{
+      type: 'CONFIRM',
+      tool: 'submit_leave_request',
+      confirmationId: id,
+      fields: { motif: 'Congé annuel', dateEffetSouhaitee: '2026-12-01', nombreJours: 5 },
+    }])).toEqual([{
+      confirmationId: id,
+      status: 'pending',
+      outcome: '',
+      details: [
+        { label: 'Motif', value: 'Congé annuel' },
+        { label: 'Date effet souhaitee', value: '2026-12-01' },
+        { label: 'Nombre jours', value: '5' },
+      ],
+    }]);
+  });
+
+  it('ignores a confirmation without a valid identifier', () => {
+    expect(getConfirmationActions([
+      { type: 'CONFIRM', confirmationId: 'pas-un-uuid', fields: {} },
+      { type: 'CONFIRM', fields: { motif: 'x' } },
+      { type: 'NAVIGATE', route: '/agents' },
+    ])).toEqual([]);
+  });
+
+  it('explains the outcome returned by Bandy', () => {
+    expect(confirmationOutcomeMessage({ status: 'CONFIRMED', result: {} }))
+      .toBe('Action confirmée et exécutée.');
+    expect(confirmationOutcomeMessage({
+      status: 'FAILED',
+      result: { ok: false, status: 403, message: { code: 'FORBIDDEN', message: 'Droits insuffisants.' } },
+    })).toBe('Action refusée : Droits insuffisants.');
+    expect(confirmationOutcomeMessage({ status: 'FAILED', result: { message: 'Type inconnu.' } }))
+      .toBe('Action refusée : Type inconnu.');
+    expect(confirmationOutcomeMessage({ status: 'FAILED' }))
+      .toBe('Action refusée par le service RH.');
+  });
+});
 
 describe('getPreparedActions', () => {
   it('keeps the proposed fields and labels the form to open', () => {
