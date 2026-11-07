@@ -25,6 +25,7 @@ import {
   sendConversationMessage,
 } from '../../api/assistant';
 import { getNavigableAgents } from './assistant-agents';
+import { getNavigationActions } from './assistant-actions';
 import {
   clearStoredConversation,
   getConversationStorageKey,
@@ -59,7 +60,19 @@ function formatChatDate(value) {
   }).format(date);
 }
 
-const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
+// Bulle de Bandy complétée par sa réponse finale : texte, cartes d'agents et
+// actions de navigation (sans doublon avec les cartes).
+function withBandyResponse(item, response) {
+  const agents = getNavigableAgents(response.toolResults);
+  return {
+    ...item,
+    content: response.message,
+    agents,
+    navigation: getNavigationActions(response.actions, agents.map((agent) => agent.id)),
+  };
+}
+
+const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute }) {
   return (
     <div
       className={`assistant-message ${item.role === 'user' ? 'assistant-message-user' : 'assistant-message-bot'}`}
@@ -75,7 +88,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
               key={agent.id}
               type="button"
               className="assistant-message-action"
-              onClick={() => onOpenAgent(agent.id)}
+              onClick={() => onOpenRoute(`/agents/${encodeURIComponent(agent.id)}`)}
             >
               <span>
                 Ouvrir la fiche de {agent.name}
@@ -84,6 +97,21 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
                   <small>Similarité du nom : {agent.similarityPercent}%</small>
                 )}
               </span>
+              <ChevronRight size={15} />
+            </button>
+          ))}
+        </div>
+      )}
+      {item.navigation?.length > 0 && (
+        <div className="assistant-message-actions">
+          {item.navigation.map((action) => (
+            <button
+              key={action.route}
+              type="button"
+              className="assistant-message-action"
+              onClick={() => onOpenRoute(action.route)}
+            >
+              <span>{action.label}</span>
               <ChevronRight size={15} />
             </button>
           ))}
@@ -135,11 +163,13 @@ export default function AssistantFloating({ user }) {
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
-  const openAgentProfile = useCallback((agentId) => {
+  // Seule façon de quitter l'assistant vers une page : la route a été validée
+  // (route interne) ; le garde de routes du front décide ensuite de l'accès.
+  const openRoute = useCallback((route) => {
     setOpen(false);
     setExpanded(false);
     setHistoryOpen(false);
-    navigate(`/agents/${encodeURIComponent(agentId)}`);
+    navigate(route);
   }, [navigate]);
 
   useEffect(() => {
@@ -607,11 +637,7 @@ export default function AssistantFloating({ user }) {
               ...chat,
               messages: chat.messages.map((item) => (
                 item.id === assistantMessageId
-                  ? {
-                      ...item,
-                      content: response.message,
-                      agents: getNavigableAgents(response.toolResults),
-                    }
+                  ? withBandyResponse(item, response)
                   : item
               )),
               totalMessages: (chat.totalMessages || 0) + 1,
@@ -935,7 +961,7 @@ export default function AssistantFloating({ user }) {
                   <AssistantMessage
                     key={item.id}
                     item={item}
-                    onOpenAgent={openAgentProfile}
+                    onOpenRoute={openRoute}
                   />
                 ))}
                 {pendingInitialMessage && (
