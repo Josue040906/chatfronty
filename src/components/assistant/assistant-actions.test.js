@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildBandyReply,
   confirmationOutcomeMessage,
   getConfirmationActions,
   getNavigationActions,
@@ -123,5 +124,41 @@ describe('getNavigationActions', () => {
   it('returns nothing when Bandy sent no actions', () => {
     expect(getNavigationActions(undefined)).toEqual([]);
     expect(isInternalRoute('/agents/1?onglet=carri%C3%A8re')).toBe(true);
+  });
+});
+
+describe('buildBandyReply', () => {
+  // Réponse réelle enregistrée par Bandy pour « change le téléphone de Toky… ».
+  const searchCards = [{
+    name: 'search_agents',
+    result: {
+      agents: [
+        { id: 3, prenom: 'Toky', nom: 'RAZAFINDRAIBE', score_correspondance: 1 },
+        { id: 9, prenom: 'Micka', nom: 'RAZAFINDRAKOTO', score_correspondance: 0.53 },
+      ],
+    },
+  }];
+
+  it('shows only the prepared task, not the intermediate search cards', () => {
+    const reply = buildBandyReply({
+      toolResults: searchCards,
+      actions: [{
+        type: 'PREPARE',
+        tool: 'prepare_agent_update',
+        route: '/agents/3',
+        fields: { telephone: '034 12 345 67' },
+      }],
+    });
+
+    expect(reply.agents).toEqual([]);
+    expect(reply.prepared).toHaveLength(1);
+    expect(reply.prepared[0].label).toBe('Ouvrir la modification préremplie');
+  });
+
+  it('keeps the search cards for a plain search', () => {
+    const reply = buildBandyReply({ toolResults: searchCards, actions: [] });
+
+    expect(reply.agents.map((agent) => agent.id)).toEqual(['3', '9']);
+    expect(reply.prepared).toEqual([]);
   });
 });

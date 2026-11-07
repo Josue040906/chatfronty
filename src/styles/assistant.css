@@ -630,8 +630,22 @@
   color: #604535;
 }
 
-.assistant-message-content {
+/* Texte et actions empilés dans une seule colonne, à côté de l'avatar :
+   chaque groupe de boutons passe à la ligne au lieu de déborder. */
+.assistant-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
   max-width: min(78%, 680px);
+}
+
+.assistant-message-user .assistant-message-body {
+  align-items: flex-end;
+}
+
+.assistant-message-content {
+  max-width: 100%;
 
   padding: 9px 11px;
 
@@ -642,8 +656,18 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: min(78%, 680px);
-  margin: -7px 0 0 34px;
+  width: 100%;
+}
+
+/* Le bouton d'une tâche préparée est l'action à suivre. */
+.assistant-message-action-primary {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.assistant-message-action-primary:hover {
+  border-color: #15803d;
+  background: #dcfce7;
 }
 
 .assistant-message-action {

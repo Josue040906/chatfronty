@@ -2,6 +2,8 @@
 // que proposer : l'utilisateur clique, et le garde de routes du front comme
 // l'API restent juges des droits.
 
+import { getNavigableAgents } from './assistant-agents';
+
 // Une route interne de l'application : un seul « / » initial, sans schéma,
 // sans espace ni barre oblique inverse. Rien d'autre n'est jamais suivi.
 const INTERNAL_ROUTE = /^\/(?!\/)[^\s\\]*$/;
@@ -114,4 +116,23 @@ export function getNavigationActions(actions, agentIds = []) {
     routes.set(action.route, { route: action.route, label: routeLabel(action.route) });
   }
   return [...routes.values()];
+}
+
+/**
+ * Ce que la bulle de Bandy affiche sous son texte. Quand la réponse contient
+ * une tâche préparée ou à confirmer, la recherche qui a servi à trouver
+ * l'agent n'est qu'une étape intermédiaire : ses cartes ne sont pas montrées,
+ * pour que le bouton de la tâche soit le seul à suivre.
+ */
+export function buildBandyReply(response) {
+  const prepared = getPreparedActions(response?.actions);
+  const confirmations = getConfirmationActions(response?.actions);
+  const hasTask = prepared.length > 0 || confirmations.length > 0;
+  const agents = hasTask ? [] : getNavigableAgents(response?.toolResults);
+  return {
+    agents,
+    navigation: getNavigationActions(response?.actions, agents.map((agent) => agent.id)),
+    prepared,
+    confirmations,
+  };
 }

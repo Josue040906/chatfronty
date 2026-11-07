@@ -26,13 +26,7 @@ import {
   confirmPendingAction,
   cancelPendingAction,
 } from '../../api/assistant';
-import { getNavigableAgents } from './assistant-agents';
-import {
-  confirmationOutcomeMessage,
-  getConfirmationActions,
-  getNavigationActions,
-  getPreparedActions,
-} from './assistant-actions';
+import { buildBandyReply, confirmationOutcomeMessage } from './assistant-actions';
 import { prefillNavigationState } from '../../utils/bandyPrefill';
 import {
   clearStoredConversation,
@@ -68,18 +62,9 @@ function formatChatDate(value) {
   }).format(date);
 }
 
-// Bulle de Bandy complétée par sa réponse finale : texte, cartes d'agents et
-// actions de navigation (sans doublon avec les cartes).
+// Bulle de Bandy complétée par sa réponse finale : son texte et ses actions.
 function withBandyResponse(item, response) {
-  const agents = getNavigableAgents(response.toolResults);
-  return {
-    ...item,
-    content: response.message,
-    agents,
-    navigation: getNavigationActions(response.actions, agents.map((agent) => agent.id)),
-    prepared: getPreparedActions(response.actions),
-    confirmations: getConfirmationActions(response.actions),
-  };
+  return { ...item, content: response.message, ...buildBandyReply(response) };
 }
 
 const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onSettle }) {
@@ -90,6 +75,8 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
       {item.role === 'assistant' && (
         <div className="assistant-message-avatar"><Bot size={14} /></div>
       )}
+      {/* Texte puis actions, empilés : aucun bouton ne déborde du panneau. */}
+      <div className="assistant-message-body">
       <div className="assistant-message-content">{item.content}</div>
       {item.agents?.length > 0 && (
         <div className="assistant-message-actions">
@@ -133,7 +120,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
             <button
               key={action.route}
               type="button"
-              className="assistant-message-action"
+              className="assistant-message-action assistant-message-action-primary"
               onClick={() => onOpenRoute(action.route, prefillNavigationState(action.fields))}
             >
               <span>
@@ -185,6 +172,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
           )}
         </div>
       ))}
+      </div>
     </div>
   );
 });
