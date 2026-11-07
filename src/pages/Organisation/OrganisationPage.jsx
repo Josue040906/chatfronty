@@ -597,7 +597,7 @@ export default function OrganisationPage() {
           target: directionNodeId,
           targetHandle: 'top-target',
           type: 'ministryBranch',
-          style: { stroke: '#b8874a', strokeWidth: 1.5 },
+          style: { stroke: 'var(--color-accent)', strokeWidth: 1.5 },
         });
 
         group.services.forEach((service, serviceIndex) => {
@@ -632,7 +632,7 @@ export default function OrganisationPage() {
             target: nodeId,
             targetHandle: 'left-target',
             type: 'serviceBranch',
-            style: { stroke: '#c9ad84', strokeWidth: 1.4 },
+            style: { stroke: 'var(--color-border-strong)', strokeWidth: 1.4 },
           });
         });
 
@@ -841,7 +841,7 @@ export default function OrganisationPage() {
                 variant={BackgroundVariant.Dots}
                 gap={24}
                 size={1}
-                color="#e2d9cc"
+                color="#d9cfc1"
               />
               <div className="org-flow-controls" aria-label="Contrôles de l’organigramme">
                 <button type="button" onClick={() => flowRef.current?.zoomIn({ duration: 180 })} aria-label="Zoom avant">
