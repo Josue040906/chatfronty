@@ -1,5 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { getNavigationActions, isInternalRoute } from './assistant-actions';
+import { getNavigationActions, getPreparedActions, isInternalRoute } from './assistant-actions';
+
+describe('getPreparedActions', () => {
+  it('keeps the proposed fields and labels the form to open', () => {
+    expect(getPreparedActions([
+      { type: 'PREPARE', route: '/agents/101', fields: { telephone: '034 12 345 67' } },
+      { type: 'PREPARE', route: '/documents/nouveau', fields: { typeDocumentId: 1, employeId: 101 } },
+    ])).toEqual([
+      {
+        route: '/agents/101',
+        fields: { telephone: '034 12 345 67' },
+        label: 'Ouvrir la modification préremplie',
+      },
+      {
+        route: '/documents/nouveau',
+        fields: { typeDocumentId: 1, employeId: 101 },
+        label: 'Ouvrir le nouveau document prérempli',
+      },
+    ]);
+  });
+
+  it('ignores external routes, empty or invalid fields and other types', () => {
+    expect(getPreparedActions([
+      { type: 'PREPARE', route: '//evil.test/x', fields: { a: 1 } },
+      { type: 'PREPARE', route: '/agents/1', fields: {} },
+      { type: 'PREPARE', route: '/agents/1', fields: ['a'] },
+      { type: 'NAVIGATE', route: '/agents/1' },
+    ])).toEqual([]);
+  });
+});
 
 describe('getNavigationActions', () => {
   it('turns NAVIGATE actions into labelled internal routes', () => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -28,6 +28,7 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
+import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -47,12 +48,15 @@ function formatDate(value) {
 export default function AgentProfilePage({ user }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [agent, setAgent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [editing, setEditing] = useState(false);
+  // Champs proposés par Bandy et différents de la valeur actuelle.
+  const [prefilled, setPrefilled] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -86,7 +90,17 @@ export default function AgentProfilePage({ user }) {
 
         if (!cancelled) {
           setAgent(result);
-          setForm(initializeForm(result));
+          // Tâche préparée par Bandy : le formulaire s'ouvre prérempli,
+          // rien n'est enregistré avant « Enregistrer ».
+          const proposition = applyPrefill(
+            initializeForm(result),
+            readPrefill(location.state)
+          );
+          setForm(proposition.form);
+          setPrefilled(proposition.changed);
+          if (proposition.changed.length > 0) {
+            setEditing(true);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -108,7 +122,9 @@ export default function AgentProfilePage({ user }) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+    // location.key : une nouvelle proposition de Bandy recharge la fiche,
+    // même si elle était déjà ouverte.
+  }, [id, location.key, location.state]);
 
   useEffect(() => {
     return () => {
@@ -192,6 +208,7 @@ export default function AgentProfilePage({ user }) {
 
   function openEditModal() {
     setForm(initializeForm(agent));
+    setPrefilled([]);
     setPhotoFile(null);
     setPhotoPreview('');
     setSaveError('');
@@ -203,6 +220,7 @@ export default function AgentProfilePage({ user }) {
     if (saving) return;
 
     setForm(initializeForm(agent));
+    setPrefilled([]);
     setPhotoFile(null);
 
     setPhotoPreview((currentPreview) => {
@@ -607,8 +625,15 @@ export default function AgentProfilePage({ user }) {
                 FORMULAIRE
                 ------------------------------------------------- */}
 
+            {prefilled.length > 0 && (
+              <p className="bandy-prefill-notice" role="status">
+                Bandy a prérempli les champs surlignés en vert. Vérifiez-les,
+                puis enregistrez : rien n’est modifié avant.
+              </p>
+            )}
+
             <div className="agent-profile-form">
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'nom', prefilled)}>
                 <label htmlFor="nom">
                   Nom
                 </label>
@@ -623,7 +648,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'prenom', prefilled)}>
                 <label htmlFor="prenom">
                   Prénom
                 </label>
@@ -638,7 +663,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'sexe', prefilled)}>
                 <label htmlFor="sexe">
                   Sexe
                 </label>
@@ -664,7 +689,7 @@ export default function AgentProfilePage({ user }) {
                 </select>
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'telephone', prefilled)}>
                 <label htmlFor="telephone">
                   Téléphone
                 </label>
@@ -678,7 +703,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'cin', prefilled)}>
                 <label htmlFor="cin">
                   CIN
                 </label>
@@ -693,7 +718,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'dateNaissance', prefilled)}>
                 <label htmlFor="dateNaissance">
                   Date de naissance
                 </label>
@@ -708,7 +733,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field">
+              <div className={prefillClass('agent-form-field', 'lieuNaissance', prefilled)}>
                 <label htmlFor="lieuNaissance">
                   Lieu de naissance
                 </label>
@@ -722,7 +747,7 @@ export default function AgentProfilePage({ user }) {
                 />
               </div>
 
-              <div className="agent-form-field agent-form-field-full">
+              <div className={prefillClass('agent-form-field agent-form-field-full', 'adresse', prefilled)}>
                 <span>
                   Adresse
                 </span>

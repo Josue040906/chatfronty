@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, FileText, Save } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 
 import { getAgents } from '../../api/agents';
 import { getDirections } from '../../api/directions';
@@ -52,7 +53,11 @@ export default function NewDocumentPage({ user }) {
   const [pdfError, setPdfError] = useState('');
   const [createdDocument, setCreatedDocument] = useState(null);
   const [completedMutation, setCompletedMutation] = useState(null);
-  const [formData, setFormData] = useState({
+  const location = useLocation();
+  // Tâche préparée par Bandy : les champs proposés remplissent le formulaire
+  // vide dès son ouverture et restent surlignés ; rien n'est créé avant
+  // « Enregistrer ».
+  const [proposition] = useState(() => applyPrefill({
     typeDocumentId: '',
     employeId: '',
     destinataire: '',
@@ -64,7 +69,9 @@ export default function NewDocumentPage({ user }) {
     posteSouhaiteId: '',
     lieuTravailSouhaite: '',
     dateEffetSouhaitee: '',
-  });
+  }, readPrefill(location.state)));
+  const prefilled = proposition.changed;
+  const [formData, setFormData] = useState(proposition.form);
 
   useEffect(() => {
     let cancelled = false;
@@ -487,8 +494,15 @@ export default function NewDocumentPage({ user }) {
         </div>
       )}
 
+      {prefilled.length > 0 && (
+        <p className="bandy-prefill-notice" role="status">
+          Bandy a prérempli les champs surlignés en vert. Vérifiez-les, puis
+          enregistrez : aucun document n’est créé avant.
+        </p>
+      )}
+
       <form className="administration-form" onSubmit={handleSubmit}>
-        <div className="administration-form-group">
+        <div className={prefillClass('administration-form-group', 'typeDocumentId', prefilled)}>
           <label htmlFor="typeDocumentId">
             Type de document <span>*</span>
           </label>
@@ -511,7 +525,7 @@ export default function NewDocumentPage({ user }) {
           </select>
         </div>
 
-        <div className="administration-form-group">
+        <div className={prefillClass('administration-form-group', 'employeId', prefilled)}>
           <label htmlFor="employeId">
             Agent concerné <span>*</span>
           </label>
@@ -536,7 +550,7 @@ export default function NewDocumentPage({ user }) {
         </div>
 
         {!isDirectMutation && (
-          <div className="administration-form-group">
+          <div className={prefillClass('administration-form-group', 'destinataire', prefilled)}>
             <label htmlFor="destinataire">
               Destinataire <span>*</span>
             </label>
@@ -556,7 +570,7 @@ export default function NewDocumentPage({ user }) {
 
         {isLeaveRequest ? (
           <>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'dateDebut', prefilled)}>
               <label htmlFor="dateDebut">
                 Date de début <span>*</span>
               </label>
@@ -570,7 +584,7 @@ export default function NewDocumentPage({ user }) {
                 required
               />
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'dateFin', prefilled)}>
               <label htmlFor="dateFin">
                 Date de fin <span>*</span>
               </label>
@@ -584,7 +598,7 @@ export default function NewDocumentPage({ user }) {
                 required
               />
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'motif', prefilled)}>
               <label htmlFor="motif">Motif</label>
               <textarea
                 id="motif"
@@ -603,7 +617,7 @@ export default function NewDocumentPage({ user }) {
               et vérifiées par le backend à partir de l’historique de carrière.
               Elles ne sont pas saisies dans ce formulaire.
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'motif', prefilled)}>
               <label htmlFor="motif">Motif (facultatif)</label>
               <textarea
                 id="motif"
@@ -636,7 +650,7 @@ export default function NewDocumentPage({ user }) {
               </div>
             )}
             {!isDirectMutation && (
-              <div className="administration-form-group">
+              <div className={prefillClass('administration-form-group', 'directionSouhaiteeId', prefilled)}>
                 <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
                 <select
                   id="directionSouhaiteeId"
@@ -654,7 +668,7 @@ export default function NewDocumentPage({ user }) {
                 </select>
               </div>
             )}
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'serviceSouhaiteId', prefilled)}>
               <label htmlFor="serviceSouhaiteId">
                 Service souhaité {isDirectMutation && <span>*</span>}
               </label>
@@ -676,7 +690,7 @@ export default function NewDocumentPage({ user }) {
                 ))}
               </select>
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'posteSouhaiteId', prefilled)}>
               <label htmlFor="posteSouhaiteId">
                 Poste souhaité {isDirectMutation && <span>*</span>}
               </label>
@@ -708,7 +722,7 @@ export default function NewDocumentPage({ user }) {
                 ))}
               </select>
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'lieuTravailSouhaite', prefilled)}>
               <label htmlFor="lieuTravailSouhaite">
                 Lieu de travail souhaité
               </label>
@@ -722,7 +736,7 @@ export default function NewDocumentPage({ user }) {
                 disabled={saving}
               />
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'dateEffetSouhaitee', prefilled)}>
               <label htmlFor="dateEffetSouhaitee">
                 Date d’effet {isDirectMutation && <span>*</span>}
               </label>
@@ -737,7 +751,7 @@ export default function NewDocumentPage({ user }) {
                 required={isDirectMutation}
               />
             </div>
-            <div className="administration-form-group">
+            <div className={prefillClass('administration-form-group', 'motif', prefilled)}>
               <label htmlFor="motif">
                 {isDirectMutation ? 'Observation (facultative)' : 'Motif *'}
               </label>

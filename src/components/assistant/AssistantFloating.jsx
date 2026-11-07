@@ -25,7 +25,8 @@ import {
   sendConversationMessage,
 } from '../../api/assistant';
 import { getNavigableAgents } from './assistant-agents';
-import { getNavigationActions } from './assistant-actions';
+import { getNavigationActions, getPreparedActions } from './assistant-actions';
+import { prefillNavigationState } from '../../utils/bandyPrefill';
 import {
   clearStoredConversation,
   getConversationStorageKey,
@@ -69,6 +70,7 @@ function withBandyResponse(item, response) {
     content: response.message,
     agents,
     navigation: getNavigationActions(response.actions, agents.map((agent) => agent.id)),
+    prepared: getPreparedActions(response.actions),
   };
 }
 
@@ -112,6 +114,24 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute }) {
               onClick={() => onOpenRoute(action.route)}
             >
               <span>{action.label}</span>
+              <ChevronRight size={15} />
+            </button>
+          ))}
+        </div>
+      )}
+      {item.prepared?.length > 0 && (
+        <div className="assistant-message-actions">
+          {item.prepared.map((action) => (
+            <button
+              key={action.route}
+              type="button"
+              className="assistant-message-action"
+              onClick={() => onOpenRoute(action.route, prefillNavigationState(action.fields))}
+            >
+              <span>
+                {action.label}
+                <small>Champs proposés surlignés en vert, à vérifier avant d’enregistrer</small>
+              </span>
               <ChevronRight size={15} />
             </button>
           ))}
@@ -165,11 +185,11 @@ export default function AssistantFloating({ user }) {
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
   // Seule façon de quitter l'assistant vers une page : la route a été validée
   // (route interne) ; le garde de routes du front décide ensuite de l'accès.
-  const openRoute = useCallback((route) => {
+  const openRoute = useCallback((route, state) => {
     setOpen(false);
     setExpanded(false);
     setHistoryOpen(false);
-    navigate(route);
+    navigate(route, state ? { state } : undefined);
   }, [navigate]);
 
   useEffect(() => {

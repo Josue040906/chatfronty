@@ -22,6 +22,34 @@ function routeLabel(route) {
   return ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
 }
 
+const PREPARED_LABELS = [
+  { pattern: /^\/agents\/\d+$/, label: 'Ouvrir la modification préremplie' },
+  { pattern: /^\/documents\/nouveau$/, label: 'Ouvrir le nouveau document prérempli' },
+];
+
+/**
+ * Tâches préparées : un formulaire à ouvrir, prérempli avec les seuls champs
+ * proposés. Rien n'est enregistré avant la validation de l'utilisateur.
+ */
+export function getPreparedActions(actions) {
+  if (!Array.isArray(actions)) {
+    return [];
+  }
+  return actions
+    .filter((action) => action?.type === 'PREPARE'
+      && isInternalRoute(action.route)
+      && action.fields
+      && typeof action.fields === 'object'
+      && !Array.isArray(action.fields)
+      && Object.keys(action.fields).length > 0)
+    .map((action) => ({
+      route: action.route,
+      fields: action.fields,
+      label: PREPARED_LABELS.find(({ pattern }) => pattern.test(action.route.split('?')[0]))
+        ?.label || 'Ouvrir le formulaire prérempli',
+    }));
+}
+
 /**
  * Actions de navigation affichables, sans doublon avec les cartes d'agents
  * déjà présentes (agentIds) : une même fiche n'a qu'un seul bouton.
