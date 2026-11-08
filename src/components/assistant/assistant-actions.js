@@ -152,7 +152,8 @@ export function getNavigationActions(actions, knownAgents = []) {
 // Au-delà de ce nombre d'agents trouvés par un filtrage, la bulle ne montre
 // plus de cartes : elle propose la liste complète sur la page Agents.
 export const MAX_AGENT_CARDS = 4;
-const PAGING_KEYS = ['limit', 'offset', 'sortBy', 'sortDirection'];
+// Ce qui ne filtre pas : pagination, tri et répartition (statistiques).
+const NON_FILTER_KEYS = ['limit', 'offset', 'sortBy', 'sortDirection', 'groupBy', 'measures'];
 
 /**
  * Lien vers la page Agents restreinte au résultat du dernier filtrage
@@ -176,10 +177,14 @@ export function getFilteredListAction(toolResults) {
   } catch {
     return null;
   }
-  if (!criteria || typeof criteria !== 'object' || Array.isArray(criteria)) {
+  // Sans critère positif (une statistique sur tous les agents), la liste
+  // complète est déjà la page Agents : aucun lien restreint à proposer.
+  const hasCriterion = ['must', 'should']
+    .some((key) => Array.isArray(criteria?.[key]) && criteria[key].length > 0);
+  if (!hasCriterion || Array.isArray(criteria)) {
     return null;
   }
-  PAGING_KEYS.forEach((key) => delete criteria[key]);
+  NON_FILTER_KEYS.forEach((key) => delete criteria[key]);
   return {
     route: `/agents?recherche=${encodeURIComponent(JSON.stringify(criteria))}`,
     label: `Voir les ${total} agents dans la liste`,

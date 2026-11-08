@@ -250,6 +250,20 @@ describe('getFilteredListAction', () => {
     expect(getFilteredListAction([search(6, [agent(1, 1), agent(2, 0.6)])])).toBeNull();
   });
 
+  it('links a filtered statistic to its agents, but not a statistic on everyone', () => {
+    const grouped = { ...search(16), arguments: {
+      resultMode: 'GROUP',
+      criteriaJson: JSON.stringify({ must: criteria.must, groupBy: ['categorie'] }),
+    } };
+    const action = getFilteredListAction([grouped]);
+    expect(JSON.parse(new URLSearchParams(action.route.split('?')[1]).get('recherche')))
+      .toEqual({ must: criteria.must });
+
+    expect(getFilteredListAction([{ ...search(33), arguments: {
+      resultMode: 'GROUP', criteriaJson: JSON.stringify({ groupBy: ['direction'] }),
+    } }])).toBeNull();
+  });
+
   it('ignores unreadable criteria', () => {
     expect(getFilteredListAction([{ ...search(9), arguments: { criteriaJson: '{oups' } }])).toBeNull();
   });
