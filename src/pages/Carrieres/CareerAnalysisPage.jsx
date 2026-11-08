@@ -39,7 +39,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
-import EmployeePhoto from '../../components/EmployeePhoto';
+import PersonPhoto from '../../components/agents/PersonPhoto';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
@@ -801,21 +801,24 @@ export default function CareerAnalysisPage({ user }) {
   ];
 
   return (
-    <div className="career-analysis-page">
+    <div className="career-analysis-page rf-page">
       <button type="button" className="career-back-button" onClick={() => navigate(`/agents/${id}`)}>
         <ArrowLeft size={17} />
         Retour au profil
       </button>
 
       <section className="career-analysis-hero">
+        <svg className="career-hero-circles" viewBox="0 0 320 200" aria-hidden="true"><circle cx="250" cy="70" r="120" /><circle cx="250" cy="70" r="80" /></svg>
         <div className="career-analysis-identity">
           <div className="career-analysis-avatar">
-            {photoUrl
-              ? <EmployeePhoto src={photoUrl} alt={agentName ? `Photo de ${agentName}` : "Photo de l'agent"} />
-              : getEmployeeInitials(agent)}
+            <PersonPhoto
+              src={photoUrl}
+              alt={agentName ? `Photo de ${agentName}` : "Photo de l'agent"}
+              initials={getEmployeeInitials(agent)}
+            />
           </div>
           <div>
-            <p className="page-eyebrow">ANALYSE DE CARRIÈRE</p>
+            <p className="rf-eyebrow career-hero-eyebrow">Analyse de carrière</p>
             <h1>{agentName}</h1>
             <div className="career-analysis-meta">
               <span><BriefcaseBusiness size={15} />{agent.poste || 'Poste non renseigné'}</span>
@@ -872,7 +875,7 @@ export default function CareerAnalysisPage({ user }) {
 
       <section className="career-section">
         <div className="career-section-heading">
-          <div><p className="page-eyebrow">SITUATION ACTUELLE</p><h2>Situation professionnelle</h2></div>
+          <div><p className="rf-eyebrow">Situation actuelle</p><h2>Situation professionnelle</h2></div>
           {canManageHr && (
             <div className="career-actions">
               <button type="button" className="career-action-button secondary" onClick={() => openProposal('reclassement')}>
@@ -896,12 +899,24 @@ export default function CareerAnalysisPage({ user }) {
         </div>
       </section>
 
+      <div className="career-duo">
       <section className="career-panel">
         <div className="career-panel-header">
           <div className="career-panel-icon"><Clock3 size={19} /></div>
           <div><h2>Ancienneté</h2><p>Calcul effectué par le backend.</p></div>
         </div>
         <div className="career-seniority-value">{formatMonths(seniority.moisTotal)}</div>
+        {Number.isFinite(Number(seniority.moisTotal)) && Number(condition.dureeMinMois) > 0 && (
+          <div className="career-progress">
+            <div className="career-progress-track" aria-hidden="true">
+              <span style={{ width: `${Math.min(100, Math.round((Number(seniority.moisTotal) / Number(condition.dureeMinMois)) * 100))}%` }} />
+            </div>
+            <div className="career-progress-labels">
+              <span>{seniority.moisTotal} mois</span>
+              <span>{condition.dureeMinMois} mois requis</span>
+            </div>
+          </div>
+        )}
         <div className="career-seniority-details">
           <div><span>Depuis</span><strong>{formatDate(seniority.dateDebut)}</strong></div>
           <div><span>Calcul au</span><strong>{formatDate(seniority.dateCalcul)}</strong></div>
@@ -929,7 +944,17 @@ export default function CareerAnalysisPage({ user }) {
         ) : (
           <div className="career-next-result neutral"><XCircle size={20} /><div><span>Évolution identifiée</span><strong>Aucune évolution suivante identifiée.</strong></div></div>
         )}
+        {evolution.type === 'ECHELON' && nextSituation && Number.isFinite(Number(situation.echelonOrdre)) && (
+          <div className="career-steps" aria-hidden="true">
+            {Number(situation.echelonOrdre) > 1 && (
+              <div className="career-step career-step-past"><span>Échelon {Number(situation.echelonOrdre) - 1}</span></div>
+            )}
+            <div className="career-step career-step-current"><span>Échelon {situation.echelonOrdre}<small>actuel</small></span></div>
+            <div className="career-step career-step-next"><span>Échelon {nextSituation.echelonOrdre}<small>suivant</small></span></div>
+          </div>
+        )}
       </section>
+      </div>
 
       {canManageHr && (
         <section className="career-panel career-history-panel">
