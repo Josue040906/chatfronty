@@ -53,23 +53,6 @@ function AdminOnly({ user, children }) {
 
 
 
-function AssistantPage() {
-  return (
-    <div className="page-placeholder">
-      <div>
-        <p className="page-placeholder-label">
-          INTELLIGENCE ARTIFICIELLE
-        </p>
-
-        <h1>Assistant</h1>
-
-        <p>
-          Votre assistant conversationnel RH SYGPERS.
-        </p>
-      </div>
-    </div>
-  );
-}
 
   
 
@@ -198,7 +181,8 @@ export default function AppRouter({
   
         <Route
           path="/assistant"
-          element={<AssistantPage />}
+          // La bulle de Bandy (AppLayout) s'y ouvre en plein écran : aucune page à part.
+          element={null}
         />
 
         

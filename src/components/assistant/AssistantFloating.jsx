@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bot,
   ChevronRight,
@@ -218,8 +218,12 @@ export default function AssistantFloating({ user }) {
   const navigate = useNavigate();
   const userId = user?.userId;
   const conversationStorageKey = getConversationStorageKey(userId);
-  const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [openState, setOpen] = useState(false);
+  const [expandedState, setExpanded] = useState(false);
+  // La page /assistant est la même conversation, ouverte en plein écran.
+  const onAssistantPage = useLocation().pathname === '/assistant';
+  const open = openState || onAssistantPage;
+  const expanded = expandedState || onAssistantPage;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [pendingInitialMessage, setPendingInitialMessage] = useState('');
@@ -388,6 +392,14 @@ export default function AssistantFloating({ user }) {
       shouldScrollToBottomRef.current = false;
     }
   }, [messages, loading, conversationLoading]);
+
+  // En arrivant sur /assistant, l'historique du volet latéral se charge,
+  // comme lorsqu'on agrandit la bulle.
+  useEffect(() => {
+    if (onAssistantPage) {
+      void loadHistory(0);
+    }
+  }, [onAssistantPage]);
 
   function startNewChat() {
     conversationRequestRef.current += 1;
@@ -1045,6 +1057,7 @@ export default function AssistantFloating({ user }) {
                 <Clock3 size={17} />
               </button>
 
+              {!onAssistantPage && (
               <button
                 type="button"
                 onClick={() => {
@@ -1059,6 +1072,7 @@ export default function AssistantFloating({ user }) {
               >
                 {expanded ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
               </button>
+              )}
 
               <button
                 type="button"
@@ -1066,6 +1080,9 @@ export default function AssistantFloating({ user }) {
                   setOpen(false);
                   setExpanded(false);
                   setHistoryOpen(false);
+                  if (onAssistantPage) {
+                    navigate('/dashboard');
+                  }
                 }}
                 aria-label="Fermer l'assistant"
                 title="Fermer"
