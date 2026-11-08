@@ -946,3 +946,173 @@
 .assistant-panel-input button {
   border-radius: 50%;
 }
+
+/* ===== Plein écran : historique latéral + conversation (maquette Assistant) ===== */
+.assistant-panel-main {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.assistant-history-side {
+  display: none;
+}
+
+.assistant-floating-panel-fullscreen {
+  background: var(--color-bg, #faf6ef);
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-side {
+  position: absolute;
+  top: 72px;
+  bottom: 0;
+  left: 0;
+  width: 290px;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 14px;
+  overflow-y: auto;
+
+  background: var(--color-surface-sunken);
+  border-right: 1px solid var(--color-border);
+}
+
+.assistant-floating-panel-fullscreen .assistant-panel-main,
+.assistant-floating-panel-fullscreen .assistant-panel-input,
+.assistant-floating-panel-fullscreen .assistant-send-error,
+.assistant-floating-panel-fullscreen .assistant-archive-notice {
+  margin-left: 290px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-panel-actions button[aria-label="Historique des conversations"] {
+  display: none;
+}
+
+.assistant-history-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(160deg, var(--color-accent), var(--color-brand-strong));
+  color: var(--color-on-brand);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-heading {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong, var(--color-brand));
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-item {
+  border-radius: 16px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-item-active,
+.assistant-floating-panel-fullscreen .assistant-history-item-active:hover {
+  background: #f3e6cf;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-actions {
+  opacity: 0;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-row:hover .assistant-history-actions,
+.assistant-floating-panel-fullscreen .assistant-history-row:focus-within .assistant-history-actions {
+  opacity: 1;
+}
+
+.assistant-floating-panel-fullscreen .assistant-messages {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-message {
+  font-size: 15px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-panel-input {
+  padding: 18px 24px 24px;
+}
+
+@media (max-width: 760px) {
+  .assistant-floating-panel-fullscreen .assistant-history-side {
+    display: none;
+  }
+
+  .assistant-floating-panel-fullscreen .assistant-panel-main,
+  .assistant-floating-panel-fullscreen .assistant-panel-input,
+  .assistant-floating-panel-fullscreen .assistant-send-error,
+  .assistant-floating-panel-fullscreen .assistant-archive-notice {
+    margin-left: 0;
+  }
+
+  .assistant-floating-panel-fullscreen .assistant-panel-actions button[aria-label="Historique des conversations"] {
+    display: flex;
+  }
+}
+
+.assistant-floating-panel-fullscreen .assistant-panel-body {
+  position: static;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-row {
+  position: relative;
+  border-top: 0;
+  border-radius: 16px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-row:hover {
+  background: #f4ede0;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-item svg {
+  display: none;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-copy {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-copy strong {
+  font-size: 14px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-history-actions {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 0;
+}

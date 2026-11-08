@@ -724,6 +724,122 @@ export default function AssistantFloating({ user }) {
   ) < historyTotal;
   const archivedConversation = activeChat?.status === 'ARCHIVED';
 
+  const historyPanel = (
+      <div className="assistant-history">
+        <div className="assistant-history-heading">
+          <span>Vos conversations</span>
+          <span>{historyTotal}</span>
+        </div>
+        {historyLoading ? (
+          <p className="assistant-history-status" role="status">Chargement de l’historique…</p>
+        ) : historyError && chats.length === 0 ? (
+          <div className="assistant-inline-error" role="alert">
+            <span>{historyError}</span>
+            <button type="button" onClick={() => void loadHistory(0)}>Réessayer</button>
+          </div>
+        ) : chats.length === 0 ? (
+          <p className="assistant-history-empty">Aucune conversation enregistrée.</p>
+        ) : (
+          <>
+            {historyError && (
+              <div className="assistant-inline-error" role="alert">
+                <span>{historyError}</span>
+                <button type="button" onClick={() => setHistoryError('')}>Fermer</button>
+              </div>
+            )}
+            {chats.map((chat) => (
+              <div className="assistant-history-row" key={chat.id}>
+                {editingConversationId === chat.id ? (
+                  <form
+                    className="assistant-history-rename"
+                    onSubmit={(event) => void saveConversationName(event, chat)}
+                  >
+                    <input
+                      aria-label="Nom de la conversation"
+                      autoFocus
+                      maxLength={200}
+                      value={editingLabel}
+                      onChange={(event) => setEditingLabel(event.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Enregistrer le nom"
+                      title="Enregistrer"
+                      disabled={historyActionId === chat.id}
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Annuler le renommage"
+                      title="Annuler"
+                      disabled={historyActionId === chat.id}
+                      onClick={() => {
+                        setEditingConversationId(null);
+                        setEditingLabel('');
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className={`assistant-history-item${chat.id === activeChatId ? ' assistant-history-item-active' : ''}`}
+                      onClick={() => void selectConversation(chat.id)}
+                    >
+                      <MessageSquareText size={17} />
+                      <span className="assistant-history-copy">
+                        <strong>{chat.label || 'Nouvelle conversation'}</strong>
+                        <small>
+                          {chat.status === 'ARCHIVED' ? 'Archivée · ' : ''}
+                          {formatChatDate(chat.lastActivityAt || chat.createdAt)}
+                        </small>
+                      </span>
+                    </button>
+                    <div className="assistant-history-actions">
+                      <button
+                        type="button"
+                        aria-label={`Renommer ${chat.label || 'la conversation'}`}
+                        title="Renommer"
+                        disabled={historyActionId === chat.id}
+                        onClick={() => beginRenameConversation(chat)}
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Supprimer ${chat.label || 'la conversation'}`}
+                        title="Supprimer définitivement"
+                        disabled={
+                          historyActionId === chat.id
+                          || (chat.id === activeChatId && loading)
+                        }
+                        onClick={() => void removeConversation(chat)}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {hasMoreConversations && (
+              <button
+                type="button"
+                className="assistant-history-more"
+                disabled={historyLoadingMore}
+                onClick={() => void loadHistory(historyPage + 1)}
+              >
+                {historyLoadingMore ? 'Chargement…' : 'Charger les conversations précédentes'}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+  );
+
   return (
     <>
       {open && (
@@ -768,7 +884,13 @@ export default function AssistantFloating({ user }) {
 
               <button
                 type="button"
-                onClick={() => setExpanded((value) => !value)}
+                onClick={() => {
+                  const nextExpanded = !expanded;
+                  setExpanded(nextExpanded);
+                  if (nextExpanded) {
+                    void loadHistory(0);
+                  }
+                }}
                 aria-label={expanded ? 'Quitter le plein écran' : 'Agrandir en plein écran'}
                 title={expanded ? 'Réduire' : 'Plein écran'}
               >
@@ -790,121 +912,19 @@ export default function AssistantFloating({ user }) {
             </div>
           </div>
 
-          <div className="assistant-panel-body">
-            {historyOpen ? (
-              <div className="assistant-history">
-                <div className="assistant-history-heading">
-                  <span>Vos conversations</span>
-                  <span>{historyTotal}</span>
-                </div>
-                {historyLoading ? (
-                  <p className="assistant-history-status" role="status">Chargement de l’historique…</p>
-                ) : historyError && chats.length === 0 ? (
-                  <div className="assistant-inline-error" role="alert">
-                    <span>{historyError}</span>
-                    <button type="button" onClick={() => void loadHistory(0)}>Réessayer</button>
-                  </div>
-                ) : chats.length === 0 ? (
-                  <p className="assistant-history-empty">Aucune conversation enregistrée.</p>
-                ) : (
-                  <>
-                    {historyError && (
-                      <div className="assistant-inline-error" role="alert">
-                        <span>{historyError}</span>
-                        <button type="button" onClick={() => setHistoryError('')}>Fermer</button>
-                      </div>
-                    )}
-                    {chats.map((chat) => (
-                      <div className="assistant-history-row" key={chat.id}>
-                        {editingConversationId === chat.id ? (
-                          <form
-                            className="assistant-history-rename"
-                            onSubmit={(event) => void saveConversationName(event, chat)}
-                          >
-                            <input
-                              aria-label="Nom de la conversation"
-                              autoFocus
-                              maxLength={200}
-                              value={editingLabel}
-                              onChange={(event) => setEditingLabel(event.target.value)}
-                            />
-                            <button
-                              type="submit"
-                              aria-label="Enregistrer le nom"
-                              title="Enregistrer"
-                              disabled={historyActionId === chat.id}
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              type="button"
-                              aria-label="Annuler le renommage"
-                              title="Annuler"
-                              disabled={historyActionId === chat.id}
-                              onClick={() => {
-                                setEditingConversationId(null);
-                                setEditingLabel('');
-                              }}
-                            >
-                              <X size={16} />
-                            </button>
-                          </form>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              className={`assistant-history-item${chat.id === activeChatId ? ' assistant-history-item-active' : ''}`}
-                              onClick={() => void selectConversation(chat.id)}
-                            >
-                              <MessageSquareText size={17} />
-                              <span className="assistant-history-copy">
-                                <strong>{chat.label || 'Nouvelle conversation'}</strong>
-                                <small>
-                                  {chat.status === 'ARCHIVED' ? 'Archivée · ' : ''}
-                                  {formatChatDate(chat.lastActivityAt || chat.createdAt)}
-                                </small>
-                              </span>
-                            </button>
-                            <div className="assistant-history-actions">
-                              <button
-                                type="button"
-                                aria-label={`Renommer ${chat.label || 'la conversation'}`}
-                                title="Renommer"
-                                disabled={historyActionId === chat.id}
-                                onClick={() => beginRenameConversation(chat)}
-                              >
-                                <Pencil size={15} />
-                              </button>
-                              <button
-                                type="button"
-                                aria-label={`Supprimer ${chat.label || 'la conversation'}`}
-                                title="Supprimer définitivement"
-                                disabled={
-                                  historyActionId === chat.id
-                                  || (chat.id === activeChatId && loading)
-                                }
-                                onClick={() => void removeConversation(chat)}
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {hasMoreConversations && (
-                      <button
-                        type="button"
-                        className="assistant-history-more"
-                        disabled={historyLoadingMore}
-                        onClick={() => void loadHistory(historyPage + 1)}
-                      >
-                        {historyLoadingMore ? 'Chargement…' : 'Charger les conversations précédentes'}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
+          <div className={`assistant-panel-body${expanded ? ' assistant-panel-body-split' : ''}`}>
+            {expanded && (
+              <aside className="assistant-history-side" aria-label="Historique des conversations">
+                <button type="button" className="assistant-history-new" onClick={startNewChat}>
+                  <Plus size={16} />
+                  Nouvelle conversation
+                </button>
+                {historyPanel}
+              </aside>
+            )}
+            <div className="assistant-panel-main">
+            {historyOpen && !expanded ? (
+              historyPanel
             ) : conversationLoading ? (
               <div className="assistant-panel-status" role="status">
                 <div className="assistant-message-content assistant-typing"><span /><span /><span /></div>
@@ -992,9 +1012,10 @@ export default function AssistantFloating({ user }) {
                 )}
               </div>
             )}
+            </div>
           </div>
 
-          {sendError && !historyOpen && (
+          {sendError && !(historyOpen && !expanded) && (
             <div className="assistant-send-error" role="alert">
               <span>{sendError}</span>
               {failedSend && (
@@ -1005,7 +1026,7 @@ export default function AssistantFloating({ user }) {
             </div>
           )}
 
-          {!historyOpen && messages.length > 0 && (
+          {!(historyOpen && !expanded) && messages.length > 0 && (
             archivedConversation ? (
               <p className="assistant-archive-notice">Cette conversation est archivée et ne peut plus recevoir de messages.</p>
             ) : (
