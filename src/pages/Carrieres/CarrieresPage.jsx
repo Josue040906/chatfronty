@@ -8,11 +8,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
-import EmployeePhoto from '../../components/EmployeePhoto';
+import PersonPhoto from '../../components/agents/PersonPhoto';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+
+const MONTHS = [
+  'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+  'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
+];
+const AVATAR_TONES = ['gold', 'green', 'blue', 'red', 'sand'];
 
 function formatDate(value) {
   if (!value) {
@@ -23,11 +29,11 @@ function formatDate(value) {
 
   const [year, month, day] = datePart.split('-');
 
-  if (!year || !month || !day) {
+  if (!year || !month || !day || !MONTHS[Number(month) - 1]) {
     return '—';
   }
 
-  return `${day}/${month}/${year}`;
+  return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
 }
 
 
@@ -108,49 +114,42 @@ export default function CarrieresPage() {
   }
 
   return (
-    <section className="page-section carrieres-page">
-      <div className="page-header carrieres-header">
+    <section className="page-section carrieres-page rf-page">
+      <header className="rf-head">
         <div>
-          <span className="page-eyebrow">
-            SUIVI ADMINISTRATIF
-          </span>
-
-          <h1>Carrières</h1>
-
-          <p>
+          <p className="rf-eyebrow">Suivi administratif</p>
+          <h1 className="rf-title">Carrières</h1>
+          <p className="rf-lead">
             Consultez la situation de carrière et l'évolution
-            administrative des agents.
+            professionnelle des agents.
           </p>
         </div>
-
-        <div className="carrieres-total">
-          <strong>{agents.length}</strong>
-          <span>agents suivis</span>
-        </div>
-      </div>
+        <span className="carrieres-total">
+          <strong>{agents.length}</strong> agents suivis
+        </span>
+      </header>
 
       <div className="carrieres-toolbar">
-        <div className="carrieres-search">
-          <Search size={18} />
-
+        <label className="rf-search carrieres-search">
+          <Search size={18} aria-hidden="true" />
           <input
             type="text"
             placeholder="Rechercher un agent, un matricule, un poste..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
+            aria-label="Rechercher un agent"
           />
-
           {search && (
             <button
               type="button"
+              className="carrieres-clear"
               onClick={() => setSearch('')}
               aria-label="Effacer la recherche"
             >
               ×
             </button>
           )}
-        </div>
-
+        </label>
         <span className="carrieres-result-count">
           {filteredAgents.length} résultat
           {filteredAgents.length > 1 ? 's' : ''}
@@ -158,90 +157,56 @@ export default function CarrieresPage() {
       </div>
 
       {filteredAgents.length === 0 ? (
-        <div className="carrieres-empty">
+        <div className="carrieres-empty rf-card">
           <UserRound size={28} />
-
           <strong>Aucun agent trouvé</strong>
-
-          <span>
-            Modifiez votre recherche pour retrouver un agent.
-          </span>
+          <span>Modifiez votre recherche pour retrouver un agent.</span>
         </div>
       ) : (
         <div className="carrieres-grid">
-          {filteredAgents.map((agent) => (
-            <article
-              className="career-agent-card"
-              key={agent.id}
-            >
+          {filteredAgents.map((agent, index) => (
+            <article className="rf-card career-agent-card" key={agent.id}>
               <div className="career-agent-card-top">
-                <div className="career-agent-avatar">
-                  {getEmployeePhotoUrl(agent.photo) ? (
-                    <EmployeePhoto
-                      src={getEmployeePhotoUrl(agent.photo)}
-                      alt={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}
-                    />
-                  ) : (
-                    getEmployeeInitials(agent)
-                  )}
-                </div>
-
+                <span className={`career-agent-avatar tone-${AVATAR_TONES[index % AVATAR_TONES.length]}`}>
+                  <PersonPhoto
+                    src={getEmployeePhotoUrl(agent.photo)}
+                    alt={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}
+                    initials={getEmployeeInitials(agent)}
+                  />
+                </span>
                 <div className="career-agent-identity">
-                  <h2>
-                    {agent.prenom} {agent.nom}
-                  </h2>
-
+                  <h2>{agent.prenom} {agent.nom}</h2>
                   <span>{agent.matricule}</span>
                 </div>
               </div>
 
-              <div className="career-agent-main">
-                <div className="career-agent-field">
-                  <span>Poste</span>
-                  <strong>
-                    {agent.poste || 'Non renseigné'}
-                  </strong>
+              <dl className="career-agent-main">
+                <div>
+                  <dt>Poste</dt>
+                  <dd>{agent.poste || 'Non renseigné'}</dd>
                 </div>
-
-                <div className="career-agent-field">
-                  <span>Service</span>
-                  <strong>
-                    {agent.service || 'Non renseigné'}
-                  </strong>
+                <div>
+                  <dt>Service</dt>
+                  <dd>{agent.service || 'Non renseigné'}</dd>
                 </div>
-
-                <div className="career-agent-field">
-                  <span>Direction</span>
-                  <strong>
-                    {agent.direction || 'Non renseignée'}
-                  </strong>
+                <div className="career-agent-wide">
+                  <dt>Direction</dt>
+                  <dd>{agent.direction || 'Non renseignée'}</dd>
                 </div>
-
-                <div className="career-agent-field career-agent-date">
-                  <span>
-                    <CalendarDays size={14} />
-                    Date d'embauche
-                  </span>
-
-                  <strong>
-                    {formatDate(agent.date_embauche)}
-                  </strong>
+                <div className="career-agent-wide">
+                  <dt><CalendarDays size={14} /> Date d'embauche</dt>
+                  <dd>{formatDate(agent.date_embauche)}</dd>
                 </div>
-              </div>
+              </dl>
 
-              <div className="career-agent-card-footer">
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      `/carrieres/${agent.id}/analyse`
-                    )
-                  }
-                >
-                  <span>Analyser la carrière</span>
-                  <ArrowRight size={17} />
-                </button>
-              </div>
+              <button
+                type="button"
+                className="career-agent-link"
+                onClick={() => navigate(`/carrieres/${agent.id}/analyse`)}
+              >
+                <span>Analyser la carrière</span>
+                <ArrowRight size={16} />
+              </button>
             </article>
           ))}
         </div>
