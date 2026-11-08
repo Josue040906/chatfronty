@@ -44,6 +44,32 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('fr-FR').format(date);
 }
 
+const completenessFields = [
+  'nom',
+  'prenom',
+  'sexe',
+  'adresse',
+  'cin',
+  'telephone',
+  'date_naissance',
+  'lieu_naissance',
+  'date_embauche',
+  'lieu_travail',
+  'photo',
+];
+
+function getCompleteness(agent) {
+  const filled = completenessFields.filter((key) => {
+    const value = agent?.[key];
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }).length;
+
+  return Math.round((filled / completenessFields.length) * 100);
+}
+
+const RING_RADIUS = 52;
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+
 export default function AgentProfilePage({ user }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -322,6 +348,8 @@ export default function AgentProfilePage({ user }) {
     );
   }
 
+  const completeness = getCompleteness(agent);
+
   const displayedPhoto =
     photoPreview || getEmployeePhotoUrl(agent.photo);
 
@@ -342,6 +370,29 @@ export default function AgentProfilePage({ user }) {
 
       <section className="agent-profile-hero">
         <div className="agent-profile-identity">
+        <div
+          className="agent-profile-avatar-wrap"
+          role="img"
+          aria-label={`Dossier complété à ${completeness} %`}
+          title={`Dossier complété à ${completeness} %`}
+        >
+          <svg
+            className="agent-profile-ring"
+            viewBox="0 0 120 120"
+            aria-hidden="true"
+          >
+            <circle className="agent-profile-ring-track" cx="60" cy="60" r={RING_RADIUS} />
+            <circle
+              className="agent-profile-ring-value"
+              cx="60"
+              cy="60"
+              r={RING_RADIUS}
+              style={{
+                strokeDasharray: RING_LENGTH,
+                strokeDashoffset: RING_LENGTH * (1 - completeness / 100),
+              }}
+            />
+          </svg>
         <div className="agent-profile-avatar">
           {getEmployeePhotoUrl(agent.photo) ? (
             <EmployeePhoto
@@ -351,6 +402,8 @@ export default function AgentProfilePage({ user }) {
           ) : (
             getEmployeeInitials(agent)
           )}
+        </div>
+          <span className="agent-profile-ring-label">{completeness} %</span>
         </div>
 
           <div>
