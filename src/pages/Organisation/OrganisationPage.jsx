@@ -25,7 +25,6 @@ import {
   getEmployeePhotoUrl,
 } from '../../utils/employee';
 
-const MINISTRY_NAME = 'Ministère de l’Économie et des Finances';
 const DIRECTION_WIDTH = 250;
 const DIRECTION_HEIGHT = 100;
 const SERVICE_WIDTH = 280;
