@@ -1244,3 +1244,12 @@ button.rf-row {
 @media (max-width: 700px) {
   .rf-dialog-main .rf-dialog-grid { padding: 14px; }
 }
+.rf-dialog-main .rf-field label.rf-upload {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-md);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.rf-dialog-main .rf-upload strong { font-weight: 700; }
+.rf-dialog-main .rf-upload small { font-weight: 400; letter-spacing: 0; text-transform: none; }
