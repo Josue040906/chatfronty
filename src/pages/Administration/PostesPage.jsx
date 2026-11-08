@@ -234,7 +234,7 @@ export default function PostesPage() {
   });
 
   return (
-    <div className="administration-page">
+    <div className="administration-page rf-page">
       <header className="administration-page-header">
         <div>
           <button
@@ -448,6 +448,7 @@ export default function PostesPage() {
       {showForm && (
         <div
           role="dialog"
+          className="adm-backdrop"
           aria-modal="true"
           aria-labelledby="poste-form-title"
           onMouseDown={(event) => {
@@ -468,6 +469,7 @@ export default function PostesPage() {
           }}
         >
           <div
+            className="adm-modal"
             style={{
               width: '100%',
               maxWidth: '560px',

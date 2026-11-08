@@ -262,7 +262,7 @@ export default function StatutsPage() {
   });
 
   return (
-    <div className="administration-page">
+    <div className="administration-page rf-page">
       <header className="administration-page-header">
         <div>
           <button

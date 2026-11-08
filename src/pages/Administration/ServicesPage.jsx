@@ -256,7 +256,7 @@ export default function ServicesPage() {
   });
 
   return (
-    <div className="administration-page">
+    <div className="administration-page rf-page">
       <header className="administration-page-header">
         <div>
           <button
@@ -336,8 +336,7 @@ export default function ServicesPage() {
       )}
 
       {!loading && error && (
-        <div className="administration-state administration-state-error">
-          style={{ marginBottom: '16px' }}
+        <div className="administration-state administration-state-error" style={{ marginBottom: '16px' }}>
           {error}
         </div>
       )}
@@ -456,6 +455,7 @@ export default function ServicesPage() {
 
       {modalOpen && (
         <div
+          className="adm-backdrop"
           style={{
             position: 'fixed',
             inset: 0,
@@ -473,6 +473,7 @@ export default function ServicesPage() {
           }}
         >
           <div
+            className="adm-modal"
             style={{
               width: '100%',
               maxWidth: '620px',

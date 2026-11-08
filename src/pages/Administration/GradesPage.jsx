@@ -262,7 +262,7 @@ export default function GradesPage() {
   });
 
   return (
-    <div className="administration-page">
+    <div className="administration-page rf-page">
       <header className="administration-page-header">
         <div>
           <button
@@ -466,6 +466,7 @@ export default function GradesPage() {
       {showForm && (
         <div
           role="dialog"
+          className="adm-backdrop"
           aria-modal="true"
           aria-labelledby="grade-form-title"
           onMouseDown={(event) => {
@@ -488,6 +489,7 @@ export default function GradesPage() {
           }}
         >
           <div
+            className="adm-modal"
             style={{
               width: '100%',
               maxWidth: '520px',
