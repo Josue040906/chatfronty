@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowRight,
   LockKeyhole,
@@ -238,6 +238,13 @@ export default function LoginPage({ onLogin }) {
                 )}
               </button>
             </form>
+          ) : success ? (
+            <div className="login-success-card" role="status">
+              <span className="login-success-icon" aria-hidden="true">
+                <Sparkles size={22} />
+              </span>
+              <p>{success}</p>
+            </div>
           ) : (
             <form
               onSubmit={handleRegisterSubmit}
@@ -246,12 +253,6 @@ export default function LoginPage({ onLogin }) {
               {error && (
                 <div className="login-error" role="alert">
                   {error}
-                </div>
-              )}
-
-              {success && (
-                <div className="login-success" role="status">
-                  {success}
                 </div>
               )}
 
