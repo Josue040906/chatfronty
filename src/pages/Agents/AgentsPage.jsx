@@ -3,10 +3,11 @@ import {
   Search,
   UserPlus,
   UserRound,
+  X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { getAgents } from '../../api/agents';
+import { getAgents, searchAgentIds } from '../../api/agents';
 import { Skeleton } from '../../components/ui';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import useUrlFilter from '../../hooks/useUrlFilter';
@@ -47,6 +48,9 @@ export default function AgentsPage({ user }) {
   const [search, setSearch] = useState('');
   // « incomplet » : seulement les dossiers que l'API juge incomplets.
   const [dossierFilter, setDossierFilter] = useUrlFilter('dossier', DOSSIER_FILTERS, '');
+  // « recherche » : les critères d'un filtrage de Bandy, relancés auprès de l'API.
+  const [recherche, setRecherche] = useUrlFilter('recherche', null, '');
+  const [selection, setSelection] = useState({ recherche: '', ids: null, failed: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
@@ -88,6 +92,22 @@ export default function AgentsPage({ user }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!recherche) {
+      return undefined;
+    }
+    let cancelled = false;
+    searchAgentIds(recherche)
+      .then((ids) => !cancelled && setSelection({ recherche, ids: new Set(ids), failed: false }))
+      .catch(() => !cancelled && setSelection({ recherche, ids: new Set(), failed: true }));
+    return () => {
+      cancelled = true;
+    };
+  }, [recherche]);
+
+  const selectionReady = !recherche || selection.recherche === recherche;
+  const selectedIds = recherche && selectionReady ? selection.ids : null;
+
   const incompleteCount = useMemo(
     () => agents.filter((agent) => agent.dossier_complet === false).length,
     [agents]
@@ -95,9 +115,9 @@ export default function AgentsPage({ user }) {
 
   const filteredAgents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
-    const listedAgents = dossierFilter === 'incomplet'
-      ? agents.filter((agent) => agent.dossier_complet === false)
-      : agents;
+    const listedAgents = agents
+      .filter((agent) => !selectedIds || selectedIds.has(String(agent.id)))
+      .filter((agent) => dossierFilter !== 'incomplet' || agent.dossier_complet === false);
 
     if (!normalizedSearch) {
       return listedAgents;
@@ -119,7 +139,7 @@ export default function AgentsPage({ user }) {
 
       return searchableText.includes(normalizedSearch);
     });
-  }, [agents, dossierFilter, search]);
+  }, [agents, dossierFilter, search, selectedIds]);
 
   const selectedAgent = filteredAgents.find(
     (agent) => String(agent.id) === String(selectedId)
@@ -160,7 +180,7 @@ export default function AgentsPage({ user }) {
     }
   }
 
-  if (loading) {
+  if (loading || !selectionReady) {
     return (
       <div className="rf-page agents-screen" role="status" aria-busy="true">
         <span className="ui-visually-hidden">Chargement des agents...</span>
@@ -223,6 +243,12 @@ export default function AgentsPage({ user }) {
         )}
       </header>
 
+      {recherche && selection.failed && (
+        <p className="rf-error" role="alert">
+          La sélection de Bandy n’a pas pu être relancée. Retirez-la pour revoir tous les agents.
+        </p>
+      )}
+
       {createFeedback && (
         <p
           className={createFeedback.tone === 'success' ? 'rf-success' : 'rf-error'}
@@ -260,9 +286,22 @@ export default function AgentsPage({ user }) {
           Dossiers incomplets
           <span>{incompleteCount}</span>
         </button>
+        {recherche && (
+          <button
+            type="button"
+            className="rf-chip"
+            aria-pressed="true"
+            title="Retirer la sélection de Bandy"
+            onClick={() => setRecherche('')}
+          >
+            Sélection de Bandy
+            <span>{selectedIds?.size ?? 0}</span>
+            <X size={14} aria-hidden="true" />
+          </button>
+        )}
         <span className="agents-count" aria-live="polite">
           {filteredAgents.length} agent{filteredAgents.length > 1 ? 's' : ''}
-          {search.trim() || dossierFilter ? ` sur ${agents.length}` : ''}
+          {search.trim() || dossierFilter || recherche ? ` sur ${agents.length}` : ''}
         </span>
       </div>
 

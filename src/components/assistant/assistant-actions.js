@@ -149,18 +149,60 @@ export function getNavigationActions(actions, knownAgents = []) {
   return [...routes.values()];
 }
 
+// Au-delà de ce nombre d'agents trouvés par un filtrage, la bulle ne montre
+// plus de cartes : elle propose la liste complète sur la page Agents.
+export const MAX_AGENT_CARDS = 4;
+const PAGING_KEYS = ['limit', 'offset', 'sortBy', 'sortDirection'];
+
+/**
+ * Lien vers la page Agents restreinte au résultat du dernier filtrage
+ * (critères sans similarité de nom), quand il dépasse MAX_AGENT_CARDS.
+ * La page relance elle-même les mêmes critères auprès de l'API : la liste
+ * affichée est toujours celle que l'API calcule, jamais une copie.
+ */
+export function getFilteredListAction(toolResults) {
+  const search = Array.isArray(toolResults)
+    ? toolResults.filter((toolResult) => toolResult?.name === 'search_agents').at(-1)
+    : null;
+  const total = search?.result?.total;
+  const agents = Array.isArray(search?.result?.agents) ? search.result.agents : [];
+  const isFilter = agents.every((agent) => !Number.isFinite(agent?.score_correspondance));
+  if (!Number.isSafeInteger(total) || total <= MAX_AGENT_CARDS || !isFilter) {
+    return null;
+  }
+  let criteria;
+  try {
+    criteria = JSON.parse(search.arguments?.criteriaJson);
+  } catch {
+    return null;
+  }
+  if (!criteria || typeof criteria !== 'object' || Array.isArray(criteria)) {
+    return null;
+  }
+  PAGING_KEYS.forEach((key) => delete criteria[key]);
+  return {
+    route: `/agents?recherche=${encodeURIComponent(JSON.stringify(criteria))}`,
+    label: `Voir les ${total} agents dans la liste`,
+  };
+}
+
 /**
  * Ce que la bulle de Bandy affiche sous son texte. Quand Bandy propose une
  * action (ouvrir une page, une tâche préparée ou à confirmer), la recherche
  * qui a servi à trouver les agents n'est qu'une étape intermédiaire : ses
  * cartes ne sont pas montrées, pour que les boutons proposés soient les seuls
- * à suivre.
+ * à suivre. De même quand un filtrage trouve trop d'agents pour des cartes :
+ * le bouton de la liste complète les remplace.
  */
 export function buildBandyReply(response) {
   const prepared = getPreparedActions(response?.actions);
   const confirmations = getConfirmationActions(response?.actions);
   const found = getNavigableAgents(response?.toolResults);
-  const navigation = getNavigationActions(response?.actions, found);
+  const filteredList = getFilteredListAction(response?.toolResults);
+  const navigation = [
+    ...(filteredList ? [filteredList] : []),
+    ...getNavigationActions(response?.actions, found),
+  ];
   const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
   return {
     agents: proposesAction ? [] : found,

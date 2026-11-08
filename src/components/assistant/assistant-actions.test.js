@@ -3,6 +3,7 @@ import {
   buildBandyReply,
   confirmationOutcomeMessage,
   getConfirmationActions,
+  getFilteredListAction,
   getNavigationActions,
   getPreparedActions,
   getTodoItems,
@@ -217,5 +218,46 @@ describe('getTodoItems', () => {
       null,
     ])).toEqual([]);
     expect(getTodoItems(undefined)).toEqual([]);
+  });
+});
+
+describe('getFilteredListAction', () => {
+  const criteria = { must: [{ field: 'sexe', operator: 'EQ', value: 'F' }], limit: 20, offset: 0 };
+  const search = (total, agents = [], resultMode) => ({
+    name: 'search_agents',
+    arguments: { criteriaJson: JSON.stringify(criteria), ...(resultMode ? { resultMode } : {}) },
+    result: { total, agents },
+  });
+  const agent = (id, score = null) => ({ id, nom: `NOM${id}`, prenom: 'Zo', score_correspondance: score });
+
+  it('opens the agents page restricted to the same criteria beyond four filtered agents', () => {
+    const action = getFilteredListAction([search(12, [agent(1), agent(2)])]);
+
+    expect(action.label).toBe('Voir les 12 agents dans la liste');
+    const [path, query] = action.route.split('?');
+    expect(path).toBe('/agents');
+    expect(JSON.parse(new URLSearchParams(query).get('recherche')))
+      .toEqual({ must: criteria.must });
+    expect(isInternalRoute(action.route)).toBe(true);
+  });
+
+  it('also offers the list after a count', () => {
+    expect(getFilteredListAction([search(7, [], 'COUNT')])?.label).toBe('Voir les 7 agents dans la liste');
+  });
+
+  it('keeps cards for four agents or fewer, and for a name search with similarity scores', () => {
+    expect(getFilteredListAction([search(4, [agent(1), agent(2), agent(3), agent(4)])])).toBeNull();
+    expect(getFilteredListAction([search(6, [agent(1, 1), agent(2, 0.6)])])).toBeNull();
+  });
+
+  it('ignores unreadable criteria', () => {
+    expect(getFilteredListAction([{ ...search(9), arguments: { criteriaJson: '{oups' } }])).toBeNull();
+  });
+
+  it('replaces the cards in the Bandy reply', () => {
+    const reply = buildBandyReply({ toolResults: [search(5, [1, 2, 3, 4, 5].map((id) => agent(id)))] });
+
+    expect(reply.agents).toEqual([]);
+    expect(reply.navigation.map(({ label }) => label)).toEqual(['Voir les 5 agents dans la liste']);
   });
 });

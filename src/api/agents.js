@@ -13,6 +13,27 @@ export async function getAgents() {
     : response.value || [];
 }
 
+const SELECTION_PAGE = 50;
+
+/**
+ * Identifiants des agents qui répondent aux critères d'une recherche de
+ * Bandy, relancée telle quelle auprès de l'API, page après page.
+ */
+export async function searchAgentIds(criteriaJson) {
+  const criteria = JSON.parse(criteriaJson);
+  const ids = [];
+  for (let offset = 0; ; offset += SELECTION_PAGE) {
+    const page = await apiPost('/api/recherche/agents/avancee', {
+      criteriaJson: JSON.stringify({ ...criteria, limit: SELECTION_PAGE, offset }),
+    });
+    const agents = Array.isArray(page?.agents) ? page.agents : [];
+    ids.push(...agents.map((agent) => String(agent.id)));
+    if (!page?.hasMore || agents.length === 0) {
+      return ids;
+    }
+  }
+}
+
 export async function getAgentById(id) {
   return apiGet(`/api/employes/${id}`);
 }
