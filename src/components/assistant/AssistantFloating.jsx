@@ -23,8 +23,11 @@ import {
   MESSAGE_PAGE_SIZE,
   renameConversation,
   sendConversationMessage,
+  confirmPendingAction,
+  cancelPendingAction,
 } from '../../api/assistant';
-import { getNavigableAgents } from './assistant-agents';
+import { buildBandyReply, confirmationOutcomeMessage } from './assistant-actions';
+import { prefillNavigationState } from '../../utils/bandyPrefill';
 import {
   clearStoredConversation,
   getConversationStorageKey,
@@ -68,7 +71,12 @@ function getInitials(name) {
     .join('');
 }
 
-const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
+// Bulle de Bandy complétée par sa réponse finale : son texte et ses actions.
+function withBandyResponse(item, response) {
+  return { ...item, content: response.message, ...buildBandyReply(response) };
+}
+
+const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onSettle }) {
   return (
     <div
       className={`assistant-message ${item.role === 'user' ? 'assistant-message-user' : 'assistant-message-bot'}`}
@@ -86,7 +94,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
                 type="button"
                 className="assistant-message-action assistant-agent-card"
                 aria-label={`Ouvrir la fiche de ${agent.name}`}
-                onClick={() => onOpenAgent(agent.id)}
+                onClick={() => onOpenRoute(`/agents/${encodeURIComponent(agent.id)}`)}
               >
                 <span className="assistant-agent-card-avatar" aria-hidden="true">
                   {getInitials(agent.name)}
@@ -106,6 +114,79 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
             ))}
           </div>
         )}
+        {item.navigation?.length > 0 && (
+          <div className="assistant-message-actions">
+            {item.navigation.map((action) => (
+              <button
+                key={action.route}
+                type="button"
+                className="assistant-message-action"
+                onClick={() => onOpenRoute(action.route)}
+              >
+                <span>{action.label}</span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
+          </div>
+        )}
+        {item.prepared?.length > 0 && (
+          <div className="assistant-message-actions">
+            {item.prepared.map((action) => (
+              <button
+                key={action.route}
+                type="button"
+                className="assistant-message-action assistant-message-action-primary"
+                onClick={() => onOpenRoute(action.route, prefillNavigationState(action.fields))}
+              >
+                <span>
+                  {action.label}
+                  <small>Champs proposés surlignés en vert, à vérifier avant d’enregistrer</small>
+                </span>
+                <ChevronRight size={15} />
+              </button>
+            ))}
+          </div>
+        )}
+        {item.confirmations?.map((confirmation) => (
+          <div key={confirmation.confirmationId} className="assistant-confirmation">
+            <p className="assistant-confirmation-title">Action à confirmer</p>
+            {confirmation.details.length > 0 && (
+              <dl className="assistant-confirmation-details">
+                {confirmation.details.map((detail) => (
+                  <div key={detail.label}>
+                    <dt>{detail.label}</dt>
+                    <dd>{detail.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {confirmation.outcome && (
+              <p className="assistant-confirmation-outcome" role="status">
+                {confirmation.outcome}
+              </p>
+            )}
+            {(confirmation.status === 'pending' || confirmation.status === 'running') && (
+              <div className="assistant-confirmation-buttons">
+                <button
+                  type="button"
+                  className="assistant-confirmation-confirm"
+                  disabled={confirmation.status === 'running'}
+                  onClick={() => onSettle(item.id, confirmation.confirmationId, 'confirm')}
+                >
+                  {confirmation.status === 'running' ? 'Exécution…' : 'Confirmer'}
+                </button>
+                <button
+                  type="button"
+                  className="assistant-confirmation-cancel"
+                  disabled={confirmation.status === 'running'}
+                  onClick={() => onSettle(item.id, confirmation.confirmationId, 'cancel')}
+                >
+                  Annuler
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -153,11 +234,57 @@ export default function AssistantFloating({ user }) {
   const activeChat = chats.find((chat) => chat.id === activeChatId);
   const messages = activeChat?.messages || EMPTY_MESSAGES;
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
-  const openAgentProfile = useCallback((agentId) => {
+  // Clic « Confirmer » ou « Annuler » sur une tâche confirmée. Bandy exécute
+  // au plus une fois ; l'API décide des droits et la carte affiche l'issue.
+  const settleConfirmation = useCallback(async (messageId, confirmationId, decision) => {
+    const conversationId = activeChatId;
+    const update = (changes) => setChats((previous) => previous.map((chat) => (
+      chat.id !== conversationId
+        ? chat
+        : {
+            ...chat,
+            messages: chat.messages.map((item) => (
+              item.id !== messageId
+                ? item
+                : {
+                    ...item,
+                    confirmations: item.confirmations.map((confirmation) => (
+                      confirmation.confirmationId === confirmationId
+                        ? { ...confirmation, ...changes }
+                        : confirmation
+                    )),
+                  }
+            )),
+          }
+    )));
+
+    update({ status: 'running', outcome: '' });
+    try {
+      if (decision === 'confirm') {
+        const outcome = await confirmPendingAction(conversationId, confirmationId);
+        update({ status: 'done', outcome: confirmationOutcomeMessage(outcome) });
+      } else {
+        await cancelPendingAction(conversationId, confirmationId);
+        update({ status: 'cancelled', outcome: 'Action annulée : rien n’a été exécuté.' });
+      }
+    } catch (error) {
+      // Panne ou réseau : la demande reste confirmable (même clé d'idempotence).
+      // Refus définitif (déjà traitée, expirée, introuvable) : la carte se ferme.
+      const retryable = error?.status == null || error.status >= 500;
+      update({
+        status: retryable ? 'pending' : 'done',
+        outcome: error?.message || 'Bandy n’a pas pu traiter la confirmation.',
+      });
+    }
+  }, [activeChatId]);
+
+  // Seule façon de quitter l'assistant vers une page : la route a été validée
+  // (route interne) ; le garde de routes du front décide ensuite de l'accès.
+  const openRoute = useCallback((route, state) => {
     setOpen(false);
     setExpanded(false);
     setHistoryOpen(false);
-    navigate(`/agents/${encodeURIComponent(agentId)}`);
+    navigate(route, state ? { state } : undefined);
   }, [navigate]);
 
   useEffect(() => {
@@ -625,11 +752,7 @@ export default function AssistantFloating({ user }) {
               ...chat,
               messages: chat.messages.map((item) => (
                 item.id === assistantMessageId
-                  ? {
-                      ...item,
-                      content: response.message,
-                      agents: getNavigableAgents(response.toolResults),
-                    }
+                  ? withBandyResponse(item, response)
                   : item
               )),
               totalMessages: (chat.totalMessages || 0) + 1,
@@ -973,7 +1096,8 @@ export default function AssistantFloating({ user }) {
                   <AssistantMessage
                     key={item.id}
                     item={item}
-                    onOpenAgent={openAgentProfile}
+                    onOpenRoute={openRoute}
+                    onSettle={settleConfirmation}
                   />
                 ))}
                 {pendingInitialMessage && (

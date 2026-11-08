@@ -20,13 +20,16 @@ import {
   getDirections,
   updateDirection,
 } from '../../api/directions';
+import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
   nom: '',
   description: '',
 };
 
-export default function DirectionsPage() {
+export default function DirectionsPage({ user }) {
+  // Lecture pour tout compte SPERS actif ; écriture réservée au chef (API : 403 sinon).
+  const canManage = canManageReferentiels(user);
   const navigate = useNavigate();
 
   const [directions, setDirections] = useState([]);
@@ -276,14 +279,16 @@ export default function DirectionsPage() {
             Consultez et gérez les directions qui composent l'organisation du MEF.
           </p>
         </div>
-        <button
-          type="button"
-          className="rf-btn rf-btn-primary"
-          onClick={openCreateForm}
-        >
-          <Plus size={17} />
-          Nouvelle direction
-        </button>
+        {canManage && (
+          <button
+            type="button"
+            className="rf-btn rf-btn-primary"
+            onClick={openCreateForm}
+          >
+            <Plus size={17} />
+            Nouvelle direction
+          </button>
+        )}
       </header>
 
       {success && (
@@ -337,6 +342,7 @@ export default function DirectionsPage() {
                     {count} {count > 1 ? 'agents' : 'agent'}
                   </span>
                 )}
+                {canManage && (
                 <div className="adm-actions">
                   <button
                     type="button"
@@ -358,6 +364,7 @@ export default function DirectionsPage() {
                     <Trash2 size={16} />
                   </button>
                 </div>
+                )}
               </article>
             );
           })}

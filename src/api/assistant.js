@@ -190,6 +190,25 @@ export function sendConversationMessage(
   });
 }
 
+/**
+ * Clic « Confirmer » d'une tâche confirmée : Bandy l'exécute une seule fois,
+ * avec le jeton de l'utilisateur. Réponse : { confirmationId, status, result }.
+ */
+export function confirmPendingAction(conversationId, confirmationId, { signal } = {}) {
+  return request(
+    `/${encodeURIComponent(conversationId)}/confirmations/${encodeURIComponent(confirmationId)}`,
+    { method: 'POST', signal, timeoutMillis: 35_000 }
+  );
+}
+
+/** Clic « Annuler » : la tâche ne pourra plus être exécutée. */
+export function cancelPendingAction(conversationId, confirmationId, { signal } = {}) {
+  return request(
+    `/${encodeURIComponent(conversationId)}/confirmations/${encodeURIComponent(confirmationId)}`,
+    { method: 'DELETE', signal }
+  );
+}
+
 export { MESSAGE_PAGE_SIZE };
 
 async function readEventStream(body, onToken) {

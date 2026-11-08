@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, FileText, Save } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 
 import { getAgents } from '../../api/agents';
 import { getDirections } from '../../api/directions';
@@ -52,7 +53,11 @@ export default function NewDocumentPage({ user }) {
   const [pdfError, setPdfError] = useState('');
   const [createdDocument, setCreatedDocument] = useState(null);
   const [completedMutation, setCompletedMutation] = useState(null);
-  const [formData, setFormData] = useState({
+  const location = useLocation();
+  // Tâche préparée par Bandy : les champs proposés remplissent le formulaire
+  // vide dès son ouverture et restent surlignés ; rien n'est créé avant
+  // « Enregistrer ».
+  const [proposition] = useState(() => applyPrefill({
     typeDocumentId: '',
     employeId: '',
     destinataire: '',
@@ -64,7 +69,9 @@ export default function NewDocumentPage({ user }) {
     posteSouhaiteId: '',
     lieuTravailSouhaite: '',
     dateEffetSouhaitee: '',
-  });
+  }, readPrefill(location.state)));
+  const prefilled = proposition.changed;
+  const [formData, setFormData] = useState(proposition.form);
 
   useEffect(() => {
     let cancelled = false;
@@ -498,7 +505,7 @@ export default function NewDocumentPage({ user }) {
   ];
 
   const typeSelect = (
-    <div className="rf-field">
+    <div className={prefillClass('rf-field', 'typeDocumentId', prefilled)}>
       <label htmlFor="typeDocumentId">Type de document <b>*</b></label>
       <select
         id="typeDocumentId"
@@ -519,7 +526,7 @@ export default function NewDocumentPage({ user }) {
   );
 
   const motifField = (
-    <div className="rf-field new-document-motif">
+    <div className={prefillClass('rf-field new-document-motif', 'motif', prefilled)}>
       <label htmlFor="motif">
         {isMutationRequest
           ? isDirectMutation ? 'Observation (facultative)' : 'Motif *'
@@ -565,6 +572,12 @@ export default function NewDocumentPage({ user }) {
         <p className="rf-error" role="alert">{mutationOptionsError}</p>
       )}
 
+      {prefilled.length > 0 && (
+        <p className="bandy-prefill-notice" role="status">
+          Bandy a prérempli les champs surlignés en vert. Vérifiez-les, puis
+          enregistrez : aucun document n’est créé avant.
+        </p>
+      )}
       <div className="new-document-layout">
         <form className="rf-card new-document-form" onSubmit={handleSubmit}>
           <div className="rf-sec">
@@ -576,7 +589,7 @@ export default function NewDocumentPage({ user }) {
           </div>
           <div className="rf-grid">
             {typeSelect}
-            <div className="rf-field">
+            <div className={prefillClass('rf-field', 'employeId', prefilled)}>
               <label htmlFor="employeId">Agent concerné <b>*</b></label>
               <select
                 id="employeId"
@@ -598,7 +611,7 @@ export default function NewDocumentPage({ user }) {
               </select>
             </div>
             {!isDirectMutation && (
-              <div className="rf-field rf-field-full">
+              <div className={prefillClass('rf-field rf-field-full', 'destinataire', prefilled)}>
                 <label htmlFor="destinataire">Destinataire <b>*</b></label>
                 <input
                   id="destinataire"
@@ -652,7 +665,7 @@ export default function NewDocumentPage({ user }) {
               <div className="rf-grid">
                 {isLeaveRequest && (
                   <>
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'dateDebut', prefilled)}>
                       <label htmlFor="dateDebut">Date de début <b>*</b></label>
                       <input
                         id="dateDebut"
@@ -664,7 +677,7 @@ export default function NewDocumentPage({ user }) {
                         required
                       />
                     </div>
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'dateFin', prefilled)}>
                       <label htmlFor="dateFin">Date de fin <b>*</b></label>
                       <input
                         id="dateFin"
@@ -682,7 +695,7 @@ export default function NewDocumentPage({ user }) {
                 {isMutationRequest && (
                   <>
                     {!isDirectMutation && (
-                      <div className="rf-field">
+                      <div className={prefillClass('rf-field', 'directionSouhaiteeId', prefilled)}>
                         <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
                         <select
                           id="directionSouhaiteeId"
@@ -700,7 +713,7 @@ export default function NewDocumentPage({ user }) {
                         </select>
                       </div>
                     )}
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'serviceSouhaiteId', prefilled)}>
                       <label htmlFor="serviceSouhaiteId">
                         Service souhaité {isDirectMutation && <b>*</b>}
                       </label>
@@ -720,7 +733,7 @@ export default function NewDocumentPage({ user }) {
                         ))}
                       </select>
                     </div>
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'posteSouhaiteId', prefilled)}>
                       <label htmlFor="posteSouhaiteId">
                         Poste souhaité {isDirectMutation && <b>*</b>}
                       </label>
@@ -746,7 +759,7 @@ export default function NewDocumentPage({ user }) {
                         ))}
                       </select>
                     </div>
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'lieuTravailSouhaite', prefilled)}>
                       <label htmlFor="lieuTravailSouhaite">Lieu de travail souhaité</label>
                       <input
                         id="lieuTravailSouhaite"
@@ -759,7 +772,7 @@ export default function NewDocumentPage({ user }) {
                         disabled={saving}
                       />
                     </div>
-                    <div className="rf-field">
+                    <div className={prefillClass('rf-field', 'dateEffetSouhaitee', prefilled)}>
                       <label htmlFor="dateEffetSouhaitee">
                         Date d’effet {isDirectMutation && <b>*</b>}
                       </label>

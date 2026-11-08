@@ -1483,3 +1483,42 @@ button.rf-row {
   .adm-modal { padding: 22px; border-radius: 26px; }
 }
 @media (prefers-reduced-motion: reduce) { .adm-row, .adm-modal, .adm-backdrop { animation: none; } }
+
+/* ---------- Champs préremplis par Bandy ---------- */
+.rf-field.bandy-prefilled input,
+.rf-field.bandy-prefilled select,
+.rf-field.bandy-prefilled textarea,
+.rf-field.bandy-prefilled .PhoneInputInput {
+  border-color: var(--color-success);
+  background-color: var(--color-success-soft);
+  box-shadow: 0 0 0 3px rgb(47 107 79 / 0.14);
+}
+.rf-field.bandy-prefilled > label,
+.rf-field.bandy-prefilled > .rf-label { color: var(--color-success); }
+.rf-field.bandy-prefilled > label::after,
+.rf-field.bandy-prefilled > .rf-label::after {
+  content: 'Proposé par Bandy';
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-success);
+  color: #fffdf9;
+  font: 500 10px var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.bandy-prefill-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 12px 18px;
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: var(--text-sm, 14px);
+  font-weight: 500;
+}
+.rf-field select option { background: var(--color-surface); color: var(--color-text); padding: 8px; }

@@ -50,6 +50,43 @@ describe('Bandy conversation API', () => {
     );
   });
 
+  it('confirms and cancels a pending task with the user token', async () => {
+    const outcome = { confirmationId: 'c-1', status: 'CONFIRMED', result: { id: 7 } };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(outcome))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(api.confirmPendingAction('conv-1', 'c-1')).resolves.toEqual(outcome);
+    await expect(api.cancelPendingAction('conv-1', 'c-2')).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://bandy.example/api/conversations/conv-1/confirmations/c-1',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-session-token' }),
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://bandy.example/api/conversations/conv-1/confirmations/c-2',
+      expect.objectContaining({ method: 'DELETE' })
+    );
+  });
+
+  it('surfaces a definitive confirmation refusal with its status', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(
+      { message: 'Cette demande a expiré ; reformulez-la pour en préparer une nouvelle.' },
+      409
+    )));
+
+    await expect(api.confirmPendingAction('conv-1', 'c-1')).rejects.toMatchObject({
+      status: 409,
+      message: 'Cette demande a expiré ; reformulez-la pour en préparer une nouvelle.',
+    });
+  });
+
   it('rejects calls without an RH session before contacting Bandy', async () => {
     sessionStorage.delete('user');
     const fetchMock = vi.fn();

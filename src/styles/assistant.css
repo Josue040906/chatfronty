@@ -1219,3 +1219,165 @@
   width: 100%;
   margin: 0;
 }
+
+/* ===== Fusion front-v1 : tâches préparées, confirmations (palette de la refonte) ===== */
+.assistant-message-action {
+  border-radius: 14px;
+  border-color: var(--color-border-strong);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.assistant-message-action:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-sunken);
+}
+
+.assistant-message-action-primary,
+.assistant-message-action-primary:hover {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.assistant-message-action-primary:hover {
+  transform: translateY(-1px);
+}
+
+.assistant-confirmation {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+
+.assistant-confirmation-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.assistant-confirmation-details {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-surface-sunken);
+}
+
+.assistant-confirmation-details div {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.assistant-confirmation-details dt {
+  min-width: 38%;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.assistant-confirmation-details dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.assistant-confirmation-outcome {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.assistant-confirmation-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.assistant-confirmation-buttons button {
+  flex: 1;
+  height: 38px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assistant-confirmation-confirm {
+  border: 0;
+  background: var(--color-brand-strong);
+  color: var(--color-on-brand);
+}
+
+.assistant-confirmation-cancel {
+  border: 1px solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.assistant-confirmation-buttons button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ===== Réponse de l'IA : lisibilité de l'écriture ===== */
+.assistant-message-bot .assistant-message-content {
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.assistant-message-user .assistant-message-content {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.assistant-floating-panel-fullscreen .assistant-message-bot .assistant-message-content,
+.assistant-floating-panel-fullscreen .assistant-message-user .assistant-message-content {
+  font-size: 15px;
+  padding: 14px 20px;
+  border-radius: 22px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-message-bot .assistant-message-content {
+  border-bottom-left-radius: 6px;
+}
+
+.assistant-floating-panel-fullscreen .assistant-message-user .assistant-message-content {
+  border-bottom-right-radius: 6px;
+}
+
+/* ===== Menu déroulant de l'historique et boutons ⋯ ===== */
+.assistant-history-more,
+.assistant-history-actions button {
+  border-radius: 10px;
+  color: var(--color-text-muted);
+}
+
+.assistant-history-more:hover:not(:disabled),
+.assistant-history-actions button:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+.assistant-history-item {
+  border-radius: 14px;
+}
+
+.assistant-history-item-active,
+.assistant-history-item-active:hover {
+  background: var(--color-surface-sunken);
+}
+
+.assistant-message-action-primary > span { font-weight: 600; font-size: 13px; }

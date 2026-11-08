@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
@@ -34,6 +34,7 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
+import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -57,12 +58,15 @@ function formatDate(value) {
 export default function AgentProfilePage({ user }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [agent, setAgent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [editing, setEditing] = useState(false);
+  // Champs proposés par Bandy et différents de la valeur actuelle.
+  const [prefilled, setPrefilled] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -96,7 +100,17 @@ export default function AgentProfilePage({ user }) {
 
         if (!cancelled) {
           setAgent(result);
-          setForm(initializeForm(result));
+          // Tâche préparée par Bandy : le formulaire s'ouvre prérempli,
+          // rien n'est enregistré avant « Enregistrer ».
+          const proposition = applyPrefill(
+            initializeForm(result),
+            readPrefill(location.state)
+          );
+          setForm(proposition.form);
+          setPrefilled(proposition.changed);
+          if (proposition.changed.length > 0) {
+            setEditing(true);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -118,7 +132,9 @@ export default function AgentProfilePage({ user }) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+    // location.key : une nouvelle proposition de Bandy recharge la fiche,
+    // même si elle était déjà ouverte.
+  }, [id, location.key, location.state]);
 
   useEffect(() => {
     return () => {
@@ -202,6 +218,7 @@ export default function AgentProfilePage({ user }) {
 
   function openEditModal() {
     setForm(initializeForm(agent));
+    setPrefilled([]);
     setPhotoFile(null);
     setPhotoPreview('');
     setSaveError('');
@@ -213,6 +230,7 @@ export default function AgentProfilePage({ user }) {
     if (saving) return;
 
     setForm(initializeForm(agent));
+    setPrefilled([]);
     setPhotoFile(null);
 
     setPhotoPreview((currentPreview) => {
@@ -498,18 +516,25 @@ export default function AgentProfilePage({ user }) {
                 <p className="rf-error" role="alert">{saveError}</p>
               )}
 
+              {prefilled.length > 0 && (
+                <p className="bandy-prefill-notice" role="status">
+                  Bandy a prérempli les champs surlignés en vert. Vérifiez-les,
+                  puis enregistrez : rien n’est modifié avant.
+                </p>
+              )}
+
               <div className="rf-dialog-grid">
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'nom', prefilled)}>
                   <label htmlFor="nom">Nom</label>
                   <input id="nom" name="nom" type="text" value={form.nom} onChange={handleChange} disabled={saving} />
                 </div>
 
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'prenom', prefilled)}>
                   <label htmlFor="prenom">Prénom</label>
                   <input id="prenom" name="prenom" type="text" value={form.prenom} onChange={handleChange} disabled={saving} />
                 </div>
 
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'sexe', prefilled)}>
                   <label htmlFor="sexe">Sexe</label>
                   <select id="sexe" name="sexe" value={form.sexe} onChange={handleChange} disabled={saving}>
                     <option value="">Sélectionner</option>
@@ -518,7 +543,7 @@ export default function AgentProfilePage({ user }) {
                   </select>
                 </div>
 
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'telephone', prefilled)}>
                   <label htmlFor="telephone">Téléphone</label>
                   <PhoneField
                     value={form.telephone}
@@ -529,17 +554,17 @@ export default function AgentProfilePage({ user }) {
                   />
                 </div>
 
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'cin', prefilled)}>
                   <label htmlFor="cin">CIN</label>
                   <input id="cin" name="cin" type="text" value={form.cin} onChange={handleChange} disabled={saving} />
                 </div>
 
-                <div className="rf-field">
+                <div className={prefillClass('rf-field', 'dateNaissance', prefilled)}>
                   <label htmlFor="dateNaissance">Date de naissance</label>
                   <input id="dateNaissance" name="dateNaissance" type="date" value={form.dateNaissance} onChange={handleChange} disabled={saving} />
                 </div>
 
-                <div className="rf-field rf-field-full">
+                <div className={prefillClass('rf-field rf-field-full', 'lieuNaissance', prefilled)}>
                   <label htmlFor="lieuNaissance">Lieu de naissance</label>
                   <VilleField
                     id="lieuNaissance"
@@ -550,7 +575,7 @@ export default function AgentProfilePage({ user }) {
                   />
                 </div>
 
-                <div className="rf-field rf-field-full">
+                <div className={prefillClass('rf-field rf-field-full', 'adresse', prefilled)}>
                   <span className="rf-label">Adresse</span>
                   <LocaliteField
                     selectedId={form.localiteResidenceId}
