@@ -29,7 +29,7 @@ const MINISTRY_NAME = 'Ministère de l’Économie et des Finances';
 const DIRECTION_WIDTH = 250;
 const DIRECTION_HEIGHT = 100;
 const SERVICE_WIDTH = 280;
-const SERVICE_HEIGHT = 68;
+const SERVICE_HEIGHT = 76;
 const SERVICE_GAP = 16;
 const SERVICE_COLUMN_GAP = 90;
 const GROUP_COLUMN_GAP = 120;
@@ -193,11 +193,12 @@ function ServiceNode({ data }) {
         onClick={() => data.onSelect(data.service)}
         aria-label={`Ouvrir le service ${data.service.nom} et consulter ${data.agentCount} agents`}
       >
+        <span className="org-service-count" aria-hidden="true">{data.agentCount}</span>
         <span className="org-service-copy">
           <strong>{data.service.nom}</strong>
           <small>
-            {data.agentCount} {data.agentCount === 1 ? 'agent' : 'agents'}
-            {data.leader ? ` · ${data.leader}` : ''}
+            {data.agentCount === 1 ? 'agent' : 'agents'}
+            {data.leader ? ` · Chef : ${data.leader}` : ''}
           </small>
         </span>
         <span className="org-service-code">
@@ -741,9 +742,9 @@ export default function OrganisationPage() {
   const totalServices = data.services.length;
   const fitDiagram = useCallback(() => {
     flowRef.current?.fitView({
-      padding: 0.1,
+      padding: 0.03,
       minZoom: 0.18,
-      maxZoom: 1.05,
+      maxZoom: 1.3,
       duration: 350,
     });
   }, []);
@@ -751,9 +752,9 @@ export default function OrganisationPage() {
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       flowRef.current?.fitView({
-        padding: 0.1,
+        padding: 0.03,
         minZoom: 0.18,
-        maxZoom: 1.05,
+        maxZoom: 1.3,
         duration: 280,
       });
     });
@@ -882,7 +883,7 @@ export default function OrganisationPage() {
                 }
               }}
               fitView
-              fitViewOptions={{ padding: 0.1, minZoom: 0.18, maxZoom: 1.05 }}
+              fitViewOptions={{ padding: 0.03, minZoom: 0.18, maxZoom: 1.3 }}
               minZoom={0.12}
               maxZoom={1.5}
               nodesDraggable={false}
