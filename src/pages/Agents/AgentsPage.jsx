@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAgents } from '../../api/agents';
 import { Skeleton } from '../../components/ui';
 import useMediaQuery from '../../hooks/useMediaQuery';
+import useUrlFilter from '../../hooks/useUrlFilter';
 import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
@@ -36,12 +37,16 @@ function formatDateLong(value) {
   }).format(date);
 }
 
+const DOSSIER_FILTERS = ['incomplet'];
+
 export default function AgentsPage({ user }) {
   const navigate = useNavigate();
   const showSummary = useMediaQuery('(min-width: 1101px)');
   const canCreateAgent = ['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role);
   const [agents, setAgents] = useState([]);
   const [search, setSearch] = useState('');
+  // « incomplet » : seulement les dossiers que l'API juge incomplets.
+  const [dossierFilter, setDossierFilter] = useUrlFilter('dossier', DOSSIER_FILTERS, '');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
@@ -83,14 +88,22 @@ export default function AgentsPage({ user }) {
     };
   }, []);
 
+  const incompleteCount = useMemo(
+    () => agents.filter((agent) => agent.dossier_complet === false).length,
+    [agents]
+  );
+
   const filteredAgents = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
+    const listedAgents = dossierFilter === 'incomplet'
+      ? agents.filter((agent) => agent.dossier_complet === false)
+      : agents;
 
     if (!normalizedSearch) {
-      return agents;
+      return listedAgents;
     }
 
-    return agents.filter((agent) => {
+    return listedAgents.filter((agent) => {
       const searchableText = [
         agent.matricule,
         agent.nom,
@@ -106,7 +119,7 @@ export default function AgentsPage({ user }) {
 
       return searchableText.includes(normalizedSearch);
     });
-  }, [agents, search]);
+  }, [agents, dossierFilter, search]);
 
   const selectedAgent = filteredAgents.find(
     (agent) => String(agent.id) === String(selectedId)
@@ -238,9 +251,18 @@ export default function AgentsPage({ user }) {
             aria-label="Rechercher un agent"
           />
         </label>
+        <button
+          type="button"
+          className="rf-chip"
+          aria-pressed={dossierFilter === 'incomplet'}
+          onClick={() => setDossierFilter(dossierFilter === 'incomplet' ? '' : 'incomplet')}
+        >
+          Dossiers incomplets
+          <span>{incompleteCount}</span>
+        </button>
         <span className="agents-count" aria-live="polite">
           {filteredAgents.length} agent{filteredAgents.length > 1 ? 's' : ''}
-          {search.trim() ? ` sur ${agents.length}` : ''}
+          {search.trim() || dossierFilter ? ` sur ${agents.length}` : ''}
         </span>
       </div>
 

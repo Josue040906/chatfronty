@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import useUrlFilter from '../../hooks/useUrlFilter';
 import { getEmployeeInitials } from '../../utils/employee';
 import {
   getDocumentRequestPdf,
@@ -78,6 +79,7 @@ const statusFilters = [
   { code: 'SIGNE', label: 'Signé' },
   { code: 'ARCHIVE', label: 'Archivé' },
 ];
+const statusCodes = statusFilters.map((chip) => chip.code);
 
 const documentFieldLabels = {
   dateDebut: 'Date de début',
@@ -199,7 +201,7 @@ export default function DocumentsPage() {
   const [pdfError, setPdfError] = useState('');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('TOUS');
-  const [statusFilter, setStatusFilter] = useState('TOUS');
+  const [statusFilter, setStatusFilter] = useUrlFilter('statut', statusCodes, 'TOUS');
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openingPdfId, setOpeningPdfId] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
