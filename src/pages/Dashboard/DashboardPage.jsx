@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
-  BriefcaseBusiness,
-  Building2,
-  Users,
 } from 'lucide-react';
 
 import { getDashboardData } from '../../api/dashboard';
@@ -16,7 +13,6 @@ import {
   PageHeader,
   Segmented,
   Skeleton,
-  StatCard,
 } from '../../components/ui';
 import {
   getEmployeePhotoUrl,
@@ -185,36 +181,62 @@ export default function DashboardPage() {
     );
   }
 
-  return (
-    <div className="dashboard-page">
-      <PageHeader
-        eyebrow="Espace de travail"
-        title="Tableau de bord"
-        subtitle="Vue d'ensemble de l'environnement RH du ministère."
-      />
+  const goToAgents = () => {
+    window.location.href = '/agents';
+  };
 
-      <section className="dash-stat-grid" aria-label="Chiffres clés">
-        <StatCard
-          index={1}
-          icon={Users}
-          label="Agents"
-          value={NUMBER_FORMATTER.format(data.employees.length)}
-          caption="agents enregistrés"
-        />
-        <StatCard
-          index={2}
-          icon={Building2}
-          label="Services"
-          value={NUMBER_FORMATTER.format(data.services.length)}
-          caption="services référencés"
-        />
-        <StatCard
-          index={3}
-          icon={BriefcaseBusiness}
-          label="Postes"
-          value={NUMBER_FORMATTER.format(data.postes.length)}
-          caption="postes référencés"
-        />
+  return (
+    <div className="dashboard-page rf-page">
+      <header className="rf-head">
+        <div>
+          <p className="rf-eyebrow">Espace de travail</p>
+          <h1 className="rf-title">Tableau de bord</h1>
+          <p className="rf-lead">Vue d'ensemble de l'environnement RH du ministère.</p>
+        </div>
+      </header>
+
+      <section className="dash-board" aria-label="Chiffres clés">
+        <article className="dash-hero">
+          <svg className="dash-hero-circles" viewBox="0 0 320 320" aria-hidden="true">
+            <circle cx="260" cy="120" r="180" />
+            <circle cx="260" cy="120" r="130" />
+            <circle cx="260" cy="120" r="80" />
+          </svg>
+          <p className="dash-hero-eyebrow">Effectif total</p>
+          <strong className="dash-hero-value">{NUMBER_FORMATTER.format(data.employees.length)}</strong>
+          <p className="dash-hero-caption">
+            {data.employees.length === 1 ? 'agent enregistré' : 'agents enregistrés'}
+            , répartis dans {NUMBER_FORMATTER.format(data.services.length)}{' '}
+            {data.services.length === 1 ? 'service' : 'services'}
+          </p>
+          <button type="button" className="rf-btn dash-hero-button" onClick={goToAgents}>
+            Voir tous les agents
+            <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
+          </button>
+        </article>
+
+        <article className="dash-mini">
+          <span>Services</span>
+          <strong>{NUMBER_FORMATTER.format(data.services.length)}</strong>
+          <small>services référencés</small>
+        </article>
+
+        <article className="dash-mini">
+          <span>Postes</span>
+          <strong>{NUMBER_FORMATTER.format(data.postes.length)}</strong>
+          <small>postes référencés</small>
+        </article>
+
+        <article className="dash-record">
+          <div>
+            <p className="dash-record-eyebrow">Années record</p>
+            <strong>{formatRecordYears(hiringSummary.peakYears)}</strong>
+          </div>
+          <div className="dash-record-peak">
+            <strong>{NUMBER_FORMATTER.format(hiringSummary.peak)}</strong>
+            <span>recrutements / an</span>
+          </div>
+        </article>
       </section>
 
       <section className="dash-chart-grid">
@@ -272,10 +294,6 @@ export default function DashboardPage() {
                     <small> / an</small>
                   </dd>
                 </div>
-                <div>
-                  <dt>Années record</dt>
-                  <dd>{formatRecordYears(hiringSummary.peakYears)}</dd>
-                </div>
               </dl>
             </>
           )}
@@ -312,9 +330,7 @@ export default function DashboardPage() {
             variant="secondary"
             size="sm"
             className="dash-all-agents"
-            onClick={() => {
-              window.location.href = '/agents';
-            }}
+            onClick={goToAgents}
           >
             Voir tous les agents
             <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
