@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  AlertCircle,
-  ArrowLeft,
   ArrowRight,
+  Check,
   FileImage,
   Plus,
   X,
@@ -14,7 +13,7 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
-import { Avatar } from '../../components/ui';
+import AgentDialogCard from '../../components/agents/AgentDialogCard';
 
 const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
 
@@ -254,9 +253,21 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
     }
   }
 
+  const serviceName = services.find((service) => String(service.id) === String(form.serviceId))?.nom;
+  const posteName = postes.find((poste) => String(poste.id) === String(form.posteId))?.intitule;
+  const trackedFields = [
+    form.matricule, form.nom, form.prenom, form.sexe, form.cin, form.telephone,
+    form.dateNaissance, form.lieuNaissance, form.adresse, form.serviceId,
+    form.posteId, form.dateEmbauche, form.lieuTravail, form.typeEmploiId,
+    form.categorieId, photoFile,
+  ];
+  const percent =
+    (trackedFields.filter((value) => Boolean(value)).length / trackedFields.length) * 100;
+
   return (
     <div
-      className="agent-create-overlay"
+      className="rf-overlay"
+      role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !saving) {
           onClose();
@@ -264,93 +275,73 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
       }}
     >
       <section
-        className="agent-create-modal"
+        className="rf-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="agent-create-title"
       >
-        <header className="agent-create-header">
-          <div className="agent-create-heading">
-            <div className="agent-create-icon">
-              <Plus size={19} />
-            </div>
+        <AgentDialogCard
+          kicker="Aperçu de la carte agent"
+          name={`${form.prenom} ${form.nom}`.trim()}
+          subtitle={posteName}
+          tags={[form.matricule, serviceName]}
+          initials={`${(form.prenom || '').charAt(0)}${(form.nom || '').charAt(0)}`.toUpperCase()}
+          percent={percent}
+        />
+
+        <form ref={formRef} onSubmit={handleSubmit} className="rf-dialog-main">
+          <header className="rf-dialog-head">
             <div>
-              <h2 id="agent-create-title">Ajouter un agent</h2>
-              <p>Renseignez les informations personnelles et professionnelles.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="agent-create-close"
-            onClick={onClose}
-            disabled={saving}
-            aria-label="Fermer le formulaire"
-          >
-            <X size={18} />
-          </button>
-        </header>
-
-        <form ref={formRef} onSubmit={handleSubmit}>
-          <div className="agent-create-body">
-            {formError && (
-              <div className="agent-create-error" role="alert">
-                <AlertCircle size={17} />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            {optionsError && (
-              <div className="agent-create-error" role="alert">
-                <AlertCircle size={17} />
-                <span>{optionsError}</span>
-              </div>
-            )}
-
-            <ol className="agent-create-steps" aria-label="Étapes de création">
-              {STEPS.map((label, index) => (
-                <li
-                  key={label}
-                  className={index < step ? 'is-done' : ''}
-                  aria-current={index === step ? 'step' : undefined}
-                >
-                  <span aria-hidden="true">{index + 1}</span>
-                  {label}
-                </li>
-              ))}
-            </ol>
-
-            <div className="agent-create-preview" aria-live="polite">
-              <Avatar
-                size="lg"
-                initials={`${(form.prenom || '').charAt(0)}${(form.nom || '').charAt(0)}`.toUpperCase() || '?'}
-              />
+              <span className="rf-ico"><Plus size={20} /></span>
               <div>
-                <strong>
-                  {`${form.prenom} ${form.nom}`.trim() || 'Nouvel agent'}
-                </strong>
-                <span>
-                  {form.matricule || 'Matricule à renseigner'}
-                  {' · '}
-                  {postes.find((poste) => String(poste.id) === String(form.posteId))?.intitule
-                    || 'Poste à choisir'}
-                </span>
+                <h2 id="agent-create-title">Ajouter un agent</h2>
+                <p>Renseignez les informations personnelles et professionnelles.</p>
               </div>
             </div>
-
-            <p className="agent-create-required-note">
-              Les champs marqués d’un astérisque sont obligatoires.
-            </p>
-
-            <fieldset
-              className="agent-create-fieldset"
-              data-step="0"
-              hidden={step !== 0}
-              disabled={saving || loadingOptions}
+            <button
+              type="button"
+              className="rf-icon-btn"
+              onClick={onClose}
+              disabled={saving}
+              aria-label="Fermer le formulaire"
             >
-              <legend>Identité</legend>
-              <div className="agent-create-grid">
-                <label className="agent-form-field">
-                  <span>Matricule <b>*</b></span>
+              <X size={16} />
+            </button>
+          </header>
+
+          {formError && <p className="rf-error" role="alert">{formError}</p>}
+          {optionsError && <p className="rf-error" role="alert">{optionsError}</p>}
+
+          <ol className="rf-steps" aria-label="Étapes de création">
+            {STEPS.map((label, index) => (
+              <li
+                key={label}
+                className={index < step ? 'is-done' : index === step ? 'is-current' : ''}
+                aria-current={index === step ? 'step' : undefined}
+              >
+                <span className="rf-step-dot">
+                  {index < step ? <Check size={16} strokeWidth={3} /> : index + 1}
+                </span>
+                <span>{label}</span>
+                {index < STEPS.length - 1 && <span className="rf-step-line" />}
+              </li>
+            ))}
+          </ol>
+
+          <p className="rf-dialog-note">
+            Les champs marqués d’un astérisque sont obligatoires.
+          </p>
+
+          <fieldset
+            className="rf-fieldset"
+            data-step="0"
+            hidden={step !== 0}
+            disabled={saving || loadingOptions}
+          >
+            <legend>Identité</legend>
+            <div className="rf-dialog-grid">
+                <label className="rf-field">
+                  <span className="rf-label">Matricule <b>*</b></span>
                   <input
                     name="matricule"
                     value={form.matricule}
@@ -360,8 +351,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     required
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Nom <b>*</b></span>
+                <label className="rf-field">
+                  <span className="rf-label">Nom <b>*</b></span>
                   <input
                     name="nom"
                     value={form.nom}
@@ -371,8 +362,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     required
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Prénom</span>
+                <label className="rf-field">
+                  <span className="rf-label">Prénom</span>
                   <input
                     name="prenom"
                     value={form.prenom}
@@ -381,8 +372,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     autoComplete="given-name"
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Sexe</span>
+                <label className="rf-field">
+                  <span className="rf-label">Sexe</span>
                   <select name="sexe" value={form.sexe} onChange={handleChange}>
                     <option value="">Sélectionner</option>
                     <option value="F">Féminin</option>
@@ -390,22 +381,23 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   </select>
                 </label>
               </div>
-            </fieldset>
+            
+          </fieldset>
 
-            <fieldset
-              className="agent-create-fieldset"
-              data-step="1"
-              hidden={step !== 1}
-              disabled={saving || loadingOptions}
-            >
-              <legend>Coordonnées et naissance</legend>
-              <div className="agent-create-grid">
-                <label className="agent-form-field">
-                  <span>CIN</span>
+          <fieldset
+            className="rf-fieldset"
+            data-step="1"
+            hidden={step !== 1}
+            disabled={saving || loadingOptions}
+          >
+            <legend>Coordonnées et naissance</legend>
+            <div className="rf-dialog-grid">
+                <label className="rf-field">
+                  <span className="rf-label">CIN</span>
                   <input name="cin" value={form.cin} onChange={handleChange} />
                 </label>
-                <label className="agent-form-field">
-                  <span>Téléphone</span>
+                <label className="rf-field">
+                  <span className="rf-label">Téléphone</span>
                   <PhoneField
                     value={form.telephone}
                     onChange={(telephone) =>
@@ -414,8 +406,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     disabled={saving}
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Date de naissance</span>
+                <label className="rf-field">
+                  <span className="rf-label">Date de naissance</span>
                   <input
                     name="dateNaissance"
                     type="date"
@@ -423,8 +415,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Lieu de naissance</span>
+                <label className="rf-field">
+                  <span className="rf-label">Lieu de naissance</span>
                   <VilleField
                     id="lieuNaissance"
                     name="lieuNaissance"
@@ -432,8 +424,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                   />
                 </label>
-                <div className="agent-form-field agent-create-full">
-                  <span>Adresse</span>
+                <div className="rf-field rf-field-full">
+                  <span className="rf-label">Adresse</span>
                   <LocaliteField
                     selectedId={form.localiteResidenceId}
                     onChange={(localiteResidenceId, adresse) =>
@@ -447,18 +439,19 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                 </div>
               </div>
-            </fieldset>
+            
+          </fieldset>
 
-            <fieldset
-              className="agent-create-fieldset"
-              data-step="2"
-              hidden={step !== 2}
-              disabled={saving || loadingOptions}
-            >
-              <legend>Affectation et statut</legend>
-              <div className="agent-create-grid">
-                <label className="agent-form-field">
-                  <span>Service <b>*</b></span>
+          <fieldset
+            className="rf-fieldset"
+            data-step="2"
+            hidden={step !== 2}
+            disabled={saving || loadingOptions}
+          >
+            <legend>Affectation et statut</legend>
+            <div className="rf-dialog-grid">
+                <label className="rf-field">
+                  <span className="rf-label">Service <b>*</b></span>
                   <select
                     name="serviceId"
                     value={form.serviceId}
@@ -473,8 +466,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="agent-form-field">
-                  <span>Poste <b>*</b></span>
+                <label className="rf-field">
+                  <span className="rf-label">Poste <b>*</b></span>
                   <select
                     name="posteId"
                     value={form.posteId}
@@ -502,8 +495,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     </small>
                   )}
                 </label>
-                <label className="agent-form-field">
-                  <span>Date d’embauche <b>*</b></span>
+                <label className="rf-field">
+                  <span className="rf-label">Date d’embauche <b>*</b></span>
                   <input
                     name="dateEmbauche"
                     type="date"
@@ -512,8 +505,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     required
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Lieu de travail</span>
+                <label className="rf-field">
+                  <span className="rf-label">Lieu de travail</span>
                   <VilleField
                     id="lieuTravail"
                     name="lieuTravail"
@@ -521,8 +514,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                   />
                 </label>
-                <label className="agent-form-field">
-                  <span>Type d’emploi</span>
+                <label className="rf-field">
+                  <span className="rf-label">Type d’emploi</span>
                   <select
                     name="typeEmploiId"
                     value={form.typeEmploiId}
@@ -536,8 +529,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="agent-form-field">
-                  <span>Catégorie</span>
+                <label className="rf-field">
+                  <span className="rf-label">Catégorie</span>
                   <select
                     name="categorieId"
                     value={form.categorieId}
@@ -551,72 +544,66 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="agent-form-field agent-create-full">
-                  <span>Photo (facultatif)</span>
-                  <span className="agent-create-file-field">
-                    <FileImage size={17} />
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={handlePhotoChange}
-                    />
-                  </span>
-                  <small className="agent-create-help">
-                    JPG, PNG ou WEBP — 5 Mo maximum.
-                  </small>
-                </label>
-              </div>
-            </fieldset>
-          </div>
+                <label className="rf-field rf-field-full">
+          <span className="rf-label">Photo <span style={{ fontWeight: 400 }}>(facultatif)</span></span>
+          <span className="rf-upload">
+            <span className="rf-upload-icon"><FileImage size={20} /></span>
+            <span>
+              <strong>{photoFile ? photoFile.name : 'Choisir une image'}</strong>
+              <small>JPEG, PNG ou WebP · 5 Mo maximum</small>
+            </span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoChange}
+            />
+          </span>
+        </label>
+      </div>
 
-          <footer className="agent-create-footer">
-            {loadingOptions && (
-              <span className="agent-create-loading">
-                Chargement des services et référentiels...
-              </span>
-            )}
-            <button
-              type="button"
-              className="agent-profile-cancel-button"
-              onClick={onClose}
-              disabled={saving}
-            >
+          </fieldset>
+
+          <footer className="rf-dialog-foot">
+            <button type="button" className="rf-btn rf-btn-ghost" onClick={onClose} disabled={saving}>
               Annuler
             </button>
-            {step > 0 && (
-              <button
-                key="previous"
-                type="button"
-                className="agent-profile-cancel-button"
-                onClick={() => setStep((current) => current - 1)}
-                disabled={saving}
-              >
-                <ArrowLeft size={16} />
-                Précédent
-              </button>
-            )}
-            {step < STEPS.length - 1 ? (
-              <button
-                key="next"
-                type="button"
-                className="agent-profile-save-button"
-                onClick={goToNextStep}
-                disabled={loadingOptions || Boolean(optionsError)}
-              >
-                Suivant
-                <ArrowRight size={16} />
-              </button>
-            ) : (
-              <button
-                key="submit"
-                type="submit"
-                className="agent-profile-save-button"
-                disabled={saving || loadingOptions || Boolean(optionsError) || Boolean(posteError)}
-              >
-                <Plus size={16} />
-                {saving ? 'Création...' : 'Créer l’agent'}
-              </button>
-            )}
+            <div>
+              {loadingOptions && (
+                <span className="rf-dialog-loading">Chargement des référentiels...</span>
+              )}
+              {step > 0 && (
+                <button
+                  key="previous"
+                  type="button"
+                  className="rf-btn"
+                  onClick={() => setStep((current) => current - 1)}
+                  disabled={saving}
+                >
+                  Précédent
+                </button>
+              )}
+              {step < STEPS.length - 1 ? (
+                <button
+                  key="next"
+                  type="button"
+                  className="rf-btn rf-btn-primary"
+                  onClick={goToNextStep}
+                  disabled={loadingOptions || Boolean(optionsError)}
+                >
+                  Suivant
+                  <ArrowRight size={16} />
+                </button>
+              ) : (
+                <button
+                  key="submit"
+                  type="submit"
+                  className="rf-btn rf-btn-primary"
+                  disabled={saving || loadingOptions || Boolean(optionsError) || Boolean(posteError)}
+                >
+                  {saving ? 'Création...' : 'Créer l’agent'}
+                </button>
+              )}
+            </div>
           </footer>
         </form>
       </section>

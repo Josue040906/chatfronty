@@ -1,22 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  BarChart3,
   Search,
   UserPlus,
   UserRound,
-  Users,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
-import {
-  Avatar,
-  Button,
-  Card,
-  EmptyState,
-  PageHeader,
-  Skeleton,
-} from '../../components/ui';
+import { Skeleton } from '../../components/ui';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import {
   getEmployeePhotoUrl,
@@ -28,7 +19,7 @@ function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
 
-function formatDate(value) {
+function formatDateLong(value) {
   if (!value) return '—';
 
   const date = new Date(value);
@@ -37,68 +28,11 @@ function formatDate(value) {
     return value;
   }
 
-  return new Intl.DateTimeFormat('fr-FR').format(date);
-}
-
-function AgentAvatar({ agent, size }) {
-  return (
-    <Avatar
-      size={size}
-      src={getEmployeePhotoUrl(agent.photo)}
-      initials={getEmployeeInitials(agent)}
-      alt={`Photo de ${formatName(agent)}`}
-    />
-  );
-}
-
-function AgentSummary({ agent, onOpenProfile, onOpenCareer }) {
-  if (!agent) {
-    return (
-      <EmptyState icon={UserRound} title="Aucun agent sélectionné">
-        Choisissez un agent dans la liste pour voir son résumé sans quitter
-        la page.
-      </EmptyState>
-    );
-  }
-
-  return (
-    <div className="agt-summary-body" key={agent.id}>
-      <AgentAvatar agent={agent} size="lg" />
-
-      <h2 className="agt-summary-name">{formatName(agent)}</h2>
-
-      <p className="agt-summary-identity">
-        <span className="agt-matricule">{agent.matricule || '—'}</span>
-        {agent.poste ? (
-          <span className="agt-summary-poste">{agent.poste}</span>
-        ) : null}
-      </p>
-
-      <dl className="agt-summary-list">
-        <div>
-          <dt>Service</dt>
-          <dd>{agent.service || '—'}</dd>
-        </div>
-        <div>
-          <dt>Direction</dt>
-          <dd>{agent.direction || '—'}</dd>
-        </div>
-        <div>
-          <dt>Embauche</dt>
-          <dd>{formatDate(agent.date_embauche)}</dd>
-        </div>
-      </dl>
-
-      <div className="agt-summary-actions">
-        <Button icon={UserRound} onClick={onOpenProfile}>
-          Voir le profil
-        </Button>
-        <Button variant="secondary" icon={BarChart3} onClick={onOpenCareer}>
-          Analyser la carrière
-        </Button>
-      </div>
-    </div>
-  );
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
 }
 
 export default function AgentsPage({ user }) {
@@ -214,191 +148,228 @@ export default function AgentsPage({ user }) {
 
   if (loading) {
     return (
-      <div className="agents-page" role="status" aria-busy="true">
+      <div className="rf-page agents-screen" role="status" aria-busy="true">
         <span className="ui-visually-hidden">Chargement des agents...</span>
-
-        <div className="agt-skeleton-heading" aria-hidden="true">
-          <Skeleton width={190} height={26} radius="999px" />
-          <Skeleton width={160} height={40} />
-        </div>
-
-        <Card as="div" className="agt-skeleton-table" aria-hidden="true">
+        <div className="rf-list" aria-hidden="true">
           {[0, 1, 2, 3, 4, 5].map((index) => (
-            <Skeleton key={index} width="100%" height={48} />
+            <Skeleton key={index} width="100%" height={74} radius="24px" />
           ))}
-        </Card>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="agents-page">
-        <PageHeader eyebrow="Ressources humaines" title="Agents" />
-
-        <Card as="div">
-          <EmptyState
-            role="alert"
-            title="Chargement impossible"
-            action={(
-              <Button onClick={() => window.location.reload()}>
-                Réessayer
-              </Button>
-            )}
+      <div className="rf-page agents-screen">
+        <header className="rf-head">
+          <div>
+            <p className="rf-eyebrow">Ressources humaines</p>
+            <h1 className="rf-title">Agents</h1>
+          </div>
+        </header>
+        <div className="rf-card agents-empty" role="alert">
+          <h2>Chargement impossible</h2>
+          <p>{error}</p>
+          <button
+            type="button"
+            className="rf-btn rf-btn-primary"
+            onClick={() => window.location.reload()}
           >
-            {error}
-          </EmptyState>
-        </Card>
+            Réessayer
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="agents-page">
-      <PageHeader
-        eyebrow="Ressources humaines"
-        title="Agents"
-        subtitle="Consultez les agents enregistrés et accédez à leur profil professionnel."
-      >
-        <div className="agt-heading-aside">
-          <div className="agt-count">
-            <Users size={19} strokeWidth={1.75} aria-hidden="true" />
-            <div>
-              <strong>{agents.length}</strong>
-              <span>agents enregistrés</span>
-            </div>
-          </div>
-
-          {canCreateAgent && (
-            <Button
-              icon={UserPlus}
-              onClick={() => {
-                setCreateFeedback(null);
-                setCreateOpen(true);
-              }}
-            >
-              Ajouter un agent
-            </Button>
-          )}
+    <div className="rf-page agents-screen">
+      <header className="rf-head">
+        <div>
+          <p className="rf-eyebrow">Ressources humaines</p>
+          <h1 className="rf-title">Agents</h1>
+          <p className="rf-lead">
+            Consultez les agents enregistrés et accédez à leur profil professionnel.
+          </p>
         </div>
-      </PageHeader>
+
+        {canCreateAgent && (
+          <button
+            type="button"
+            className="rf-btn rf-btn-primary"
+            onClick={() => {
+              setCreateFeedback(null);
+              setCreateOpen(true);
+            }}
+          >
+            <UserPlus size={18} />
+            Ajouter un agent
+          </button>
+        )}
+      </header>
 
       {createFeedback && (
-        <div
-          className={`agents-create-feedback agents-create-feedback-${createFeedback.tone}`}
+        <p
+          className={createFeedback.tone === 'success' ? 'rf-success' : 'rf-error'}
           role={createFeedback.tone === 'success' ? 'status' : 'alert'}
         >
           {createFeedback.message}
           <button
             type="button"
+            className="agents-feedback-close"
             onClick={() => setCreateFeedback(null)}
             aria-label="Fermer le message"
           >
             ×
           </button>
-        </div>
+        </p>
       )}
 
-      <div className={`agt-layout${showSummary ? ' agt-layout-with-summary' : ''}`}>
-        <div className="agt-list">
-          <section className="agt-toolbar">
-            <label className="agt-search">
-              <Search size={17} strokeWidth={1.75} aria-hidden="true" />
+      <div className="rf-toolbar">
+        <label className="rf-search">
+          <Search size={18} aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher par nom, matricule, poste ou service..."
+            aria-label="Rechercher un agent"
+          />
+        </label>
+        <span className="agents-count" aria-live="polite">
+          {filteredAgents.length} agent{filteredAgents.length > 1 ? 's' : ''}
+          {search.trim() ? ` sur ${agents.length}` : ''}
+        </span>
+      </div>
 
-              <input
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Rechercher par nom, matricule, poste ou service..."
-                aria-label="Rechercher un agent"
-              />
-            </label>
-
-            <div className="agt-result-count" aria-live="polite">
-              {filteredAgents.length} résultat
-              {filteredAgents.length > 1 ? 's' : ''}
+      <div className="agents-layout">
+        <section aria-label="Liste des agents" className="agents-main">
+          {filteredAgents.length === 0 ? (
+            <div className="rf-card agents-empty">
+              <h2>Aucun agent trouvé</h2>
+              <p>Aucun agent ne correspond à votre recherche.</p>
             </div>
-          </section>
-
-          <Card as="section">
-            {filteredAgents.length === 0 ? (
-              <EmptyState icon={Search} title="Aucun agent trouvé">
-                Aucun agent ne correspond à votre recherche.
-              </EmptyState>
-            ) : (
-              <div className="agt-table-wrapper">
-                <table className="agt-table">
-                  <thead>
-                    <tr>
-                      <th>Agent</th>
-                      <th>Matricule</th>
-                      <th>Poste</th>
-                      <th>Service</th>
-                      <th>Direction</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredAgents.map((agent) => {
-                      const isSelected = selectedAgent?.id === agent.id;
-
-                      return (
-                        <tr
-                          key={agent.id}
-                          tabIndex={0}
-                          className={isSelected ? 'is-selected' : ''}
-                          aria-current={isSelected ? 'true' : undefined}
-                          onClick={() => activate(agent)}
-                          onDoubleClick={() => openProfile(agent)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                              event.preventDefault();
-                              openProfile(agent);
-                            } else if (event.key === ' ') {
-                              event.preventDefault();
-                              activate(agent);
-                            }
-                          }}
-                        >
-                          <td>
-                            <div className="agt-person">
-                              <AgentAvatar agent={agent} size="md" />
-
-                              <div>
-                                <strong>{formatName(agent)}</strong>
-                                <span>{agent.code_service || '—'}</span>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td>
-                            <span className="agt-matricule">
-                              {agent.matricule || '—'}
-                            </span>
-                          </td>
-
-                          <td>{agent.poste || '—'}</td>
-                          <td>{agent.service || '—'}</td>
-                          <td>{agent.direction || '—'}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          ) : (
+            <>
+              <div className="agents-columns" aria-hidden="true">
+                <span>Agent</span>
+                <span>Matricule</span>
+                <span>Poste</span>
+                <span>Service</span>
               </div>
-            )}
-          </Card>
-        </div>
+
+              <div className="rf-list">
+                {filteredAgents.map((agent, index) => {
+                  const isSelected = selectedAgent?.id === agent.id;
+                  const photoUrl = getEmployeePhotoUrl(agent.photo);
+
+                  return (
+                    <div
+                      key={agent.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`rf-row agents-row${isSelected ? ' is-selected' : ''}`}
+                      aria-current={isSelected ? 'true' : undefined}
+                      onClick={() => activate(agent)}
+                      onDoubleClick={() => openProfile(agent)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          openProfile(agent);
+                        } else if (event.key === ' ') {
+                          event.preventDefault();
+                          activate(agent);
+                        }
+                      }}
+                    >
+                      <span className="agents-row-person">
+                        <span className={`rf-avatar rf-avatar-lg rf-avatar-tone-${index % 5}`}>
+                          {photoUrl ? (
+                            <img src={photoUrl} alt={`Photo de ${formatName(agent)}`} />
+                          ) : (
+                            getEmployeeInitials(agent)
+                          )}
+                        </span>
+                        <strong>{formatName(agent)}</strong>
+                      </span>
+                      <span className="rf-mono agents-row-matricule">
+                        {agent.matricule || '—'}
+                      </span>
+                      <span className="agents-row-poste">
+                        {agent.poste || 'Poste non renseigné'}
+                      </span>
+                      <span className="agents-row-service">{agent.service || '—'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </section>
 
         {showSummary ? (
-          <aside className="agt-summary" aria-label="Résumé de l'agent">
-            <Card as="div" className="agt-summary-card">
-              <AgentSummary
-                agent={selectedAgent}
-                onOpenProfile={() => openProfile(selectedAgent)}
-                onOpenCareer={() => openCareer(selectedAgent)}
-              />
-            </Card>
+          <aside
+            className="rf-card rf-aside agents-aside"
+            aria-label="Résumé de l'agent"
+          >
+            {selectedAgent ? (
+              <div key={selectedAgent.id} className="agents-aside-body">
+                <div className="agents-aside-avatar">
+                  {getEmployeePhotoUrl(selectedAgent.photo) ? (
+                    <img
+                      src={getEmployeePhotoUrl(selectedAgent.photo)}
+                      alt={`Photo de ${formatName(selectedAgent)}`}
+                    />
+                  ) : (
+                    getEmployeeInitials(selectedAgent)
+                  )}
+                </div>
+                <h2>{formatName(selectedAgent)}</h2>
+                <p className="rf-mono agents-aside-matricule">
+                  {selectedAgent.matricule || '—'}
+                </p>
+                <dl className="rf-dl agents-aside-list">
+                  <div>
+                    <dt>Service</dt>
+                    <dd>{selectedAgent.service || '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Direction</dt>
+                    <dd>{selectedAgent.direction || '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Embauche</dt>
+                    <dd>{formatDateLong(selectedAgent.date_embauche)}</dd>
+                  </div>
+                </dl>
+                <div className="agents-aside-actions">
+                  <button
+                    type="button"
+                    className="rf-btn rf-btn-primary"
+                    onClick={() => openProfile(selectedAgent)}
+                  >
+                    Voir le profil
+                  </button>
+                  <button
+                    type="button"
+                    className="rf-btn"
+                    onClick={() => openCareer(selectedAgent)}
+                  >
+                    Analyser la carrière
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="agents-aside-empty">
+                <UserRound size={32} />
+                <h2>Aucun agent sélectionné</h2>
+                <p>
+                  Choisissez un agent dans la liste pour voir son résumé sans
+                  quitter la page.
+                </p>
+              </div>
+            )}
           </aside>
         ) : null}
       </div>

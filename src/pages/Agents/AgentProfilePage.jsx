@@ -2,16 +2,21 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
-  BriefcaseBusiness,
+  ArrowRight,
   CalendarDays,
   Building2,
+  Camera,
   IdCard,
+  MapPin,
+  Phone,
+  Users,
   UserRound,
   AlertCircle,
   Pencil,
-  Save,
+  Check,
   X,
-  Upload,
+  ImagePlus,
+  BarChart3,
 } from 'lucide-react';
 
 import {
@@ -23,7 +28,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
-import EmployeePhoto from '../../components/EmployeePhoto';
+import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
@@ -41,34 +46,12 @@ function formatDate(value) {
     return value;
   }
 
-  return new Intl.DateTimeFormat('fr-FR').format(date);
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
 }
-
-const completenessFields = [
-  'nom',
-  'prenom',
-  'sexe',
-  'adresse',
-  'cin',
-  'telephone',
-  'date_naissance',
-  'lieu_naissance',
-  'date_embauche',
-  'lieu_travail',
-  'photo',
-];
-
-function getCompleteness(agent) {
-  const filled = completenessFields.filter((key) => {
-    const value = agent?.[key];
-    return value !== null && value !== undefined && String(value).trim() !== '';
-  }).length;
-
-  return Math.round((filled / completenessFields.length) * 100);
-}
-
-const RING_RADIUS = 52;
-const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
 
 export default function AgentProfilePage({ user }) {
   const { id } = useParams();
@@ -312,577 +295,316 @@ export default function AgentProfilePage({ user }) {
 
   if (loading) {
     return (
-      <div className="agent-profile-page">
-        <div className="agent-profile-loading">
-          Chargement du profil...
-        </div>
+      <div className="rf-page">
+        <p className="rf-note" role="status">Chargement du profil...</p>
       </div>
     );
   }
 
   if (error || !agent) {
     return (
-      <div className="agent-profile-page">
-        <button
-          type="button"
-          className="agent-profile-back"
-          onClick={() => navigate('/agents')}
-        >
-          <ArrowLeft size={17} />
+      <div className="rf-page">
+        <button type="button" className="rf-back" onClick={() => navigate('/agents')}>
+          <ArrowLeft size={18} />
           Retour aux agents
         </button>
 
-        <div className="agent-profile-error">
-          <AlertCircle size={24} />
-
-          <div>
-            <h1>Profil introuvable</h1>
-
-            <p>
-              {error ||
-                "Cet agent n'existe pas ou n'est plus disponible."}
-            </p>
-          </div>
+        <div className="rf-card agents-empty" role="alert">
+          <AlertCircle size={28} />
+          <h1>Profil introuvable</h1>
+          <p>{error || "Cet agent n'existe pas ou n'est plus disponible."}</p>
         </div>
       </div>
     );
   }
 
-  const completeness = getCompleteness(agent);
-
-  const displayedPhoto =
-    photoPreview || getEmployeePhotoUrl(agent.photo);
+  const photoUrl = getEmployeePhotoUrl(agent.photo);
+  const displayedPhoto = photoPreview || photoUrl;
+  const infoItems = [
+    [UserRound, 'Nom', agent.nom],
+    [UserRound, 'Prénom', agent.prenom],
+    [Users, 'Sexe', agent.sexe === 'M' ? 'Masculin' : agent.sexe === 'F' ? 'Féminin' : agent.sexe],
+    [IdCard, 'CIN', agent.cin, 'mono'],
+    [Phone, 'Téléphone', agent.telephone],
+    [MapPin, 'Adresse', agent.adresse],
+    [CalendarDays, 'Date de naissance', agent.date_naissance ? formatDate(agent.date_naissance) : ''],
+    [MapPin, 'Lieu de naissance', agent.lieu_naissance],
+    [CalendarDays, "Date d'embauche", agent.date_embauche ? formatDate(agent.date_embauche) : ''],
+    [Building2, 'Lieu de travail', agent.lieu_travail],
+    [Camera, 'Photo', agent.photo ? 'Photo enregistrée' : 'Aucune photo'],
+  ];
+  const openCareer = () => navigate(`/carrieres/${agent.id}/analyse`);
+  const formPercent = Math.round(
+    ([form.nom, form.prenom, form.sexe, form.adresse, form.cin, form.telephone,
+      form.dateNaissance, form.lieuNaissance, agent.date_embauche, agent.lieu_travail,
+      displayedPhoto]
+      .filter((value) => value && String(value).trim() !== '').length /
+      11) * 100
+  );
 
   return (
-    <div className="agent-profile-page">
-      <button
-        type="button"
-        className="agent-profile-back"
-        onClick={() => navigate('/agents')}
-      >
-        <ArrowLeft size={17} />
+    <div className="rf-page agent-fiche">
+      <button type="button" className="rf-back" onClick={() => navigate('/agents')}>
+        <ArrowLeft size={18} />
         Retour aux agents
       </button>
 
-      {/* =====================================================
-          EN-TÊTE DU PROFIL
-          ===================================================== */}
-
-      <section className="agent-profile-hero">
-        <div className="agent-profile-identity">
-        <div
-          className="agent-profile-avatar-wrap"
-          role="img"
-          aria-label={`Dossier complété à ${completeness} %`}
-          title={`Dossier complété à ${completeness} %`}
-        >
-          <svg
-            className="agent-profile-ring"
-            viewBox="0 0 120 120"
-            aria-hidden="true"
-          >
-            <circle className="agent-profile-ring-track" cx="60" cy="60" r={RING_RADIUS} />
-            <circle
-              className="agent-profile-ring-value"
-              cx="60"
-              cy="60"
-              r={RING_RADIUS}
-              style={{
-                strokeDasharray: RING_LENGTH,
-                strokeDashoffset: RING_LENGTH * (1 - completeness / 100),
-              }}
-            />
-          </svg>
-        <div className="agent-profile-avatar">
-          {getEmployeePhotoUrl(agent.photo) ? (
-            <EmployeePhoto
-              src={getEmployeePhotoUrl(agent.photo)}
-              alt={`Photo de ${formatName(agent)}`}
-            />
-          ) : (
-            getEmployeeInitials(agent)
-          )}
-        </div>
-          <span className="agent-profile-ring-label">{completeness} %</span>
-        </div>
-
-          <div>
-            <p className="page-eyebrow">
-              PROFIL AGENT
-            </p>
-
-            <h1>{formatName(agent)}</h1>
-
-            <div className="agent-profile-meta">
-              <span>
-                <BriefcaseBusiness size={15} />
-                {agent.poste || 'Poste non renseigné'}
-              </span>
-
-              <span>
-                <IdCard size={15} />
-                {agent.matricule || 'Matricule non renseigné'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="agent-profile-actions">
-          <button
-            type="button"
-            className="agent-profile-edit-button"
-            onClick={openEditModal}
-          >
-            <Pencil size={17} />
-            Modifier
-          </button>
-        </div>
-      </section>
-
-      {/* =====================================================
-          MESSAGE DE SUCCÈS
-          ===================================================== */}
-
       {saveSuccess && (
-        <div className="agent-profile-message agent-profile-message-success">
-          <span>{saveSuccess}</span>
-        </div>
+        <p className="rf-success" role="status">
+          <Check size={16} /> {saveSuccess}
+        </p>
       )}
 
-      {/* =====================================================
-          INFORMATIONS PERSONNELLES
-          ===================================================== */}
+      <div className="rf-profile">
+        <aside className="rf-card rf-profile-card">
+          <div className="rf-profile-band" aria-hidden="true" />
+          <svg
+            width="300"
+            height="300"
+            viewBox="0 0 300 300"
+            style={{ position: 'absolute', right: -100, top: -130 }}
+            className="rf-hero-art"
+            aria-hidden="true"
+          >
+            <circle cx="150" cy="150" r="130" fill="none" stroke="#B8863F" strokeOpacity=".4" strokeWidth="2" />
+            <circle cx="150" cy="150" r="90" fill="none" stroke="#B8863F" strokeOpacity=".3" strokeWidth="2" />
+          </svg>
 
-      <div className="agent-profile-grid">
-        <section className="agent-profile-card">
-          <div className="agent-profile-card-header">
-            <div className="agent-profile-card-icon">
-              <UserRound size={18} />
+          <div className="rf-profile-id">
+            <div className="rf-profile-photo">
+              {photoUrl ? (
+                <img src={photoUrl} alt={`Photo de ${formatName(agent)}`} />
+              ) : (
+                getEmployeeInitials(agent)
+              )}
             </div>
-
-            <div>
-              <h2>Informations personnelles</h2>
-
-              <p>
-                Informations d'identification de l'agent.
-              </p>
-            </div>
-          </div>
-
-          <div className="agent-profile-details">
-            <div className="agent-detail">
-              <span>Nom</span>
-              <strong>{agent.nom || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Prénom</span>
-              <strong>{agent.prenom || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Sexe</span>
-              <strong>{agent.sexe || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Adresse</span>
-              <strong>{agent.adresse || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>CIN</span>
-              <strong>{agent.cin || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Téléphone</span>
-              <strong>{agent.telephone || '—'}</strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Date de naissance</span>
-              <strong>
-                {formatDate(agent.date_naissance)}
-              </strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Lieu de naissance</span>
-              <strong>
-                {agent.lieu_naissance || '—'}
-              </strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Date d'embauche</span>
-              <strong>
-                {formatDate(agent.date_embauche)}
-              </strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Lieu de travail</span>
-              <strong>
-                {agent.lieu_travail || '—'}
-              </strong>
-            </div>
-
-            <div className="agent-detail">
-              <span>Photo</span>
-
-              <strong>
-                {agent.photo
-                  ? 'Photo enregistrée'
-                  : 'Aucune photo'}
-              </strong>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* =====================================================
-          PARCOURS PROFESSIONNEL
-          ===================================================== */}
-
-      <section className="agent-profile-card agent-career-preview">
-        <div className="agent-profile-card-header">
-          <div className="agent-profile-card-icon">
-            <CalendarDays size={18} />
-          </div>
-
-          <div>
-            <h2>Parcours professionnel</h2>
-
-            <p>
-              Analyse de la situation et évolution de carrière.
+            <p className="rf-eyebrow" style={{ marginTop: 16 }}>Profil agent</p>
+            <h1>{formatName(agent)}</h1>
+            <p className="rf-lead" style={{ margin: 0 }}>
+              {agent.poste || 'Poste non renseigné'}
+            </p>
+            <p className="rf-profile-matricule">
+              Matricule {agent.matricule || 'non renseigné'}
             </p>
           </div>
-        </div>
 
-        <div className="agent-career-content">
-          <div className="agent-career-placeholder">
-            <Building2 size={20} />
-
-            <div>
-              <strong>Analyse de carrière</strong>
-
-              <p>
-                L'analyse détaillée de la carrière de cet agent
-                sera accessible ici.
-              </p>
-            </div>
+          <div className="rf-profile-actions">
+            <button type="button" className="rf-btn rf-btn-primary" onClick={openCareer}>
+              <BarChart3 size={18} />
+              Analyser la carrière
+            </button>
+            <button type="button" className="rf-btn" onClick={openEditModal}>
+              <Pencil size={18} />
+              Modifier
+            </button>
           </div>
+        </aside>
 
-          <button
-            type="button"
-            className="agent-career-button"
-            onClick={() =>
-              navigate(`/carrieres/${agent.id}/analyse`)
-            }
+        <div className="rf-profile-main">
+          <section className="rf-card" aria-labelledby="agent-identity">
+            <p className="rf-eyebrow">Identité</p>
+            <h2 id="agent-identity" className="rf-section-title">Informations personnelles</h2>
+            <dl className="rf-info-grid">
+              {infoItems.map(([Icon, label, value, kind]) => (
+                <div className="rf-info" key={label}>
+                  <span className="rf-ico"><Icon size={18} /></span>
+                  <div>
+                    <dt>{label}</dt>
+                    <dd className={kind === 'mono' ? 'rf-mono-plain' : undefined}>
+                      {value || '—'}
+                    </dd>
+                  </div>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <a
+            href={`/carrieres/${agent.id}/analyse`}
+            className="rf-card rf-card-hover rf-career"
+            onClick={(event) => {
+              event.preventDefault();
+              openCareer();
+            }}
           >
-            Analyser la carrière
-          </button>
+            <div className="rf-career-bars" aria-hidden="true">
+              <span style={{ height: 14 }} />
+              <span style={{ height: 26 }} />
+              <span style={{ height: 38 }} />
+              <span style={{ height: 50 }} />
+              <span style={{ height: 62 }} />
+            </div>
+            <div className="rf-career-text">
+              <p className="rf-career-kicker">Parcours professionnel</p>
+              <h2>Analyse de carrière</h2>
+              <p>Analyse de la situation et évolution de carrière.</p>
+            </div>
+            <span className="rf-btn">
+              Analyse de carrière
+              <ArrowRight size={18} />
+            </span>
+          </a>
         </div>
-      </section>
-
-      {/* =====================================================
-          MODALE DE MODIFICATION
-          ===================================================== */}
+      </div>
 
       {editing && (
         <div
-          className="agent-profile-modal-overlay"
+          className="rf-overlay"
+          role="presentation"
           onMouseDown={(event) => {
-            if (
-              event.target === event.currentTarget &&
-              !saving
-            ) {
+            if (event.target === event.currentTarget && !saving) {
               closeEditModal();
             }
           }}
         >
-          <div
-            className="agent-profile-modal"
+          <section
+            className="rf-dialog"
             role="dialog"
             aria-modal="true"
             aria-labelledby="agent-profile-modal-title"
-            onMouseDown={(event) =>
-              event.stopPropagation()
-            }
           >
-            {/* -------------------------------------------------
-                EN-TÊTE DE LA MODALE
-                ------------------------------------------------- */}
+            <AgentDialogCard
+              kicker="Fiche en cours de modification"
+              name={[form.prenom, form.nom].filter(Boolean).join(' ')}
+              subtitle={agent.poste}
+              tags={[agent.matricule, agent.service]}
+              initials={getEmployeeInitials({ nom: form.nom, prenom: form.prenom })}
+              photoUrl={displayedPhoto}
+              percent={formPercent}
+            />
 
-            <div className="agent-profile-modal-header">
-              <div className="agent-profile-modal-title">
-                <div className="agent-profile-modal-icon">
-                  <Pencil size={18} />
-                </div>
-
+            <div className="rf-dialog-main">
+              <header className="rf-dialog-head">
                 <div>
-                  <h2 id="agent-profile-modal-title">
-                    Modifier les informations
-                  </h2>
-
-                  <p>
-                    Modifiez les informations personnelles de
-                    l'agent.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="agent-profile-modal-close"
-                onClick={closeEditModal}
-                disabled={saving}
-                aria-label="Fermer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* -------------------------------------------------
-                ERREUR DE SAUVEGARDE
-                ------------------------------------------------- */}
-
-            {saveError && (
-              <div className="agent-profile-modal-error">
-                <AlertCircle size={18} />
-
-                <span>{saveError}</span>
-              </div>
-            )}
-
-            {/* -------------------------------------------------
-                FORMULAIRE
-                ------------------------------------------------- */}
-
-            <div className="agent-profile-form">
-              <div className="agent-form-field">
-                <label htmlFor="nom">
-                  Nom
-                </label>
-
-                <input
-                  id="nom"
-                  name="nom"
-                  type="text"
-                  value={form.nom}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="prenom">
-                  Prénom
-                </label>
-
-                <input
-                  id="prenom"
-                  name="prenom"
-                  type="text"
-                  value={form.prenom}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="sexe">
-                  Sexe
-                </label>
-
-                <select
-                  id="sexe"
-                  name="sexe"
-                  value={form.sexe}
-                  onChange={handleChange}
-                  disabled={saving}
-                >
-                  <option value="">
-                    Sélectionner
-                  </option>
-
-                  <option value="F">
-                    Féminin
-                  </option>
-
-                  <option value="M">
-                    Masculin
-                  </option>
-                </select>
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="telephone">
-                  Téléphone
-                </label>
-
-                <PhoneField
-                  value={form.telephone}
-                  onChange={(telephone) =>
-                    setForm((current) => ({ ...current, telephone }))
-                  }
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="cin">
-                  CIN
-                </label>
-
-                <input
-                  id="cin"
-                  name="cin"
-                  type="text"
-                  value={form.cin}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="dateNaissance">
-                  Date de naissance
-                </label>
-
-                <input
-                  id="dateNaissance"
-                  name="dateNaissance"
-                  type="date"
-                  value={form.dateNaissance}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field">
-                <label htmlFor="lieuNaissance">
-                  Lieu de naissance
-                </label>
-
-                <VilleField
-                  id="lieuNaissance"
-                  name="lieuNaissance"
-                  value={form.lieuNaissance}
-                  onChange={handleChange}
-                  disabled={saving}
-                />
-              </div>
-
-              <div className="agent-form-field agent-form-field-full">
-                <span>
-                  Adresse
-                </span>
-
-                <LocaliteField
-                  selectedId={form.localiteResidenceId}
-                  currentAddress={form.adresse}
-                  onChange={(localiteResidenceId, adresse) =>
-                    setForm((current) => ({
-                      ...current,
-                      localiteResidenceId: localiteResidenceId || '',
-                      effacerLocaliteResidence: !localiteResidenceId,
-                      adresse,
-                    }))
-                  }
-                  disabled={saving}
-                />
-              </div>
-
-              {/* -------------------------------------------------
-                  PHOTO
-                  ------------------------------------------------- */}
-
-              <div className="agent-form-field agent-form-field-full">
-                <label>
-                  Photo de l'agent
-                </label>
-
-                <div className="agent-photo-upload">
-                  <div className="agent-photo-preview">
-                    {displayedPhoto ? (
-                      <EmployeePhoto
-                        src={displayedPhoto}
-                        alt={`Aperçu de ${formatName(agent)}`}
-                      />
-                    ) : (
-                      <span>
-                        {getEmployeeInitials(agent)}
-                      </span>
-                    )}
+                  <span className="rf-ico"><Pencil size={20} /></span>
+                  <div>
+                    <h2 id="agent-profile-modal-title">Modifier les informations</h2>
+                    <p>Modifiez les informations personnelles de {formatName(agent)}.</p>
                   </div>
+                </div>
+                <button
+                  type="button"
+                  className="rf-icon-btn"
+                  onClick={closeEditModal}
+                  disabled={saving}
+                  aria-label="Fermer le formulaire"
+                >
+                  <X size={16} />
+                </button>
+              </header>
 
-                  <div className="agent-photo-upload-content">
-                    <div>
+              {saveError && (
+                <p className="rf-error" role="alert">{saveError}</p>
+              )}
+
+              <div className="rf-dialog-grid">
+                <div className="rf-field">
+                  <label htmlFor="nom">Nom</label>
+                  <input id="nom" name="nom" type="text" value={form.nom} onChange={handleChange} disabled={saving} />
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="prenom">Prénom</label>
+                  <input id="prenom" name="prenom" type="text" value={form.prenom} onChange={handleChange} disabled={saving} />
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="sexe">Sexe</label>
+                  <select id="sexe" name="sexe" value={form.sexe} onChange={handleChange} disabled={saving}>
+                    <option value="">Sélectionner</option>
+                    <option value="F">Féminin</option>
+                    <option value="M">Masculin</option>
+                  </select>
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="telephone">Téléphone</label>
+                  <PhoneField
+                    value={form.telephone}
+                    onChange={(telephone) =>
+                      setForm((current) => ({ ...current, telephone }))
+                    }
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="cin">CIN</label>
+                  <input id="cin" name="cin" type="text" value={form.cin} onChange={handleChange} disabled={saving} />
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="dateNaissance">Date de naissance</label>
+                  <input id="dateNaissance" name="dateNaissance" type="date" value={form.dateNaissance} onChange={handleChange} disabled={saving} />
+                </div>
+
+                <div className="rf-field rf-field-full">
+                  <label htmlFor="lieuNaissance">Lieu de naissance</label>
+                  <VilleField
+                    id="lieuNaissance"
+                    name="lieuNaissance"
+                    value={form.lieuNaissance}
+                    onChange={handleChange}
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="rf-field rf-field-full">
+                  <span className="rf-label">Adresse</span>
+                  <LocaliteField
+                    selectedId={form.localiteResidenceId}
+                    currentAddress={form.adresse}
+                    onChange={(localiteResidenceId, adresse) =>
+                      setForm((current) => ({
+                        ...current,
+                        localiteResidenceId: localiteResidenceId || '',
+                        effacerLocaliteResidence: !localiteResidenceId,
+                        adresse,
+                      }))
+                    }
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="rf-field rf-field-full">
+                  <span className="rf-label">Photo de l’agent</span>
+                  <label htmlFor="agent-photo-input" className="rf-upload">
+                    <span className="rf-upload-icon">
+                      {displayedPhoto ? (
+                        <img src={displayedPhoto} alt={`Aperçu de ${formatName(agent)}`} />
+                      ) : (
+                        <ImagePlus size={20} />
+                      )}
+                    </span>
+                    <span>
                       <strong>
-                        {photoFile
-                          ? photoFile.name
-                          : agent.photo
-                            ? 'Photo actuelle'
-                            : 'Aucune photo sélectionnée'}
+                        {photoFile ? photoFile.name : 'Choisir une image'}
                       </strong>
-
-                      <p>
-                        JPG, PNG ou WEBP — 5 Mo maximum
-                      </p>
-                    </div>
-
-                    <label
-                      htmlFor="agent-photo-input"
-                      className="agent-photo-upload-button"
-                    >
-                      <Upload size={16} />
-                      Changer la photo
-                    </label>
-
+                      <small>JPG, PNG ou WEBP · 5 Mo maximum</small>
+                    </span>
                     <input
                       id="agent-photo-input"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       onChange={handlePhotoChange}
                       disabled={saving}
-                      hidden
                     />
-                  </div>
+                  </label>
                 </div>
               </div>
+
+              <footer className="rf-dialog-foot" style={{ justifyContent: 'flex-end' }}>
+                <div>
+                  <button type="button" className="rf-btn" onClick={closeEditModal} disabled={saving}>
+                    Annuler
+                  </button>
+                  <button type="button" className="rf-btn rf-btn-primary" onClick={handleSave} disabled={saving}>
+                    {saving ? 'Enregistrement...' : 'Enregistrer'}
+                  </button>
+                </div>
+              </footer>
             </div>
-
-            {/* -------------------------------------------------
-                PIED DE LA MODALE
-                ------------------------------------------------- */}
-
-            <div className="agent-profile-modal-footer">
-              <button
-                type="button"
-                className="agent-profile-cancel-button"
-                onClick={closeEditModal}
-                disabled={saving}
-              >
-                <X size={17} />
-                Annuler
-              </button>
-
-              <button
-                type="button"
-                className="agent-profile-save-button"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                <Save size={17} />
-
-                {saving
-                  ? 'Enregistrement...'
-                  : 'Enregistrer'}
-              </button>
-            </div>
-          </div>
+          </section>
         </div>
       )}
     </div>
