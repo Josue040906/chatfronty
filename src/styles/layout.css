@@ -9,7 +9,7 @@
 
 .app-shell {
   --rail-width: 92px;
-  --rail-offset: 120px;
+  --rail-offset: 112px;
   min-height: 100vh;
   display: flex;
   background: var(--color-bg);
@@ -17,36 +17,27 @@
 
 .app-sidebar {
   position: fixed;
-  top: 14px;
-  bottom: 14px;
-  left: 14px;
+  top: 20px;
+  left: 20px;
   z-index: 100;
   width: var(--rail-width);
+  max-height: calc(100vh - 40px);
+  box-sizing: border-box;
+  padding: 18px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 6px;
   border-radius: 34px;
   background: var(--color-menu);
   color: var(--color-menu-text-strong);
-  box-shadow:
-    0 2px 4px rgb(var(--shadow-ink) / 0.12),
-    0 24px 48px -20px rgb(var(--shadow-ink) / 0.55);
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   animation: rail-in 600ms var(--ease-out) both;
 }
 
-/* Reflet doré en haut du rail */
-.app-sidebar::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 140px;
-  background: radial-gradient(
-    circle at 50% 0%,
-    rgb(184 134 63 / 0.22),
-    transparent 70%
-  );
-  pointer-events: none;
+.app-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes rail-in {
@@ -55,12 +46,10 @@
 }
 
 .sidebar-header {
-  position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 18px 0 10px;
+  margin-bottom: 14px;
 }
 
 .sidebar-brand {
@@ -69,35 +58,16 @@
   text-decoration: none;
 }
 
-.sidebar-brand:hover,
-.sidebar-brand:focus,
-.sidebar-brand:visited,
-.sidebar-brand:active {
-  color: inherit;
-  text-decoration: none;
-}
-
 .sidebar-brand-mark {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 16px;
   background: var(--color-accent);
   color: var(--color-menu);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  box-shadow:
-    0 6px 14px rgb(0 0 0 / 0.25),
-    inset 0 1px 0 rgb(255 255 255 / 0.25);
-  transition: transform var(--duration-base) var(--ease-spring);
-}
-
-.sidebar-brand:hover .sidebar-brand-mark {
-  transform: rotate(-6deg) scale(1.06);
+  font: 600 20px var(--font-display);
 }
 
 .sidebar-close {
@@ -114,65 +84,50 @@
 }
 
 .sidebar-navigation {
-  position: relative;
-  flex: 1;
   width: 100%;
-  overflow-y: auto;
-  scrollbar-width: none;
-  padding: 6px 8px 10px;
-}
-
-.sidebar-navigation::-webkit-scrollbar {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .sidebar-nav-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: contents;
 }
 
 /* Filet fin entre les groupes (gestion RH / documents / configuration) */
-.sidebar-nav-group {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-menu-border);
+.sidebar-nav-group > :first-child {
+  margin-top: 8px;
 }
 
 .sidebar-nav-item {
   position: relative;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 9px 2px 8px;
-  border: 0;
-  border-radius: 22px;
-  background: transparent;
-  color: var(--color-menu-text);
+  width: 68px;
+  padding: 10px 0;
+  box-sizing: border-box;
+  border-radius: 20px;
+  color: rgb(255 253 249 / 0.74);
   font-size: 11px;
-  font-weight: 500;
-  line-height: 1.15;
+  font-weight: 600;
   text-align: center;
   text-decoration: none;
   transition:
-    background var(--duration-fast) ease,
-    color var(--duration-fast) ease,
-    transform var(--duration-base) var(--ease-out);
+    transform 0.22s var(--ease-out),
+    background 0.22s,
+    color 0.22s;
 }
 
 .sidebar-nav-icon {
   position: relative;
-  width: 40px;
-  height: 30px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  transition:
-    background var(--duration-fast) ease,
-    transform var(--duration-base) var(--ease-spring);
+}
+
+.sidebar-nav-icon svg {
+  transition: transform 0.25s var(--ease-out);
 }
 
 .sidebar-nav-label {
@@ -183,72 +138,49 @@
 }
 
 .sidebar-nav-item:hover {
-  background: var(--color-menu-hover);
+  transform: translateY(-2px);
+  background: rgb(255 253 249 / 0.08);
   color: var(--color-menu-text-strong);
 }
 
-.sidebar-nav-item:hover .sidebar-nav-icon {
-  transform: translateY(-2px) scale(1.08);
+.sidebar-nav-item:hover svg {
+  transform: scale(1.15);
 }
 
-.sidebar-nav-item-active {
-  color: var(--color-menu-accent);
-  font-weight: 600;
-}
-
-.sidebar-nav-item-active .sidebar-nav-icon {
-  background: var(--color-menu-active);
-}
-
-.sidebar-nav-item-active::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  width: 4px;
-  height: 22px;
-  border-radius: 0 4px 4px 0;
-  background: var(--color-menu-accent);
-  transform: translateY(-50%);
+.sidebar-nav-item-active,
+.sidebar-nav-item-active:hover {
+  background: rgb(184 134 63 / 0.26);
+  color: #F1D28F;
 }
 
 /* Pastille : demandes d'inscription en attente */
 .sidebar-nav-badge {
   position: absolute;
-  top: -4px;
-  right: -2px;
+  top: -7px;
+  right: -11px;
   min-width: 18px;
   height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 5px;
+  box-sizing: border-box;
   border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-menu);
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  box-shadow: 0 0 0 2px var(--color-menu);
-  animation: badge-pop 420ms var(--ease-spring) both;
+  animation: rail-pulse 2.2s infinite;
 }
 
-@keyframes badge-pop {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
+@keyframes rail-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(199 155 45 / 0.55); }
+  60% { box-shadow: 0 0 0 7px rgb(199 155 45 / 0); }
 }
 
 .sidebar-footer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-bottom: 14px;
-  border-radius: 12px;
-  background: rgb(255 253 249 / 0.06);
-  color: var(--color-menu-accent);
+  display: none;
 }
 
 /* =========================================================
@@ -268,8 +200,7 @@
 
 .app-content {
   min-height: calc(100vh - 72px);
-
-  padding: 34px 30px;
+  padding: 8px 36px 56px 28px;
 }
 
 

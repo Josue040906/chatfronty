@@ -40,15 +40,15 @@
   color: var(--admin-text);
 }
 
-.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td) {
+.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td):not(.rf-page *) {
   color: var(--admin-text);
 }
 
-.admin-theme .app-content :is(p, small) {
+.admin-theme .app-content :is(p, small):not(.rf-page *) {
   color: var(--admin-muted);
 }
 
-.admin-theme .app-content :is(input, select, textarea) {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *) {
   border-color: var(--color-border) !important;
   background-color: var(--color-surface) !important;
   color: var(--admin-text) !important;
@@ -402,22 +402,22 @@
   outline-offset: 3px;
 }
 
-.admin-theme .app-content :is(input, select, textarea):hover:not(:disabled) {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):hover:not(:disabled) {
   border-color: var(--color-brand) !important;
 }
 
-.admin-theme .app-content :is(input, select, textarea):focus {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):focus {
   border-color: var(--admin-yellow) !important;
   box-shadow: 0 0 0 3px rgba(242, 206, 75, 0.18);
   outline: none;
 }
 
-.admin-theme .app-content :is(input, select, textarea)::placeholder {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *)::placeholder {
   color: var(--color-text-muted);
   opacity: 1;
 }
 
-.admin-theme .app-content :is(input, select, textarea):disabled {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):disabled {
   background: var(--color-brand-strong) !important;
   color: var(--color-text-muted) !important;
   cursor: not-allowed;
@@ -776,15 +776,15 @@
 
 /* Keep the standard light layout; only replace its brown accent palette. */
 .admin-theme .app-content {
-  background: var(--color-surface);
+  background: transparent;
 }
 
-.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td),
-.admin-theme .app-content :is(.administration-page-header h1, .registration-requests-header h1) {
+.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td):not(.rf-page *),
+.admin-theme .app-content :is(.administration-page-header h1, .registration-requests-header h1):not(.rf-page *) {
   color: var(--admin-text);
 }
 
-.admin-theme .app-content :is(p, small),
+.admin-theme .app-content :is(p, small):not(.rf-page *),
 .admin-theme .administration-page-header p,
 .admin-theme .administration-section-header p,
 .admin-theme .administration-card-content span,
@@ -897,16 +897,16 @@
 }
 
 .admin-theme .administration-search input::placeholder,
-.admin-theme .app-content :is(input, select, textarea)::placeholder {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *)::placeholder {
   color: var(--color-text-muted);
   opacity: 1;
 }
 
-.admin-theme .app-content :is(input, select, textarea):hover:not(:disabled) {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):hover:not(:disabled) {
   border-color: var(--color-border-strong) !important;
 }
 
-.admin-theme .app-content :is(input, select, textarea):disabled {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):disabled {
   border-color: var(--color-border) !important;
   background: var(--color-surface-sunken) !important;
   color: var(--color-text-muted) !important;
@@ -1035,7 +1035,7 @@
 .admin-theme .administration-form-field input:focus,
 .admin-theme .administration-form-field textarea:focus,
 .admin-theme .administration-form-field select:focus,
-.admin-theme .app-content :is(input, select, textarea):focus {
+.admin-theme .app-content :is(input, select, textarea):not(.rf-page *):focus {
   border-color: var(--color-border-strong) !important;
   box-shadow: 0 0 0 3px rgba(36, 88, 59, 0.1);
   outline: none;
