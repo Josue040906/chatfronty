@@ -6,6 +6,7 @@ import {
   getFilteredListAction,
   getNavigationActions,
   getPreparedActions,
+  getStatistics,
   getTodoItems,
   isInternalRoute,
 } from './assistant-actions';
@@ -273,5 +274,38 @@ describe('getFilteredListAction', () => {
 
     expect(reply.agents).toEqual([]);
     expect(reply.navigation.map(({ label }) => label)).toEqual(['Voir les 5 agents dans la liste']);
+  });
+});
+
+describe('getStatistics', () => {
+  const grouped = (groupes, total = 33) => [{ name: 'search_agents', arguments: { resultMode: 'GROUP' }, result: { total, agents: [], groupes } }];
+
+  it('turns an API breakdown into a table, as received', () => {
+    expect(getStatistics(grouped([
+      { direction: 'Direction Financière', 'diplomes.niveau': 'Licence', nombre: 3, moyenne_age: 36.5 },
+      { direction: 'Direction Financière', 'diplomes.niveau': null, nombre: 1, moyenne_age: 24 },
+    ]))).toEqual({
+      columns: ['Direction', 'Niveau (diplomes)', 'Agents', 'Moyenne age'],
+      rows: [
+        ['Direction Financière', 'Licence', '3', '36.5'],
+        ['Direction Financière', 'Non renseigné', '1', '24'],
+      ],
+      hiddenRows: 0,
+      total: 33,
+    });
+  });
+
+  it('shows the first twenty groups and counts the others', () => {
+    const groups = Array.from({ length: 23 }, (_, index) => ({ date_embauche: 2000 + index, nombre: 1 }));
+    const table = getStatistics(grouped(groups));
+    expect(table.rows).toHaveLength(20);
+    expect(table.hiddenRows).toBe(3);
+  });
+
+  it('has no table without a breakdown', () => {
+    expect(getStatistics([{ name: 'search_agents', result: { total: 4, agents: [] } }])).toBeNull();
+    expect(getStatistics(undefined)).toBeNull();
+    expect(buildBandyReply({ toolResults: grouped([{ sexe: 'F', nombre: 16 }]) }).statistics.rows)
+      .toEqual([['F', '16']]);
   });
 });

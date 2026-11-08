@@ -87,6 +87,26 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
       )}
       <div className="assistant-message-body">
         <div className="assistant-message-content">{item.content}</div>
+        {item.statistics && (
+          <div className="assistant-stats">
+            <table>
+              {item.statistics.total !== null && (
+                <caption>Sur {item.statistics.total} agent{item.statistics.total > 1 ? 's' : ''}</caption>
+              )}
+              <thead>
+                <tr>{item.statistics.columns.map((column) => <th key={column} scope="col">{column}</th>)}</tr>
+              </thead>
+              <tbody>
+                {item.statistics.rows.map((row) => (
+                  <tr key={row.join('|')}>{row.map((value, index) => <td key={item.statistics.columns[index]}>{value}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+            {item.statistics.hiddenRows > 0 && (
+              <p>… et {item.statistics.hiddenRows} autre{item.statistics.hiddenRows > 1 ? 's' : ''} groupe{item.statistics.hiddenRows > 1 ? 's' : ''}.</p>
+            )}
+          </div>
+        )}
         {item.agents?.length > 0 && (
           <div className="assistant-message-actions">
             {item.agents.map((agent) => (

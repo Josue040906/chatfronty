@@ -191,6 +191,49 @@ export function getFilteredListAction(toolResults) {
   };
 }
 
+const MAX_STATISTIC_ROWS = 20;
+const COLUMN_PREFIXES = { moyenne: 'Moyenne', minimum: 'Minimum', maximum: 'Maximum', somme: 'Somme' };
+
+/** « diplomes.niveau » → « Niveau (diplomes) », « moyenne_age » → « Moyenne age », « nombre » → « Agents ». */
+function columnLabel(key) {
+  if (key === 'nombre') {
+    return 'Agents';
+  }
+  const [list, field] = key.includes('.') ? key.split('.') : [null, key];
+  const [first, ...rest] = field.split('_');
+  const words = [COLUMN_PREFIXES[first] || first, ...rest].join(' ');
+  const label = words.charAt(0).toUpperCase() + words.slice(1);
+  return list ? `${label} (${list})` : label;
+}
+
+/**
+ * Tableau d'une répartition (search_agents en mode GROUP) : les chiffres
+ * viennent tels quels de l'API ; un groupe sans valeur est « Non renseigné ».
+ */
+export function getStatistics(toolResults) {
+  const grouped = Array.isArray(toolResults)
+    ? toolResults.filter((toolResult) => toolResult?.name === 'search_agents'
+      && Array.isArray(toolResult.result?.groupes) && toolResult.result.groupes.length > 0).at(-1)
+    : null;
+  if (!grouped) {
+    return null;
+  }
+  const groups = grouped.result.groupes.filter((group) => group && typeof group === 'object');
+  const keys = Object.keys(groups[0] || {});
+  if (keys.length === 0) {
+    return null;
+  }
+  const cell = (value) => (value === null || value === undefined || value === ''
+    ? 'Non renseigné'
+    : String(value));
+  return {
+    columns: keys.map(columnLabel),
+    rows: groups.slice(0, MAX_STATISTIC_ROWS).map((group) => keys.map((key) => cell(group[key]))),
+    hiddenRows: Math.max(0, groups.length - MAX_STATISTIC_ROWS),
+    total: Number.isSafeInteger(grouped.result.total) ? grouped.result.total : null,
+  };
+}
+
 /**
  * Ce que la bulle de Bandy affiche sous son texte. Quand Bandy propose une
  * action (ouvrir une page, une tâche préparée ou à confirmer), la recherche
@@ -210,6 +253,7 @@ export function buildBandyReply(response) {
   ];
   const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
   return {
+    statistics: getStatistics(response?.toolResults),
     agents: proposesAction ? [] : found,
     navigation,
     prepared,

@@ -1406,3 +1406,53 @@
 }
 
 .assistant-message-action-primary > span { font-weight: 600; font-size: 13px; }
+
+/* Répartition renvoyée par l'API (search_agents en mode GROUP). */
+.assistant-stats {
+  max-width: 100%;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.assistant-stats table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 12px;
+}
+
+.assistant-stats caption {
+  padding: 0 0 6px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  text-align: left;
+}
+
+.assistant-stats th,
+.assistant-stats td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.assistant-stats th {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.assistant-stats tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.assistant-stats td:not(:first-child) {
+  font-variant-numeric: tabular-nums;
+}
+
+.assistant-stats p {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
