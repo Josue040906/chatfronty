@@ -54,8 +54,9 @@
 .rf-title {
   margin: 0;
   color: var(--color-text);
-  font: 600 44px / 1.05 var(--font-display);
+  font: 600 clamp(30px, 3.2vw, 40px) / 1.1 var(--font-display);
   letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
 }
 
 .rf-lead {
@@ -634,7 +635,7 @@ button.rf-row {
 
 .rf-hero-body { position: relative; flex: 1 1 320px; }
 .rf-hero-ref { margin: 0; font: 500 var(--text-sm) var(--font-mono); color: #E3C27F; }
-.rf-hero h2 { margin: 6px 0 12px; font: 600 32px / 1.15 var(--font-display); }
+.rf-hero h2 { margin: 6px 0 12px; font: 600 clamp(24px, 2.4vw, 30px) / 1.15 var(--font-display); overflow-wrap: anywhere; }
 .rf-hero .rf-pill { background: rgb(255 253 249 / 0.14); color: var(--color-on-brand); }
 .rf-hero .rf-pill-valide { background: var(--color-success-soft); color: var(--color-success); }
 .rf-hero .rf-pill-signe { background: var(--color-info-soft); color: var(--color-info); }
@@ -764,7 +765,7 @@ button.rf-row {
 }
 
 .rf-dialog-progress { margin-bottom: 14px; color: #E3C27F; font-size: var(--text-xs); font-weight: 700; }
-.rf-dialog-card h3 { margin: 0; font: 600 26px / 1.12 var(--font-display); }
+.rf-dialog-card h3 { margin: 0; font: 600 22px / 1.15 var(--font-display); overflow-wrap: anywhere; }
 .rf-dialog-card .rf-dialog-sub { margin: 6px 0 16px; font-size: var(--text-md); color: rgb(255 253 249 / 0.82); }
 .rf-dialog-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .rf-dialog-tags span {
@@ -909,7 +910,16 @@ button.rf-row {
 }
 
 .rf-profile-photo img { width: 100%; height: 100%; object-fit: cover; }
-.rf-profile-id h1 { margin: 6px 0 4px; font: 600 36px / 1.1 var(--font-display); letter-spacing: -0.01em; }
+.rf-profile-id h1 {
+  position: relative;
+  max-width: 100%;
+  margin: 12px 0 4px;
+  color: var(--color-text);
+  font: 600 clamp(22px, 2vw, 28px) / 1.2 var(--font-display);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
 .rf-profile-id p { margin: 0; }
 .rf-profile-matricule {
   margin-top: 12px !important;
@@ -1006,7 +1016,7 @@ button.rf-row {
 
 /* ---------- Adaptation ---------- */
 @media (max-width: 900px) {
-  .rf-title { font-size: 34px; }
+  .rf-title { font-size: 28px; }
   .rf-grid { margin-left: 0; }
   .rf-dialog-card { flex-basis: 100%; }
   .rf-dialog-main { padding: 24px 20px; }
@@ -1175,3 +1185,62 @@ button.rf-row {
 .rf-dialog-loading { align-self: center; font-size: var(--text-xs); color: var(--color-text-muted); }
 .rf-field.rf-field-label { display: block; }
 .rf-field small.agent-create-field-error { color: var(--color-danger); }
+
+/* Garde-fous typographiques : aucun texte long ne déborde de sa carte. */
+.rf-page :is(h1, h2, h3, p, dd, .rf-chip, .rf-eyebrow) { overflow-wrap: anywhere; }
+.agents-aside h2 { font: 600 22px / 1.2 var(--font-display); overflow-wrap: anywhere; }
+.rf-profile-id .rf-eyebrow, .rf-profile-id p { max-width: 100%; }
+
+/* ---------- Formulaires agent : finitions (création + modification) ---------- */
+.rf-dialog-main .rf-dialog-grid {
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  background: linear-gradient(180deg, var(--color-surface), var(--color-surface-sunken));
+}
+.rf-dialog-main .rf-field label,
+.rf-dialog-main .rf-field .rf-label {
+  margin-bottom: 7px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rf-dialog-main .rf-field input:not([type='file']):not([type='checkbox']),
+.rf-dialog-main .rf-field select,
+.rf-dialog-main .rf-field textarea {
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgb(var(--shadow-ink) / 0.04);
+}
+.rf-dialog-main .rf-field input:hover:not(:disabled):not(:focus),
+.rf-dialog-main .rf-field select:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-accent);
+}
+.rf-dialog-main .rf-field {
+  animation: rf-field-in 0.4s var(--ease-out) both;
+}
+.rf-dialog-main .rf-field:nth-child(2) { animation-delay: 0.04s; }
+.rf-dialog-main .rf-field:nth-child(3) { animation-delay: 0.08s; }
+.rf-dialog-main .rf-field:nth-child(4) { animation-delay: 0.12s; }
+.rf-dialog-main .rf-field:nth-child(5) { animation-delay: 0.16s; }
+.rf-dialog-main .rf-field:nth-child(6) { animation-delay: 0.2s; }
+.rf-dialog-main .rf-upload {
+  border: 2px dashed var(--color-border-strong);
+  border-radius: 20px;
+  background: var(--color-surface);
+}
+.rf-dialog-main .rf-upload:hover {
+  border-color: var(--color-brand);
+  background: var(--color-accent-soft);
+}
+@keyframes rf-field-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rf-dialog-main .rf-field { animation: none; }
+}
+@media (max-width: 700px) {
+  .rf-dialog-main .rf-dialog-grid { padding: 14px; }
+}

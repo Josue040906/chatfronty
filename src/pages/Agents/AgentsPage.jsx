@@ -13,6 +13,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import PersonPhoto from '../../components/agents/PersonPhoto';
 import CreateAgentModal from './CreateAgentModal';
 
 function formatName(agent) {
@@ -285,11 +286,11 @@ export default function AgentsPage({ user }) {
                     >
                       <span className="agents-row-person">
                         <span className={`rf-avatar rf-avatar-lg rf-avatar-tone-${index % 5}`}>
-                          {photoUrl ? (
-                            <img src={photoUrl} alt={`Photo de ${formatName(agent)}`} />
-                          ) : (
-                            getEmployeeInitials(agent)
-                          )}
+                          <PersonPhoto
+                            src={photoUrl}
+                            alt={`Photo de ${formatName(agent)}`}
+                            initials={getEmployeeInitials(agent)}
+                          />
                         </span>
                         <strong>{formatName(agent)}</strong>
                       </span>
@@ -316,14 +317,11 @@ export default function AgentsPage({ user }) {
             {selectedAgent ? (
               <div key={selectedAgent.id} className="agents-aside-body">
                 <div className="agents-aside-avatar">
-                  {getEmployeePhotoUrl(selectedAgent.photo) ? (
-                    <img
-                      src={getEmployeePhotoUrl(selectedAgent.photo)}
-                      alt={`Photo de ${formatName(selectedAgent)}`}
-                    />
-                  ) : (
-                    getEmployeeInitials(selectedAgent)
-                  )}
+                  <PersonPhoto
+                    src={getEmployeePhotoUrl(selectedAgent.photo)}
+                    alt={`Photo de ${formatName(selectedAgent)}`}
+                    initials={getEmployeeInitials(selectedAgent)}
+                  />
                 </div>
                 <h2>{formatName(selectedAgent)}</h2>
                 <p className="rf-mono agents-aside-matricule">

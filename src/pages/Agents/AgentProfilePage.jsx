@@ -28,6 +28,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import PersonPhoto from '../../components/agents/PersonPhoto';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
@@ -372,11 +373,11 @@ export default function AgentProfilePage({ user }) {
 
           <div className="rf-profile-id">
             <div className="rf-profile-photo">
-              {photoUrl ? (
-                <img src={photoUrl} alt={`Photo de ${formatName(agent)}`} />
-              ) : (
-                getEmployeeInitials(agent)
-              )}
+              <PersonPhoto
+                src={photoUrl}
+                alt={`Photo de ${formatName(agent)}`}
+                initials={getEmployeeInitials(agent)}
+              />
             </div>
             <p className="rf-eyebrow" style={{ marginTop: 16 }}>Profil agent</p>
             <h1>{formatName(agent)}</h1>
@@ -571,7 +572,11 @@ export default function AgentProfilePage({ user }) {
                   <label htmlFor="agent-photo-input" className="rf-upload">
                     <span className="rf-upload-icon">
                       {displayedPhoto ? (
-                        <img src={displayedPhoto} alt={`Aperçu de ${formatName(agent)}`} />
+                        <PersonPhoto
+                          src={displayedPhoto}
+                          alt={`Aperçu de ${formatName(agent)}`}
+                          initials={<ImagePlus size={20} />}
+                        />
                       ) : (
                         <ImagePlus size={20} />
                       )}

@@ -1,3 +1,5 @@
+import PersonPhoto from './PersonPhoto';
+
 const RING_LENGTH = 427.3;
 
 /**
@@ -50,7 +52,7 @@ export default function AgentDialogCard({
           />
         </svg>
         <div className="rf-ring-photo">
-          {photoUrl ? <img src={photoUrl} alt="" /> : initials || '—'}
+          <PersonPhoto src={photoUrl} initials={initials || '—'} />
         </div>
       </div>
 
