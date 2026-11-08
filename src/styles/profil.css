@@ -19,7 +19,7 @@
 
 .profil-heading .page-eyebrow {
   margin: 0 0 7px;
-  color: #B8874A;
+  color: var(--color-accent);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -27,8 +27,8 @@
 
 .profil-heading h1 {
   margin: 0;
-  color: #3A2A1E;
-  font-family: 'Fraunces', Georgia, serif;
+  color: var(--color-text);
+  font-family: var(--font-display);
   font-size: 34px;
   font-weight: 600;
   letter-spacing: -0.5px;
@@ -36,7 +36,7 @@
 
 .profil-heading > div > p:last-child {
   margin: 8px 0 0;
-  color: #8A7C6E;
+  color: var(--color-text-muted);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -53,9 +53,9 @@
   min-height: 128px;
   margin-bottom: 24px;
   padding: 22px 24px;
-  border: 1px solid #DDD4C9;
+  border: 1px solid var(--color-border-strong);
   border-radius: 14px;
-  background: #FBF8F2;
+  background: var(--color-bg);
   box-shadow:
     0 8px 24px rgba(58, 42, 30, 0.06);
 }
@@ -68,10 +68,10 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid #D6B06D;
+  border: 1px solid var(--color-menu-accent);
   border-radius: 50%;
   background: #E8DCCB;
-  color: #6D4E35;
+  color: var(--color-brand);
 }
 
 .profil-avatar img {
@@ -88,15 +88,15 @@
 
 .profil-identity-content h2 {
   margin: 0;
-  color: #3A2A1E;
-  font-family: 'Fraunces', Georgia, serif;
+  color: var(--color-text);
+  font-family: var(--font-display);
   font-size: 23px;
   font-weight: 600;
 }
 
 .profil-poste {
   margin: 5px 0 0;
-  color: #6D5D50;
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 500;
 }
@@ -113,10 +113,10 @@
   align-items: center;
   min-height: 25px;
   padding: 0 9px;
-  border: 1px solid #E3DCD3;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: #F8F5EF;
-  color: #806F61;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 600;
 }
@@ -129,14 +129,14 @@
   padding: 7px 10px;
   border: 1px solid #DCCDB8;
   border-radius: 999px;
-  background: #F5EDDF;
-  color: #6D4E35;
+  background: var(--color-accent-soft);
+  color: var(--color-brand);
   font-size: 10px;
   font-weight: 600;
 }
 
 .profil-account-status svg {
-  color: #B8874A;
+  color: var(--color-accent);
 }
 
 
@@ -147,9 +147,9 @@
 .profil-section {
   margin-bottom: 24px;
   padding: 24px;
-  border: 1px solid #DDD4C9;
+  border: 1px solid var(--color-border-strong);
   border-radius: 14px;
-  background: #FFFFFF;
+  background: var(--color-surface);
   box-shadow:
     0 6px 20px rgba(58, 42, 30, 0.045);
 }
@@ -172,7 +172,7 @@
 
 .profil-section-eyebrow {
   margin: 0 0 5px;
-  color: #B8874A;
+  color: var(--color-accent);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -180,8 +180,8 @@
 
 .profil-section-heading h2 {
   margin: 0;
-  color: #3A2A1E;
-  font-family: 'Fraunces', Georgia, serif;
+  color: var(--color-text);
+  font-family: var(--font-display);
   font-size: 19px;
   font-weight: 600;
 }
@@ -193,10 +193,10 @@
   gap: 6px;
   min-height: 27px;
   padding: 0 9px;
-  border: 1px solid #E4DDD4;
+  border: 1px solid var(--color-border);
   border-radius: 7px;
-  background: #F8F5EF;
-  color: #8A7C6E;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
   font-size: 9px;
   font-weight: 600;
 }
@@ -211,23 +211,23 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  border: 1px solid #E8E1D9;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
-  background: #E8E1D9;
+  background: var(--color-border);
 }
 
 .profil-info-item,
 .profil-editable-item {
   min-width: 0;
   padding: 14px 15px;
-  background: #FFFFFF;
+  background: var(--color-surface);
 }
 
 .profil-info-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #95887A;
+  color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 600;
   line-height: 1.3;
@@ -235,14 +235,14 @@
 
 .profil-info-label svg {
   flex-shrink: 0;
-  color: #B8874A;
+  color: var(--color-accent);
 }
 
 .profil-info-value {
   min-width: 0;
   margin-top: 6px;
   overflow-wrap: anywhere;
-  color: #3A2A1E;
+  color: var(--color-text);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
@@ -284,35 +284,35 @@
 
 .profil-edit-button {
   border: 1px solid #D9C5A7;
-  background: #F8F0E3;
-  color: #765332;
+  background: var(--color-accent-soft);
+  color: var(--color-brand);
 }
 
 .profil-edit-button:hover {
   border-color: #C7A56F;
-  background: #F2E5D2;
+  background: var(--color-accent-soft);
 }
 
 .profil-cancel-button {
-  border: 1px solid #DDD4C9;
-  background: #FFFFFF;
-  color: #76685D;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
 }
 
 .profil-cancel-button:hover {
-  border-color: #CFC2B5;
-  background: #F8F5EF;
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-sunken);
 }
 
 .profil-save-button {
-  border: 1px solid #8B633F;
-  background: #8B633F;
-  color: #FFFFFF;
+  border: 1px solid var(--color-brand);
+  background: var(--color-brand);
+  color: var(--color-surface);
 }
 
 .profil-save-button:hover {
-  background: #765332;
-  border-color: #765332;
+  background: var(--color-brand);
+  border-color: var(--color-brand);
 }
 
 .profil-save-button:disabled,
@@ -326,11 +326,11 @@
   min-height: 34px;
   margin-top: 6px;
   padding: 7px 9px;
-  border: 1px solid #D8CDC0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
   outline: none;
-  background: #FFFFFF;
-  color: #3A2A1E;
+  background: var(--color-surface);
+  color: var(--color-text);
   font-family: inherit;
   font-size: 12px;
   transition:
@@ -363,15 +363,15 @@
 }
 
 .profil-save-message {
-  border-top: 1px solid #E3DCD3;
-  background: #F7F1E7;
-  color: #6D4E35;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-brand);
 }
 
 .profil-save-error {
-  border-top: 1px solid #E8C9C1;
-  background: #FBEFEB;
-  color: #A6432E;
+  border-top: 1px solid var(--color-danger-soft);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 
@@ -385,28 +385,28 @@
   gap: 11px;
   margin-top: 18px;
   padding: 13px 14px;
-  border: 1px solid #E5DDD3;
+  border: 1px solid var(--color-border);
   border-radius: 9px;
-  background: #F8F5EF;
-  color: #806F61;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
 }
 
 .profil-security-note > svg {
   flex-shrink: 0;
   margin-top: 1px;
-  color: #B8874A;
+  color: var(--color-accent);
 }
 
 .profil-security-note strong {
   display: block;
-  color: #5F4938;
+  color: var(--color-brand-strong);
   font-size: 11px;
   font-weight: 700;
 }
 
 .profil-security-note p {
   margin: 4px 0 0;
-  color: #8A7C6E;
+  color: var(--color-text-muted);
   font-size: 10px;
   line-height: 1.6;
 }
@@ -418,21 +418,21 @@
 .profil-password-section {
   margin-top: 18px;
   padding: 16px;
-  border: 1px solid #E5DDD3;
+  border: 1px solid var(--color-border);
   border-radius: 9px;
-  background: #F8F5EF;
+  background: var(--color-surface-sunken);
 }
 
 .profil-password-heading strong {
   display: block;
-  color: #5F4938;
+  color: var(--color-brand-strong);
   font-size: 11px;
   font-weight: 700;
 }
 
 .profil-password-heading p {
   margin: 4px 0 0;
-  color: #8A7C6E;
+  color: var(--color-text-muted);
   font-size: 10px;
   line-height: 1.6;
 }
@@ -451,7 +451,7 @@
 .profil-password-field label {
   display: block;
   margin-bottom: 6px;
-  color: #6F5E50;
+  color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 600;
 }
@@ -460,11 +460,11 @@
   width: 100%;
   min-height: 34px;
   padding: 7px 9px;
-  border: 1px solid #D8CDC0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 7px;
   outline: none;
-  background: #FFFFFF;
-  color: #3A2A1E;
+  background: var(--color-surface);
+  color: var(--color-text);
   font-family: inherit;
   font-size: 12px;
   transition:
@@ -482,7 +482,7 @@
 .profil-password-field input:disabled {
   cursor: not-allowed;
   opacity: 0.6;
-  background: #F5F1EC;
+  background: var(--color-surface-sunken);
 }
 
 .profil-password-actions {
@@ -500,7 +500,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8A7C6E;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
@@ -509,10 +509,10 @@
   align-items: flex-start;
   gap: 12px;
   padding: 20px;
-  border: 1px solid #E8C9C1;
+  border: 1px solid var(--color-danger-soft);
   border-radius: 12px;
-  background: #FBEFEB;
-  color: #A6432E;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .profil-error > svg {
@@ -522,14 +522,14 @@
 
 .profil-error h1 {
   margin: 0;
-  color: #5A3025;
-  font-family: 'Fraunces', Georgia, serif;
+  color: var(--color-danger);
+  font-family: var(--font-display);
   font-size: 20px;
 }
 
 .profil-error p {
   margin: 5px 0 0;
-  color: #8B5548;
+  color: var(--color-danger);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -620,10 +620,10 @@
   height: 28px;
   display: grid;
   place-items: center;
-  border: 2px solid #FBF8F2;
+  border: 2px solid var(--color-bg);
   border-radius: 50%;
-  background: #8B633F;
-  color: #FFFFFF;
+  background: var(--color-brand);
+  color: var(--color-surface);
   cursor: pointer;
   transition:
     background 0.2s ease,
@@ -631,7 +631,7 @@
 }
 
 .profil-photo-button:hover {
-  background: #765332;
+  background: var(--color-brand);
   transform: scale(1.05);
 }
 
@@ -652,10 +652,10 @@
   gap: 14px;
   margin: -12px 0 24px;
   padding: 11px 14px;
-  border: 1px solid #E5DDD3;
+  border: 1px solid var(--color-border);
   border-radius: 9px;
-  background: #FFFFFF;
-  color: #6F5E50;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   font-size: 11px;
 }
 
@@ -696,4 +696,33 @@
   .profil-photo-pending button {
     flex: 1;
   }
+}
+
+/* Habillage « maquette » : cartes arrondies, relief et entrée animée */
+.profil-identity-card,
+.profil-section {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  animation: profil-rise 600ms var(--ease-out) both;
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.profil-section:nth-of-type(3) { animation-delay: 90ms; }
+.profil-section:nth-of-type(4) { animation-delay: 180ms; }
+
+.profil-section:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.profil-edit-button,
+.profil-save-button,
+.profil-cancel-button {
+  border-radius: var(--radius-pill);
+}
+
+@keyframes profil-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }
