@@ -19,9 +19,22 @@ export function isInternalRoute(route) {
   return typeof route === 'string' && INTERNAL_ROUTE.test(route) && !route.includes('://');
 }
 
-function routeLabel(route) {
-  const path = route.split('?')[0];
-  return ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
+const AGENT_RECORD = /^\/agents\/\d+$/;
+
+/**
+ * Le paramètre « nom » d'une navigation sert seulement au libellé du bouton
+ * (« Ouvrir la fiche de Hery Randria ») : il est retiré de l'adresse ouverte.
+ */
+function navigationTarget(route) {
+  const [path, query = ''] = route.split('?');
+  const params = new URLSearchParams(query);
+  const name = (params.get('nom') || '').trim().slice(0, 80);
+  params.delete('nom');
+  const rest = params.toString();
+  const label = name && AGENT_RECORD.test(path)
+    ? `Ouvrir la fiche de ${name}`
+    : ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
+  return { route: rest ? `${path}?${rest}` : path, label };
 }
 
 const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
@@ -110,10 +123,11 @@ export function getNavigationActions(actions, agentIds = []) {
     if (action?.type !== 'NAVIGATE' || !isInternalRoute(action.route)) {
       continue;
     }
-    if (agentRoutes.has(action.route) || routes.has(action.route)) {
+    const target = navigationTarget(action.route);
+    if (agentRoutes.has(target.route) || routes.has(target.route)) {
       continue;
     }
-    routes.set(action.route, { route: action.route, label: routeLabel(action.route) });
+    routes.set(target.route, target);
   }
   return [...routes.values()];
 }

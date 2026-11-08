@@ -116,6 +116,18 @@ describe('getNavigationActions', () => {
     ]);
   });
 
+  it('names the agent on the button and keeps one button per agent', () => {
+    expect(getNavigationActions([
+      { type: 'NAVIGATE', route: '/agents/16?nom=Hery%20Randria' },
+      { type: 'NAVIGATE', route: '/agents/18?nom=Haja%20Ramanana' },
+      { type: 'NAVIGATE', route: '/agents/16' },
+      { type: 'NAVIGATE', route: '/agents/7?nom=Tiana' },
+    ], ['7'])).toEqual([
+      { route: '/agents/16', label: 'Ouvrir la fiche de Hery Randria' },
+      { route: '/agents/18', label: 'Ouvrir la fiche de Haja Ramanana' },
+    ]);
+  });
+
   it('labels an unknown internal page generically', () => {
     expect(getNavigationActions([{ type: 'NAVIGATE', route: '/carrieres' }]))
       .toEqual([{ route: '/carrieres', label: 'Ouvrir la page' }]);
@@ -158,7 +170,8 @@ describe('buildBandyReply', () => {
   it('keeps the search cards for a plain search', () => {
     const reply = buildBandyReply({ toolResults: searchCards, actions: [] });
 
-    expect(reply.agents.map((agent) => agent.id)).toEqual(['3', '9']);
+    // Micka (53 %) est trop loin de Toky (100 %) pour être proposé.
+    expect(reply.agents.map((agent) => agent.id)).toEqual(['3']);
     expect(reply.prepared).toEqual([]);
   });
 });
