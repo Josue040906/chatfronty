@@ -114,3 +114,14 @@ Pages réelles **absentes de la maquette** : liste des Agents, liste des Carriè
 8. Tableau de bord et assistant.
 
 Chaque lot : branche `refonte-visuelle`, petits commits, vérification locale (`npm run lint`, `npm run build`, `npm test`) avant le suivant.
+
+## 5. Recalage de la maquette (8 novembre 2026)
+
+Après ce relevé, la maquette a été corrigée :
+
+- **Retiré :** indice et courbe d'indice, « sur 8 », simulation de reclassement, fil de carrière et repères de la fiche agent, badge « Actif », recherche et bouton « Demander à Bandy » du tableau de bord, « Pic : 3 par an », champ « Trouver un service… ».
+- **Carrière :** reprise des sections réelles (profil, situation professionnelle, ancienneté, évolution possible, reclassements, historique de carrière, diplômes) et des actions Reclassement, Mutation, Avancement, Ajout de diplôme.
+- **Corrigé :** fiche agent (champs réels), organigramme (indicateurs, fenêtre avec recherche par nom ou matricule, chef de service, Échap), assistant (renommer / supprimer), statut « Signé », textes de l'administration et des demandes, message d'inscription qui remplace le formulaire, adresse et photo dans la modification d'un agent, entrée « Activités » dans le menu.
+- **Ajouté :** liste des agents, liste des carrières, fenêtre « Vérifier l'avancement d'échelon », modification d'un document.
+
+Toujours absents de la maquette : Services, Postes, Grades, Statuts (même principe que Directions), fenêtres Mutation / Diplôme / Reclassement, vue d'impression, assistant flottant.
