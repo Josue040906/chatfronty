@@ -38,6 +38,15 @@ function formatStatus(status) {
     .replace(/^\p{L}/u, (letter) => letter.toUpperCase());
 }
 
+const statusFilters = [
+  { code: 'TOUS', label: 'Tous' },
+  { code: 'BROUILLON', label: 'Brouillon' },
+  { code: 'A_VERIFIER', label: 'À vérifier' },
+  { code: 'VALIDE', label: 'Validé' },
+  { code: 'SIGNE', label: 'Signé' },
+  { code: 'ARCHIVE', label: 'Archivé' },
+];
+
 const documentFieldLabels = {
   dateDebut: 'Date de début',
   dateFin: 'Date de fin',
@@ -98,6 +107,7 @@ export default function DocumentsPage() {
   const [pdfError, setPdfError] = useState('');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('TOUS');
+  const [statusFilter, setStatusFilter] = useState('TOUS');
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openingPdfId, setOpeningPdfId] = useState(null);
 
@@ -150,6 +160,9 @@ export default function DocumentsPage() {
       const typeMatches =
         typeFilter === 'TOUS' || String(item.typeDocumentId) === typeFilter;
       if (!typeMatches) return false;
+      if (statusFilter !== 'TOUS' && item.statut !== statusFilter) {
+        return false;
+      }
       if (!query) return true;
 
       const type = typeById.get(String(item.typeDocumentId));
@@ -169,7 +182,15 @@ export default function DocumentsPage() {
 
       return searchable.includes(query);
     });
-  }, [agentById, documents, search, typeById, typeFilter]);
+  }, [agentById, documents, search, statusFilter, typeById, typeFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { TOUS: documents.length };
+    documents.forEach((item) => {
+      counts[item.statut] = (counts[item.statut] || 0) + 1;
+    });
+    return counts;
+  }, [documents]);
 
   async function handleOpenPdf(documentData) {
     const type = typeById.get(String(documentData.typeDocumentId));
@@ -262,6 +283,27 @@ export default function DocumentsPage() {
         </div>
       </div>
 
+      <div
+        className="documents-status-chips"
+        role="group"
+        aria-label="Filtrer par statut"
+      >
+        {statusFilters.map((chip) => (
+          <button
+            key={chip.code}
+            type="button"
+            className={`documents-status-chip documents-status-chip-${chip.code.toLowerCase()}${
+              statusFilter === chip.code ? ' is-active' : ''
+            }`}
+            aria-pressed={statusFilter === chip.code}
+            onClick={() => setStatusFilter(chip.code)}
+          >
+            {chip.label}
+            <span>{statusCounts[chip.code] || 0}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="administration-section-header">
         <div>
           <h2>Documents récents</h2>
@@ -285,7 +327,7 @@ export default function DocumentsPage() {
           <p>
             {documents.length === 0
               ? 'Les documents créés apparaîtront ici.'
-              : 'Modifiez votre recherche ou le filtre de type.'}
+              : 'Modifiez votre recherche ou les filtres.'}
           </p>
           <button
             type="button"
