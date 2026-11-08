@@ -269,6 +269,21 @@ describe('getFilteredListAction', () => {
     expect(getFilteredListAction([{ ...search(9), arguments: { criteriaJson: '{oups' } }])).toBeNull();
   });
 
+  it('lets Bandy open the agents page on a search on request, without a duplicate button', () => {
+    const route = `/agents?recherche=${encodeURIComponent(JSON.stringify({ must: criteria.must, limit: 20 }))}`;
+    const reply = buildBandyReply({
+      toolResults: [search(4, [1, 2, 3, 4].map((id) => agent(id)))],
+      actions: [{ type: 'NAVIGATE', tool: 'open_page', route }],
+    });
+
+    expect(reply.agents).toEqual([]);
+    expect(reply.navigation).toEqual([{ route, label: 'Voir ces agents dans la page Agents' }]);
+    expect(buildBandyReply({
+      toolResults: [search(9)],
+      actions: [{ type: 'NAVIGATE', tool: 'open_page', route }],
+    }).navigation).toHaveLength(1);
+  });
+
   it('replaces the cards in the Bandy reply', () => {
     const reply = buildBandyReply({ toolResults: [search(5, [1, 2, 3, 4, 5].map((id) => agent(id)))] });
 

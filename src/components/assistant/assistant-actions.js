@@ -34,7 +34,9 @@ function navigationTarget(route, knownNames = new Map()) {
   const rest = params.toString();
   const label = name && AGENT_RECORD.test(path)
     ? `Ouvrir la fiche de ${name}`
-    : ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
+    : path === '/agents' && params.has('recherche')
+      ? 'Voir ces agents dans la page Agents'
+      : ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
   return { route: rest ? `${path}?${rest}` : path, label };
 }
 
@@ -246,11 +248,11 @@ export function buildBandyReply(response) {
   const prepared = getPreparedActions(response?.actions);
   const confirmations = getConfirmationActions(response?.actions);
   const found = getNavigableAgents(response?.toolResults);
-  const filteredList = getFilteredListAction(response?.toolResults);
-  const navigation = [
-    ...(filteredList ? [filteredList] : []),
-    ...getNavigationActions(response?.actions, found),
-  ];
+  const proposed = getNavigationActions(response?.actions, found);
+  // Bandy a déjà proposé la page Agents restreinte à une recherche : pas de second bouton.
+  const listProposed = proposed.some(({ route }) => /^\/agents\?(.*&)?recherche=/.test(route));
+  const filteredList = listProposed ? null : getFilteredListAction(response?.toolResults);
+  const navigation = [...(filteredList ? [filteredList] : []), ...proposed];
   const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
   return {
     statistics: getStatistics(response?.toolResults),
