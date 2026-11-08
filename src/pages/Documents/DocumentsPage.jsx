@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Eye,
+  ChevronDown,
   FileText,
   Plus,
   Search,
@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
+import { getEmployeeInitials } from '../../utils/employee';
 import {
   getDocumentRequestPdf,
   getDocumentRequests,
@@ -30,8 +31,39 @@ function formatDate(value) {
   return date.toLocaleDateString('fr-FR');
 }
 
+function formatDateLong(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return formatDate(value);
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatDateShort(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return formatDate(value);
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+const statusLabels = {
+  BROUILLON: 'Brouillon',
+  A_VERIFIER: 'À vérifier',
+  VALIDE: 'Validé',
+  SIGNE: 'Signé',
+  ARCHIVE: 'Archivé',
+};
+
 function formatStatus(status) {
   if (!status) return '—';
+  if (statusLabels[status]) return statusLabels[status];
   return status
     .toLowerCase()
     .replaceAll('_', ' ')
@@ -70,6 +102,66 @@ function formatDocumentValue(key, value) {
     return formatDate(value);
   }
   return String(value);
+}
+
+function DocumentDonnees({ document, type }) {
+  return (
+    <>
+      {Object.entries(document.donnees || {}).flatMap(
+        ([key, value]) => {
+          const selectedType = type;
+          const label =
+            documentFieldLabels[key] ||
+            key.replace(/([A-Z])/g, ' $1');
+
+          if (
+            (key === 'situationActuelle' ||
+              key === 'situationDemandee') &&
+            value &&
+            typeof value === 'object'
+          ) {
+            const situation = value;
+            let display;
+            if (selectedType?.code === 'MUTATION') {
+              const fields = [
+                ['Direction', situation.direction],
+                ['Service', situation.service],
+                ['Poste', situation.poste],
+                ['Lieu', situation.lieuTravail],
+              ];
+              display = fields
+                .filter(([, fieldValue]) => fieldValue)
+                .map(([fieldLabel, fieldValue]) =>
+                  `${fieldLabel} : ${fieldValue}`
+                )
+                .join(' · ') || 'Non renseignée';
+            } else {
+              const classLabel =
+                situation.classeLibelle || 'Classe non précisée';
+              const echelon = situation.echelonOrdre;
+              display = echelon == null
+                ? classLabel
+                : `${classLabel} — échelon ${echelon}`;
+            }
+
+            return [
+              <div key={key}>
+                <dt>{label}</dt>
+                <dd>{display}</dd>
+              </div>,
+            ];
+          }
+
+          return [
+            <div key={key}>
+              <dt>{label}</dt>
+              <dd>{formatDocumentValue(key, value)}</dd>
+            </div>,
+          ];
+        }
+      )}
+    </>
+  );
 }
 
 function canOpenPdf(type) {
@@ -263,38 +355,42 @@ export default function DocumentsPage() {
     return fullName || agent.matricule || '—';
   }
 
+  const selectedType = selectedDocument
+    ? typeById.get(String(selectedDocument.typeDocumentId))
+    : null;
+
+  function getInitials(documentData) {
+    const agent = agentById.get(String(documentData.employeId));
+    return agent ? getEmployeeInitials(agent) || '—' : '—';
+  }
+
   return (
-    <div className="administration-page documents-page">
-      <div className="administration-header">
+    <div className="rf-page documents-screen">
+      <header className="rf-head">
         <div>
-          <h1>Documents administratifs</h1>
-          <p>Créez et consultez les documents RH des agents.</p>
+          <p className="rf-eyebrow">Documents RH</p>
+          <h1 className="rf-title">Documents administratifs</h1>
+          <p className="rf-lead">Créez et consultez les documents RH des agents.</p>
         </div>
-        <div className="administration-header-actions">
-          <button
-            type="button"
-            className="administration-button-primary"
-            onClick={() => navigate('/documents/nouveau')}
-          >
-            <Plus size={18} />
-            Nouveau document
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          className="rf-btn rf-btn-primary"
+          onClick={() => navigate('/documents/nouveau')}
+        >
+          <Plus size={18} />
+          Nouveau document
+        </button>
+      </header>
 
       {error && (
-        <div className="administration-state administration-state-error" role="alert">
-          {error}
-        </div>
+        <p className="rf-error" role="alert">{error}</p>
       )}
       {pdfError && (
-        <div className="administration-state administration-state-error" role="alert">
-          {pdfError}
-        </div>
+        <p className="rf-error" role="alert">{pdfError}</p>
       )}
 
-      <div className="administration-toolbar">
-        <div className="administration-search">
+      <div className="rf-toolbar">
+        <label className="rf-search">
           <Search size={18} />
           <input
             type="search"
@@ -302,8 +398,8 @@ export default function DocumentsPage() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Rechercher un document, un agent, une référence..."
           />
-        </div>
-        <div className="administration-filters">
+        </label>
+        <label className="rf-select">
           <select
             value={typeFilter}
             onChange={(event) => setTypeFilter(event.target.value)}
@@ -316,21 +412,16 @@ export default function DocumentsPage() {
               </option>
             ))}
           </select>
-        </div>
+          <ChevronDown size={16} aria-hidden="true" />
+        </label>
       </div>
 
-      <div
-        className="documents-status-chips"
-        role="group"
-        aria-label="Filtrer par statut"
-      >
+      <div className="rf-chips" role="group" aria-label="Filtrer par statut">
         {statusFilters.map((chip) => (
           <button
             key={chip.code}
             type="button"
-            className={`documents-status-chip documents-status-chip-${chip.code.toLowerCase()}${
-              statusFilter === chip.code ? ' is-active' : ''
-            }`}
+            className="rf-chip"
             aria-pressed={statusFilter === chip.code}
             onClick={() => setStatusFilter(chip.code)}
           >
@@ -340,282 +431,218 @@ export default function DocumentsPage() {
         ))}
       </div>
 
-      <div className="administration-section-header">
-        <div>
-          <h2>Documents récents</h2>
-          <span>
-            {filteredDocuments.length}{' '}
-            {filteredDocuments.length === 1 ? 'document' : 'documents'}
-          </span>
-        </div>
-      </div>
+      <div className="documents-layout">
+        <section aria-labelledby="documents-recent" className="documents-main">
+          <div className="documents-section-head">
+            <h2 id="documents-recent">Documents récents</h2>
+            <span>
+              {filteredDocuments.length}{' '}
+              {filteredDocuments.length === 1 ? 'document' : 'documents'}
+            </span>
+          </div>
 
-      {loading ? (
-        <div className="administration-state">Chargement des documents...</div>
-      ) : filteredDocuments.length === 0 ? (
-        <div className="administration-empty">
-          <FileText size={42} />
-          <h3>
-            {documents.length === 0
-              ? 'Aucun document créé'
-              : 'Aucun document trouvé'}
-          </h3>
-          <p>
-            {documents.length === 0
-              ? 'Les documents créés apparaîtront ici.'
-              : 'Modifiez votre recherche ou les filtres.'}
-          </p>
-          <button
-            type="button"
-            className="administration-button-primary"
-            onClick={() => navigate('/documents/nouveau')}
-          >
-            <Plus size={18} />
-            Créer un document
-          </button>
-        </div>
-      ) : (
-        <div className="administration-table-wrapper">
-          <table className="administration-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Agent</th>
-                <th>Référence</th>
-                <th>Date</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDocuments.map((item) => {
+          {loading ? (
+            <p className="rf-note">Chargement des documents...</p>
+          ) : filteredDocuments.length === 0 ? (
+            <div className="rf-card documents-empty">
+              <FileText size={42} />
+              <h3>
+                {documents.length === 0
+                  ? 'Aucun document créé'
+                  : 'Aucun document trouvé'}
+              </h3>
+              <p>
+                {documents.length === 0
+                  ? 'Les documents créés apparaîtront ici.'
+                  : 'Modifiez votre recherche ou les filtres.'}
+              </p>
+              <button
+                type="button"
+                className="rf-btn rf-btn-primary"
+                onClick={() => navigate('/documents/nouveau')}
+              >
+                <Plus size={18} />
+                Créer un document
+              </button>
+            </div>
+          ) : (
+            <div className="rf-list">
+              {filteredDocuments.map((item, index) => {
                 const type = typeById.get(String(item.typeDocumentId));
                 const pdfUnavailable = !canOpenPdf(type);
+                const status = String(item.statut || '').toLowerCase();
 
                 return (
-                  <tr key={item.id}>
-                    <td>{type?.libelle || 'Type supprimé'}</td>
-                    <td>{getAgentName(item)}</td>
-                    <td>
-                      <strong>{item.referenceDocument || '—'}</strong>
-                    </td>
-                    <td>{formatDate(item.dateCreation || item.dateDocument)}</td>
-                    <td>
-                      <span
-                        className={`administration-status administration-status-${String(
-                          item.statut || ''
-                        ).toLowerCase()}`}
-                      >
-                        {formatStatus(item.statut)}
+                  <div
+                    key={item.id}
+                    className={`rf-row documents-row${
+                      selectedDocument?.id === item.id ? ' is-selected' : ''
+                    }`}
+                  >
+                    <span className={`rf-tile${index % 2 ? ' rf-tile-info' : ''}`}>
+                      <FileText size={24} />
+                    </span>
+                    <span>
+                      <span className="documents-row-title">
+                        {type?.libelle || 'Type supprimé'}
                       </span>
-                    </td>
-                    <td>
-                      <div className="documents-row-actions">
-                        <button
-                          type="button"
-                          className="administration-table-action"
-                          onClick={() => setSelectedDocument(item)}
-                        >
-                          <Eye size={17} />
-                          Voir
-                        </button>
-                        <button
-                          type="button"
-                          className="administration-table-action"
-                          onClick={() => handleOpenPdf(item)}
-                          disabled={pdfUnavailable || openingPdfId === item.id}
-                          title={
-                            pdfUnavailable
-                              ? 'Le modèle PDF de ce type n’est pas disponible côté backend.'
-                              : 'Ouvrir le PDF'
-                          }
-                        >
-                          <FileText size={17} />
-                          {openingPdfId === item.id ? 'Ouverture...' : 'PDF'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      <span className="documents-row-ref rf-mono">
+                        {item.referenceDocument || '—'}
+                      </span>
+                    </span>
+                    <span className="documents-row-agent">
+                      <span className={`rf-avatar rf-avatar-tone-${index % 5}`}>
+                        {getInitials(item)}
+                      </span>
+                      {getAgentName(item)}
+                    </span>
+                    <span className="documents-row-date">
+                      {formatDateShort(item.dateCreation || item.dateDocument)}
+                    </span>
+                    <span className={`rf-pill rf-pill-${status}`}>
+                      {formatStatus(item.statut)}
+                    </span>
+                    <span className="documents-row-actions">
+                      <button
+                        type="button"
+                        className="rf-btn rf-btn-sm"
+                        onClick={() => {
+                          closePreview();
+                          setSelectedDocument(item);
+                        }}
+                      >
+                        Voir
+                      </button>
+                      <button
+                        type="button"
+                        className="rf-btn rf-btn-sm"
+                        onClick={() => handleOpenPdf(item)}
+                        disabled={pdfUnavailable || openingPdfId === item.id}
+                        title={
+                          pdfUnavailable
+                            ? 'Le modèle PDF de ce type n’est pas disponible côté backend.'
+                            : 'Ouvrir le PDF'
+                        }
+                      >
+                        {openingPdfId === item.id ? 'Ouverture...' : 'PDF'}
+                      </button>
+                    </span>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </div>
+          )}
+        </section>
 
-      {selectedDocument && (
-        <div
-          className="administration-modal-overlay"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              closeDetail();
-            }
-          }}
-        >
-          <section
-            className="administration-modal documents-detail-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="document-detail-title"
+        {selectedDocument && (
+          <aside
+            className="rf-card rf-aside documents-aside"
+            aria-labelledby="documents-details"
           >
-            <header className="administration-modal-header">
+            <div className="documents-aside-head">
               <div>
-                <h2 id="document-detail-title">Détails du document</h2>
-                <p>{selectedDocument.referenceDocument || 'Sans référence'}</p>
+                <p className="rf-eyebrow">Aperçu</p>
+                <h2 id="documents-details">Détails du document</h2>
               </div>
               <button
                 type="button"
-                className="administration-modal-close"
-                onClick={() => closeDetail()}
+                className="rf-icon-btn documents-aside-close"
                 aria-label="Fermer les détails"
+                onClick={closeDetail}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
-            </header>
-            <div className="documents-detail-content">
-              <dl>
+            </div>
+            <p className="rf-mono documents-aside-ref">
+              {selectedDocument.referenceDocument || 'Sans référence'}
+            </p>
+            <dl className="rf-dl">
+              <div>
                 <dt>Type</dt>
-                <dd>
-                  {typeById.get(String(selectedDocument.typeDocumentId))?.libelle ||
-                    'Type supprimé'}
-                </dd>
+                <dd>{selectedType?.libelle || 'Type supprimé'}</dd>
+              </div>
+              <div>
                 <dt>Agent</dt>
                 <dd>{getAgentName(selectedDocument)}</dd>
+              </div>
+              <div>
                 <dt>Destinataire</dt>
                 <dd>{selectedDocument.destinataire || '—'}</dd>
+              </div>
+              <div>
                 <dt>Date de création</dt>
                 <dd>
-                  {formatDate(
+                  {formatDateLong(
                     selectedDocument.dateCreation ||
                       selectedDocument.dateDocument
                   )}
                 </dd>
-                <dt>Statut</dt>
-                <dd>{formatStatus(selectedDocument.statut)}</dd>
-                {Object.entries(selectedDocument.donnees || {}).flatMap(
-                  ([key, value]) => {
-                    const selectedType = typeById.get(
-                      String(selectedDocument.typeDocumentId)
-                    );
-                    const label =
-                      documentFieldLabels[key] ||
-                      key.replace(/([A-Z])/g, ' $1');
-
-                    if (
-                      (key === 'situationActuelle' ||
-                        key === 'situationDemandee') &&
-                      value &&
-                      typeof value === 'object'
-                    ) {
-                      const situation = value;
-                      if (selectedType?.code === 'MUTATION') {
-                        const fields = [
-                          ['Direction', situation.direction],
-                          ['Service', situation.service],
-                          ['Poste', situation.poste],
-                          ['Lieu', situation.lieuTravail],
-                        ];
-                        const display = fields
-                          .filter(([, fieldValue]) => fieldValue)
-                          .map(([fieldLabel, fieldValue]) =>
-                            `${fieldLabel} : ${fieldValue}`
-                          )
-                          .join(' · ') || 'Non renseignée';
-
-                        return [
-                          <dt key={`${key}-label`}>{label}</dt>,
-                          <dd key={`${key}-value`}>{display}</dd>,
-                        ];
-                      }
-                      const classLabel =
-                        situation.classeLibelle || 'Classe non précisée';
-                      const echelon = situation.echelonOrdre;
-                      const display = echelon == null
-                        ? classLabel
-                        : `${classLabel} — échelon ${echelon}`;
-
-                      return [
-                        <dt key={`${key}-label`}>{label}</dt>,
-                        <dd key={`${key}-value`}>{display}</dd>,
-                      ];
-                    }
-
-                    return [
-                      <dt key={`${key}-label`}>{label}</dt>,
-                      <dd key={`${key}-value`}>
-                        {formatDocumentValue(key, value)}
-                      </dd>,
-                    ];
-                  }
-                )}
-              </dl>
-              {!canOpenPdf(
-                typeById.get(String(selectedDocument.typeDocumentId))
-              ) && (
-                <p className="administration-form-info">
-                  Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
-                </p>
-              )}
-              {previewError && (
-                <p className="administration-form-info" role="alert">
-                  {previewError}
-                </p>
-              )}
-              {previewUrl && (
-                <iframe
-                  className="documents-pdf-preview"
-                  src={previewUrl}
-                  title="Aperçu du document PDF"
-                />
-              )}
-              <div className="administration-form-actions">
-                <button
-                  type="button"
-                  className="administration-button-secondary"
-                  onClick={closeDetail}
-                >
-                  Fermer
-                </button>
-                <button
-                  type="button"
-                  className="administration-button-secondary"
-                  onClick={() =>
-                    previewUrl
-                      ? closePreview()
-                      : handlePreviewPdf(selectedDocument)
-                  }
-                  disabled={
-                    !canOpenPdf(
-                      typeById.get(String(selectedDocument.typeDocumentId))
-                    ) || previewLoading
-                  }
-                >
-                  <Eye size={18} />
-                  {previewLoading
-                    ? 'Chargement...'
-                    : previewUrl
-                      ? 'Masquer l’aperçu'
-                      : 'Aperçu PDF'}
-                </button>
-                <button
-                  type="button"
-                  className="administration-button-primary"
-                  onClick={() => handleOpenPdf(selectedDocument)}
-                  disabled={
-                    !canOpenPdf(
-                      typeById.get(String(selectedDocument.typeDocumentId))
-                    ) || openingPdfId === selectedDocument.id
-                  }
-                >
-                  <FileText size={18} />
-                  Voir le PDF
-                </button>
               </div>
+              <div>
+                <dt>Statut</dt>
+                <dd>
+                  <span
+                    className={`rf-pill rf-pill-${String(
+                      selectedDocument.statut || ''
+                    ).toLowerCase()}`}
+                  >
+                    {formatStatus(selectedDocument.statut)}
+                  </span>
+                </dd>
+              </div>
+              <DocumentDonnees
+                document={selectedDocument}
+                type={selectedType}
+              />
+            </dl>
+
+            {!canOpenPdf(selectedType) && (
+              <p className="rf-note">
+                Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
+              </p>
+            )}
+            {previewError && (
+              <p className="rf-error" role="alert">{previewError}</p>
+            )}
+            {previewUrl && (
+              <iframe
+                className="documents-pdf-preview"
+                src={previewUrl}
+                title="Aperçu du document PDF"
+              />
+            )}
+
+            <div className="documents-aside-actions">
+              <button
+                type="button"
+                className="rf-btn rf-btn-primary"
+                onClick={() => handleOpenPdf(selectedDocument)}
+                disabled={!canOpenPdf(selectedType) || openingPdfId === selectedDocument.id}
+              >
+                {openingPdfId === selectedDocument.id
+                  ? 'Ouverture...'
+                  : 'Ouvrir le PDF'}
+              </button>
+              <button
+                type="button"
+                className="rf-btn"
+                onClick={() =>
+                  previewUrl
+                    ? closePreview()
+                    : handlePreviewPdf(selectedDocument)
+                }
+                disabled={!canOpenPdf(selectedType) || previewLoading}
+              >
+                {previewLoading
+                  ? 'Chargement...'
+                  : previewUrl
+                    ? 'Masquer l’aperçu'
+                    : 'Aperçu PDF'}
+              </button>
             </div>
-          </section>
-        </div>
-      )}
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

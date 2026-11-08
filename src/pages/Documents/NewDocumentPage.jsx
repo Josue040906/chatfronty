@@ -390,25 +390,33 @@ export default function NewDocumentPage({ user }) {
     const mutationCompleted = Boolean(completedMutation);
 
     return (
-      <div className="administration-page">
-        <div className="administration-header">
+      <div className="rf-page">
+        <header className="rf-head">
           <div>
-            <h1>{mutationCompleted ? 'Mutation effectuée' : 'Document créé'}</h1>
-            <p>{mutationCompleted
-              ? 'L’affectation de l’agent a été modifiée par le backend.'
-              : 'Le backend a enregistré votre document.'}</p>
+            <p className="rf-eyebrow">Documents RH</p>
+            <h1 className="rf-title">
+              {mutationCompleted ? 'Mutation effectuée' : 'Document créé'}
+            </h1>
+            <p className="rf-lead">
+              {mutationCompleted
+                ? 'L’affectation de l’agent a été modifiée par le backend.'
+                : 'Le backend a enregistré votre document.'}
+            </p>
           </div>
-        </div>
+        </header>
 
-        <div className="administration-state-success">
+        <div className="rf-card new-document-done">
+          <span className="rf-ico"><FileText size={22} /></span>
           <div>
-            <strong>{mutationCompleted
-              ? completedMutation.message || 'Affectation modifiée avec succès.'
-              : 'Document créé avec succès.'}</strong>
+            <strong>
+              {mutationCompleted
+                ? completedMutation.message || 'Affectation modifiée avec succès.'
+                : 'Document créé avec succès.'}
+            </strong>
             {!mutationCompleted && (
               <p>
                 Référence :{' '}
-                <strong>
+                <strong className="rf-mono">
                   {createdDocument.referenceDocument || 'attribuée par le serveur'}
                 </strong>
               </p>
@@ -417,29 +425,30 @@ export default function NewDocumentPage({ user }) {
         </div>
 
         {!mutationCompleted && pdfError && (
-          <div className="administration-state administration-state-error" role="alert">
-            {pdfError}
-          </div>
+          <p className="rf-error" role="alert">{pdfError}</p>
         )}
 
         {!mutationCompleted && !hasPdfTemplate && (
-          <div className="administration-form-info">
+          <p className="rf-note">
             Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
-          </div>
+          </p>
         )}
 
-        <div className="administration-form-actions">
+        <div className="rf-actions new-document-done-actions">
           <button
             type="button"
-            className="administration-button-secondary"
+            className="rf-btn"
             onClick={() => navigate('/documents')}
           >
             Retour aux documents
           </button>
+          <button type="button" className="rf-btn" onClick={startAnotherDocument}>
+            Nouveau document
+          </button>
           {!mutationCompleted && hasPdfTemplate && (
             <button
               type="button"
-              className="administration-button-primary"
+              className="rf-btn rf-btn-primary"
               onClick={handleOpenPdf}
               disabled={openingPdf}
             >
@@ -447,351 +456,409 @@ export default function NewDocumentPage({ user }) {
               {openingPdf ? 'Ouverture du PDF...' : 'Voir le PDF'}
             </button>
           )}
-          <button
-            type="button"
-            className="administration-button-secondary"
-            onClick={startAnotherDocument}
-          >
-            Nouveau document
-          </button>
         </div>
       </div>
     );
   }
 
+  const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest;
+  const hasDetails = isLeaveRequest || isMutationRequest;
+  const selectedAgentName = selectedAgent
+    ? [selectedAgent.prenom, selectedAgent.nom].filter(Boolean).join(' ')
+    : '';
+  const selectedDirection = directions.find(
+    (direction) => String(direction.id) === formData.directionSouhaiteeId
+  );
+  const selectedService = services.find(
+    (service) => String(service.id) === formData.serviceSouhaiteId
+  );
+  const selectedPoste = postes.find(
+    (poste) => String(poste.id) === formData.posteSouhaiteId
+  );
+  const notFilled = <span className="new-document-empty">Non renseigné</span>;
+  const summaryRows = [
+    ['Agent', selectedAgentName || notFilled],
+    ...(!isDirectMutation
+      ? [['Destinataire', formData.destinataire || notFilled]]
+      : []),
+    ...(isLeaveRequest
+      ? [
+          ['Date de début', formData.dateDebut || notFilled],
+          ['Date de fin', formData.dateFin || notFilled],
+        ]
+      : []),
+    ...(isMutationRequest
+      ? [
+          ['Direction souhaitée', selectedDirection?.nom || notFilled],
+          ['Service souhaité', selectedService?.nom || notFilled],
+          ['Poste souhaité', selectedPoste?.intitule || notFilled],
+          ['Date d’effet', formData.dateEffetSouhaitee || notFilled],
+        ]
+      : []),
+  ];
+
+  const typeSelect = (
+    <div className="rf-field">
+      <label htmlFor="typeDocumentId">Type de document <b>*</b></label>
+      <select
+        id="typeDocumentId"
+        name="typeDocumentId"
+        value={formData.typeDocumentId}
+        onChange={handleChange}
+        disabled={loadingOptions || saving || types.length === 0}
+        required
+      >
+        <option value="">
+          {loadingOptions ? 'Chargement des types...' : 'Sélectionner un type'}
+        </option>
+        {types.map((type) => (
+          <option key={type.id} value={type.id}>{type.libelle}</option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const motifField = (
+    <div className="rf-field new-document-motif">
+      <label htmlFor="motif">
+        {isMutationRequest
+          ? isDirectMutation ? 'Observation (facultative)' : 'Motif *'
+          : isLeaveRequest ? 'Motif' : 'Motif (facultatif)'}
+      </label>
+      <textarea
+        id="motif"
+        name="motif"
+        value={formData.motif}
+        onChange={handleChange}
+        rows={4}
+        maxLength={isLeaveRequest ? undefined : 2000}
+        disabled={saving}
+        required={isMutationRequest && !isDirectMutation}
+        placeholder={
+          isAdvancementRequest
+            ? 'Vous pouvez préciser le motif de la demande.'
+            : undefined
+        }
+      />
+      {!isLeaveRequest && <small>{formData.motif.length}/2000 caractères</small>}
+    </div>
+  );
+
   return (
-    <div className="administration-page documents-flow-page">
-      <div className="administration-header">
+    <div className="rf-page new-document-screen">
+      <button type="button" className="rf-back" onClick={() => navigate('/documents')}>
+        <ArrowLeft size={18} />
+        Retour aux documents
+      </button>
+
+      <header className="rf-head">
         <div>
-          <button
-            type="button"
-            className="administration-back-button"
-            onClick={() => navigate('/documents')}
-          >
-            <ArrowLeft size={18} />
-            Retour aux documents
-          </button>
-          <h1>{isDirectMutation ? 'Muter un agent' : 'Nouveau document'}</h1>
-          <p>Choisissez un type, un agent et complétez les informations.</p>
+          <h1 className="rf-title">
+            {isDirectMutation ? 'Muter un agent' : 'Nouveau document'}
+          </h1>
+          <p className="rf-lead">Choisissez un type, un agent et complétez les informations.</p>
         </div>
-      </div>
+      </header>
 
-      {error && (
-        <div className="administration-state administration-state-error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <p className="rf-error" role="alert">{error}</p>}
       {isMutationRequest && mutationOptionsError && (
-        <div className="administration-state administration-state-error" role="alert">
-          {mutationOptionsError}
-        </div>
+        <p className="rf-error" role="alert">{mutationOptionsError}</p>
       )}
 
-      <form className="administration-form" onSubmit={handleSubmit}>
-        <div className="administration-form-group">
-          <label htmlFor="typeDocumentId">
-            Type de document <span>*</span>
-          </label>
-          <select
-            id="typeDocumentId"
-            name="typeDocumentId"
-            value={formData.typeDocumentId}
-            onChange={handleChange}
-            disabled={loadingOptions || saving || types.length === 0}
-            required
-          >
-            <option value="">
-              {loadingOptions ? 'Chargement des types...' : 'Sélectionner un type'}
-            </option>
-            {types.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.libelle}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="administration-form-group">
-          <label htmlFor="employeId">
-            Agent concerné <span>*</span>
-          </label>
-          <select
-            id="employeId"
-            name="employeId"
-            value={formData.employeId}
-            onChange={handleChange}
-            disabled={loadingOptions || saving}
-            required
-          >
-            <option value="">
-              {loadingOptions ? 'Chargement des agents...' : 'Sélectionner un agent'}
-            </option>
-            {agents.map((agent) => (
-              <option key={agent.id} value={agent.id}>
-                {agent.matricule ? `${agent.matricule} — ` : ''}
-                {[agent.prenom, agent.nom].filter(Boolean).join(' ')}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {!isDirectMutation && (
-          <div className="administration-form-group">
-            <label htmlFor="destinataire">
-              Destinataire <span>*</span>
-            </label>
-            <input
-              id="destinataire"
-              name="destinataire"
-              type="text"
-              value={formData.destinataire}
-              onChange={handleChange}
-              maxLength={255}
-              placeholder="Ex. Chef du Service du Personnel"
-              disabled={saving}
-              required
-            />
+      <div className="new-document-layout">
+        <form className="rf-card new-document-form" onSubmit={handleSubmit}>
+          <div className="rf-sec">
+            <span className="rf-num">1</span>
+            <div>
+              <h2>Type et agent</h2>
+              <p>Le type de document détermine les champs suivants.</p>
+            </div>
           </div>
-        )}
+          <div className="rf-grid">
+            {typeSelect}
+            <div className="rf-field">
+              <label htmlFor="employeId">Agent concerné <b>*</b></label>
+              <select
+                id="employeId"
+                name="employeId"
+                value={formData.employeId}
+                onChange={handleChange}
+                disabled={loadingOptions || saving}
+                required
+              >
+                <option value="">
+                  {loadingOptions ? 'Chargement des agents...' : 'Sélectionner un agent'}
+                </option>
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.matricule ? `${agent.matricule} — ` : ''}
+                    {[agent.prenom, agent.nom].filter(Boolean).join(' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {!isDirectMutation && (
+              <div className="rf-field rf-field-full">
+                <label htmlFor="destinataire">Destinataire <b>*</b></label>
+                <input
+                  id="destinataire"
+                  name="destinataire"
+                  type="text"
+                  value={formData.destinataire}
+                  onChange={handleChange}
+                  maxLength={255}
+                  placeholder="Ex. Chef du Service du Personnel"
+                  disabled={saving}
+                  required
+                />
+              </div>
+            )}
+          </div>
 
-        {isLeaveRequest ? (
-          <>
-            <div className="administration-form-group">
-              <label htmlFor="dateDebut">
-                Date de début <span>*</span>
-              </label>
-              <input
-                id="dateDebut"
-                name="dateDebut"
-                type="date"
-                value={formData.dateDebut}
-                onChange={handleChange}
-                disabled={saving}
-                required
-              />
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="dateFin">
-                Date de fin <span>*</span>
-              </label>
-              <input
-                id="dateFin"
-                name="dateFin"
-                type="date"
-                value={formData.dateFin}
-                onChange={handleChange}
-                disabled={saving}
-                required
-              />
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="motif">Motif</label>
-              <textarea
-                id="motif"
-                name="motif"
-                value={formData.motif}
-                onChange={handleChange}
-                rows={4}
-                disabled={saving}
-              />
-            </div>
-          </>
-        ) : isAdvancementRequest ? (
-          <>
-            <div className="administration-form-info">
+          {hasDetails && (
+            <>
+              <div className="rf-sec">
+                <span className="rf-num">2</span>
+                <div>
+                  <h2>{isMutationRequest ? 'Affectation souhaitée' : 'Période'}</h2>
+                  <p>
+                    {isMutationRequest
+                      ? isDirectMutation
+                        ? 'Le poste doit appartenir au service choisi.'
+                        : 'Chaque champ est facultatif.'
+                      : 'Indiquez les dates du congé.'}
+                  </p>
+                </div>
+              </div>
+
+              {isMutationRequest && (
+                <p className="rf-note new-document-note">
+                  {isDirectMutation
+                    ? 'Cette action modifie immédiatement l’affectation de l’agent. Le poste doit appartenir au service choisi.'
+                    : 'La situation actuelle est enregistrée par le backend comme instantané. La demande ne modifie pas l’affectation de l’agent. Choisissez au moins un élément de destination.'}
+                  {selectedAgent && (
+                    <>
+                      <br />
+                      <strong>Situation actuelle :</strong>{' '}
+                      Direction : {selectedAgent.direction || 'Non renseignée'}
+                      {' · '}Service : {selectedAgent.service || 'Non renseigné'}
+                      {' · '}Poste : {selectedAgent.poste || 'Non renseigné'}
+                      {' · '}Lieu : {selectedAgent.lieu_travail || 'Non renseigné'}
+                    </>
+                  )}
+                </p>
+              )}
+
+              <div className="rf-grid">
+                {isLeaveRequest && (
+                  <>
+                    <div className="rf-field">
+                      <label htmlFor="dateDebut">Date de début <b>*</b></label>
+                      <input
+                        id="dateDebut"
+                        name="dateDebut"
+                        type="date"
+                        value={formData.dateDebut}
+                        onChange={handleChange}
+                        disabled={saving}
+                        required
+                      />
+                    </div>
+                    <div className="rf-field">
+                      <label htmlFor="dateFin">Date de fin <b>*</b></label>
+                      <input
+                        id="dateFin"
+                        name="dateFin"
+                        type="date"
+                        value={formData.dateFin}
+                        onChange={handleChange}
+                        disabled={saving}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                {isMutationRequest && (
+                  <>
+                    {!isDirectMutation && (
+                      <div className="rf-field">
+                        <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
+                        <select
+                          id="directionSouhaiteeId"
+                          name="directionSouhaiteeId"
+                          value={formData.directionSouhaiteeId}
+                          onChange={handleDirectionChange}
+                          disabled={saving}
+                        >
+                          <option value="">Ne pas préciser</option>
+                          {directions.map((direction) => (
+                            <option key={direction.id} value={direction.id}>
+                              {direction.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    <div className="rf-field">
+                      <label htmlFor="serviceSouhaiteId">
+                        Service souhaité {isDirectMutation && <b>*</b>}
+                      </label>
+                      <select
+                        id="serviceSouhaiteId"
+                        name="serviceSouhaiteId"
+                        value={formData.serviceSouhaiteId}
+                        onChange={handleServiceChange}
+                        disabled={saving}
+                        required={isDirectMutation}
+                      >
+                        <option value="">
+                          {isDirectMutation ? 'Sélectionner un service' : 'Ne pas préciser'}
+                        </option>
+                        {filteredServices.map((service) => (
+                          <option key={service.id} value={service.id}>{service.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="rf-field">
+                      <label htmlFor="posteSouhaiteId">
+                        Poste souhaité {isDirectMutation && <b>*</b>}
+                      </label>
+                      <select
+                        id="posteSouhaiteId"
+                        name="posteSouhaiteId"
+                        value={formData.posteSouhaiteId}
+                        onChange={handleChange}
+                        disabled={saving || loadingPostes || !formData.serviceSouhaiteId}
+                        required={isDirectMutation}
+                      >
+                        <option value="">
+                          {formData.serviceSouhaiteId
+                            ? loadingPostes
+                              ? 'Chargement des postes...'
+                              : isDirectMutation
+                                ? 'Sélectionner un poste'
+                                : 'Ne pas préciser'
+                            : 'Choisissez d’abord un service'}
+                        </option>
+                        {postes.map((poste) => (
+                          <option key={poste.id} value={poste.id}>{poste.intitule}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="rf-field">
+                      <label htmlFor="lieuTravailSouhaite">Lieu de travail souhaité</label>
+                      <input
+                        id="lieuTravailSouhaite"
+                        name="lieuTravailSouhaite"
+                        type="text"
+                        value={formData.lieuTravailSouhaite}
+                        onChange={handleChange}
+                        maxLength={255}
+                        placeholder="Ne pas préciser"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div className="rf-field">
+                      <label htmlFor="dateEffetSouhaitee">
+                        Date d’effet {isDirectMutation && <b>*</b>}
+                      </label>
+                      <input
+                        id="dateEffetSouhaitee"
+                        name="dateEffetSouhaitee"
+                        type="date"
+                        value={formData.dateEffetSouhaitee}
+                        onChange={handleChange}
+                        max={isDirectMutation ? todayInputValue() : undefined}
+                        disabled={saving}
+                        required={isDirectMutation}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {isAdvancementRequest && (
+            <p className="rf-note new-document-note">
               La situation actuelle et la prochaine situation seront calculées
               et vérifiées par le backend à partir de l’historique de carrière.
               Elles ne sont pas saisies dans ce formulaire.
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="motif">Motif (facultatif)</label>
-              <textarea
-                id="motif"
-                name="motif"
-                value={formData.motif}
-                onChange={handleChange}
-                rows={4}
-                maxLength={2000}
-                disabled={saving}
-                placeholder="Vous pouvez préciser le motif de la demande."
-              />
-              <small>{formData.motif.length}/2000 caractères</small>
-            </div>
-          </>
-        ) : isMutationRequest ? (
-          <>
-            <div className="administration-form-info">
-              {isDirectMutation
-                ? 'Cette action modifie immédiatement l’affectation de l’agent. Le poste doit appartenir au service choisi.'
-                : 'La situation actuelle est enregistrée par le backend comme instantané. La demande ne modifie pas l’affectation de l’agent. Choisissez au moins un élément de destination.'}
-            </div>
-            {selectedAgent && (
-              <div className="administration-form-info">
-                <strong>Situation actuelle de l’agent</strong>
-                <br />
-                Direction : {selectedAgent.direction || 'Non renseignée'}
-                {' · '}Service : {selectedAgent.service || 'Non renseigné'}
-                {' · '}Poste : {selectedAgent.poste || 'Non renseigné'}
-                {' · '}Lieu : {selectedAgent.lieu_travail || 'Non renseigné'}
-              </div>
-            )}
-            {!isDirectMutation && (
-              <div className="administration-form-group">
-                <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
-                <select
-                  id="directionSouhaiteeId"
-                  name="directionSouhaiteeId"
-                  value={formData.directionSouhaiteeId}
-                  onChange={handleDirectionChange}
-                  disabled={saving}
-                >
-                  <option value="">Ne pas préciser</option>
-                  {directions.map((direction) => (
-                    <option key={direction.id} value={direction.id}>
-                      {direction.nom}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div className="administration-form-group">
-              <label htmlFor="serviceSouhaiteId">
-                Service souhaité {isDirectMutation && <span>*</span>}
-              </label>
-              <select
-                id="serviceSouhaiteId"
-                name="serviceSouhaiteId"
-                value={formData.serviceSouhaiteId}
-                onChange={handleServiceChange}
-                disabled={saving}
-                required={isDirectMutation}
-              >
-                <option value="">
-                  {isDirectMutation ? 'Sélectionner un service' : 'Ne pas préciser'}
-                </option>
-                {filteredServices.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="posteSouhaiteId">
-                Poste souhaité {isDirectMutation && <span>*</span>}
-              </label>
-              <select
-                id="posteSouhaiteId"
-                name="posteSouhaiteId"
-                value={formData.posteSouhaiteId}
-                onChange={handleChange}
-                disabled={
-                  saving ||
-                  loadingPostes ||
-                  !formData.serviceSouhaiteId
-                }
-                required={isDirectMutation}
-              >
-                <option value="">
-                  {formData.serviceSouhaiteId
-                    ? loadingPostes
-                      ? 'Chargement des postes...'
-                      : isDirectMutation
-                        ? 'Sélectionner un poste'
-                        : 'Ne pas préciser'
-                    : 'Choisissez d’abord un service'}
-                </option>
-                {postes.map((poste) => (
-                  <option key={poste.id} value={poste.id}>
-                    {poste.intitule}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="lieuTravailSouhaite">
-                Lieu de travail souhaité
-              </label>
-              <input
-                id="lieuTravailSouhaite"
-                name="lieuTravailSouhaite"
-                type="text"
-                value={formData.lieuTravailSouhaite}
-                onChange={handleChange}
-                maxLength={255}
-                disabled={saving}
-              />
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="dateEffetSouhaitee">
-                Date d’effet {isDirectMutation && <span>*</span>}
-              </label>
-              <input
-                id="dateEffetSouhaitee"
-                name="dateEffetSouhaitee"
-                type="date"
-                value={formData.dateEffetSouhaitee}
-                onChange={handleChange}
-                max={isDirectMutation ? todayInputValue() : undefined}
-                disabled={saving}
-                required={isDirectMutation}
-              />
-            </div>
-            <div className="administration-form-group">
-              <label htmlFor="motif">
-                {isDirectMutation ? 'Observation (facultative)' : 'Motif *'}
-              </label>
-              <textarea
-                id="motif"
-                name="motif"
-                value={formData.motif}
-                onChange={handleChange}
-                rows={4}
-                maxLength={2000}
-                disabled={saving}
-                required={!isDirectMutation}
-              />
-              <small>{formData.motif.length}/2000 caractères</small>
-            </div>
-          </>
-        ) : selectedType ? (
-          <div className="administration-form-info">
-            {selectedType.description ||
-              'Aucun champ supplémentaire n’est défini pour ce type par le backend.'}
-          </div>
-        ) : null}
+            </p>
+          )}
 
-        {!loadingOptions && types.length === 0 && (
-          <div className="administration-form-info">
-            Aucun type de document actif n’est actuellement proposé par le backend.
-          </div>
-        )}
+          {hasMotif && (
+            <>
+              <div className="rf-sec">
+                <span className="rf-num">{hasDetails ? 3 : 2}</span>
+                <div>
+                  <h2>Motif</h2>
+                  <p>Précisez le contexte de la demande.</p>
+                </div>
+              </div>
+              <div className="new-document-motif-wrap">{motifField}</div>
+            </>
+          )}
 
-        <div className="administration-form-actions">
-          <button
-            type="button"
-            className="administration-button-secondary"
-            onClick={() => navigate('/documents')}
-            disabled={saving}
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            className="administration-button-primary"
-            disabled={
-              loadingOptions ||
-              saving ||
-              types.length === 0
-            }
-          >
-            <Save size={18} />
-            {saving
-              ? isDirectMutation ? 'Mutation...' : 'Création...'
-              : isDirectMutation ? 'Muter l’agent' : 'Créer le document'}
-          </button>
-        </div>
-      </form>
+          {!hasMotif && selectedType && (
+            <p className="rf-note new-document-note">
+              {selectedType.description ||
+                'Aucun champ supplémentaire n’est défini pour ce type par le backend.'}
+            </p>
+          )}
+
+          {!loadingOptions && types.length === 0 && (
+            <p className="rf-note new-document-note">
+              Aucun type de document actif n’est actuellement proposé par le backend.
+            </p>
+          )}
+
+          <div className="rf-actions">
+            <button
+              type="button"
+              className="rf-btn"
+              onClick={() => navigate('/documents')}
+              disabled={saving}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="rf-btn rf-btn-primary"
+              disabled={loadingOptions || saving || types.length === 0}
+            >
+              <Save size={18} />
+              {saving
+                ? isDirectMutation ? 'Mutation...' : 'Création...'
+                : isDirectMutation ? 'Muter l’agent' : 'Créer le document'}
+            </button>
+          </div>
+        </form>
+
+        <aside className="rf-card rf-aside" aria-labelledby="new-document-summary">
+          <p className="rf-eyebrow">Récapitulatif</p>
+          <h2 id="new-document-summary">Votre saisie</h2>
+          {selectedType && (
+            <span className="rf-pill rf-pill-signe new-document-type-pill">
+              {selectedType.libelle}
+            </span>
+          )}
+          <dl className="rf-dl new-document-summary">
+            {summaryRows.map(([label, value]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="rf-note">
+            {isDirectMutation
+              ? 'La mutation est appliquée immédiatement par le serveur.'
+              : 'Le PDF est généré par le serveur après la création du document.'}
+          </p>
+        </aside>
+      </div>
     </div>
   );
 }

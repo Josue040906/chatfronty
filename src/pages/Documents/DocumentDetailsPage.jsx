@@ -4,9 +4,11 @@ import {
   Archive,
   Edit3,
   FileText,
+  FolderOpen,
+  Info,
   Printer,
   Save,
-  X,
+  UserRound,
   Check,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -442,503 +444,261 @@ export default function DocumentDetailsPage() {
     );
   }
 
+  const statusClass = `rf-pill rf-pill-${String(documentData.statut || '').toLowerCase()}`;
+  const isArchived = documentData.statut === 'ARCHIVE';
+
+  const sectionIcon = (Icon) => (
+    <span className="rf-ico"><Icon size={20} /></span>
+  );
+
   return (
-    <div className="administration-page documents-flow-page">
-      <div className="administration-header">
+    <div className="rf-page document-details-screen">
+      <button
+        type="button"
+        className="rf-back"
+        onClick={() => navigate('/documents')}
+      >
+        <ArrowLeft size={18} />
+        Retour aux documents
+      </button>
+
+      <header className="rf-head">
         <div>
-          <button
-            type="button"
-            className="administration-back-button"
-            onClick={() =>
-              navigate('/documents')
-            }
-          >
-            <ArrowLeft size={18} />
-            Retour aux documents
-          </button>
-
-          <h1>
-            {editing
-              ? 'Modifier le document'
-              : 'Détails du document'}
+          {editing && <p className="rf-eyebrow">Documents RH</p>}
+          <h1 className="rf-title">
+            {editing ? 'Modifier le document' : 'Détails du document'}
           </h1>
-
-          <p>
+          <p className="rf-lead">
             Référence :{' '}
-            <strong>
-              {documentData.reference}
-            </strong>
+            <strong className="rf-mono">{documentData.reference}</strong>
           </p>
         </div>
 
         {!editing && (
-          <div className="administration-header-actions">
-            <button
-              type="button"
-              className="administration-button-secondary"
-              onClick={handlePrint}
-            >
+          <div className="document-details-actions">
+            <button type="button" className="rf-btn" onClick={handlePrint}>
               <Printer size={18} />
               Imprimer
             </button>
-
             <button
               type="button"
-              className="administration-button-secondary"
-              onClick={
-                commencerModification
-              }
-              disabled={
-                documentData.statut ===
-                'ARCHIVE'
-              }
+              className="rf-btn"
+              onClick={commencerModification}
+              disabled={isArchived}
             >
               <Edit3 size={18} />
               Modifier
             </button>
-
             <button
               type="button"
-              className="administration-button-danger"
+              className="rf-btn rf-btn-danger"
               onClick={handleArchive}
-              disabled={
-                archiving ||
-                documentData.statut ===
-                  'ARCHIVE'
-              }
+              disabled={archiving || isArchived}
             >
               <Archive size={18} />
-
-              {archiving
-                ? 'Archivage...'
-                : 'Archiver'}
+              {archiving ? 'Archivage...' : 'Archiver'}
             </button>
           </div>
         )}
-      </div>
+      </header>
 
-      {error && (
-        <div className="administration-state-error">
-          {error}
-        </div>
-      )}
+      {error && <p className="rf-error" role="alert">{error}</p>}
 
       {success && (
-        <div className="administration-success">
-          <Check size={18} />
-          {success}
-        </div>
+        <p className="rf-success" role="status">
+          <Check size={16} /> {success}
+        </p>
       )}
 
       {editing ? (
-        <form
-          className="administration-form"
-          onSubmit={handleSave}
-        >
-          <div className="administration-form-group">
-            <label htmlFor="type">
-              Type de document
-            </label>
+        <>
+          <form className="rf-card document-edit-form" onSubmit={handleSave}>
+            <div className="rf-dialog-grid">
+              <div className="rf-field">
+                <label htmlFor="type">Type de document</label>
+                <select id="type" name="type" value={formData.type} onChange={handleChange}>
+                  <option value="DEMANDE">Demande</option>
+                  <option value="COURRIER">Courrier</option>
+                  <option value="ACTE">Acte</option>
+                </select>
+              </div>
 
-            <select
-              id="type"
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-            >
-              <option value="DEMANDE">
-                Demande
-              </option>
+              <div className="rf-field">
+                <label htmlFor="objet">Objet <b>*</b></label>
+                <input
+                  id="objet"
+                  name="objet"
+                  type="text"
+                  value={formData.objet}
+                  onChange={handleChange}
+                  maxLength={255}
+                />
+              </div>
 
-              <option value="COURRIER">
-                Courrier
-              </option>
+              <div className="rf-field">
+                <label htmlFor="agent-concerne">Agent concerné</label>
+                <input
+                  id="agent-concerne"
+                  type="text"
+                  value={`${documentData.agent_matricule || ''} — ${
+                    documentData.agent_prenom || ''
+                  } ${documentData.agent_nom || ''}`.trim()}
+                  disabled
+                />
+                <input type="hidden" name="agentId" value={formData.agentId} />
+              </div>
 
-              <option value="ACTE">
-                Acte
-              </option>
-            </select>
+              <div className="rf-field">
+                <label htmlFor="auteur">Auteur</label>
+                <input
+                  id="auteur"
+                  name="auteur"
+                  type="text"
+                  value={formData.auteur}
+                  onChange={handleChange}
+                  maxLength={150}
+                />
+              </div>
+
+              <div className="rf-field">
+                <label htmlFor="dateDocument">Date du document</label>
+                <input
+                  id="dateDocument"
+                  name="dateDocument"
+                  type="date"
+                  value={formData.dateDocument}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="rf-field">
+                <label htmlFor="statut">Statut</label>
+                <select id="statut" name="statut" value={formData.statut} onChange={handleChange}>
+                  <option value="BROUILLON">Brouillon</option>
+                  <option value="A_VERIFIER">À vérifier</option>
+                  <option value="VALIDE">Validé</option>
+                  <option value="SIGNE">Signé</option>
+                  <option value="ARCHIVE">Archivé</option>
+                </select>
+              </div>
+
+              <div className="rf-field rf-field-full">
+                <label htmlFor="contenu">Contenu <b>*</b></label>
+                <textarea
+                  id="contenu"
+                  name="contenu"
+                  value={formData.contenu}
+                  onChange={handleChange}
+                  rows={10}
+                />
+              </div>
+            </div>
+
+            <p className="rf-note">
+              <strong>Créé le :</strong> {formatDate(documentData.date_creation)}
+              {' · '}
+              <strong>Dernière modification :</strong>{' '}
+              {formatDate(documentData.date_modification)}
+            </p>
+
+            <div className="rf-actions">
+              <button
+                type="button"
+                className="rf-btn"
+                onClick={annulerModification}
+                disabled={saving}
+              >
+                Annuler
+              </button>
+              <button type="submit" className="rf-btn rf-btn-primary" disabled={saving}>
+                <Save size={18} />
+                {saving ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+          </form>
+
+          <div className="document-status-legend" aria-label="Statuts proposés">
+            {['BROUILLON', 'A_VERIFIER', 'VALIDE', 'SIGNE', 'ARCHIVE'].map((code) => (
+              <span key={code} className={`rf-pill rf-pill-${code.toLowerCase()}`}>
+                {getStatusLabel(code)}
+              </span>
+            ))}
           </div>
-
-          <div className="administration-form-group">
-            <label htmlFor="objet">
-              Objet <span>*</span>
-            </label>
-
-            <input
-              id="objet"
-              name="objet"
-              type="text"
-              value={formData.objet}
-              onChange={handleChange}
-              maxLength={255}
-            />
-          </div>
-
-          <div className="administration-form-group">
-            <label>
-              Agent concerné
-            </label>
-
-            <input
-              type="text"
-              value={`${documentData.agent_matricule || ''} — ${
-                documentData.agent_prenom || ''
-              } ${documentData.agent_nom || ''}`.trim()}
-              disabled
-            />
-
-            <input
-              type="hidden"
-              name="agentId"
-              value={formData.agentId}
-            />
-          </div>
-
-          <div className="administration-form-group">
-            <label htmlFor="auteur">
-              Auteur
-            </label>
-
-            <input
-              id="auteur"
-              name="auteur"
-              type="text"
-              value={formData.auteur}
-              onChange={handleChange}
-              maxLength={150}
-            />
-          </div>
-
-          <div className="administration-form-group">
-            <label htmlFor="dateDocument">
-              Date du document
-            </label>
-
-            <input
-              id="dateDocument"
-              name="dateDocument"
-              type="date"
-              value={
-                formData.dateDocument
-              }
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="administration-form-group">
-            <label htmlFor="statut">
-              Statut
-            </label>
-
-            <select
-              id="statut"
-              name="statut"
-              value={formData.statut}
-              onChange={handleChange}
-            >
-              <option value="BROUILLON">
-                Brouillon
-              </option>
-
-              <option value="A_VERIFIER">
-                À vérifier
-              </option>
-
-              <option value="VALIDE">
-                Validé
-              </option>
-
-              <option value="SIGNE">
-                Signé
-              </option>
-
-              <option value="ARCHIVE">
-                Archivé
-              </option>
-            </select>
-          </div>
-
-          <div className="administration-form-group">
-            <label htmlFor="contenu">
-              Contenu <span>*</span>
-            </label>
-
-            <textarea
-              id="contenu"
-              name="contenu"
-              value={formData.contenu}
-              onChange={handleChange}
-              rows={14}
-            />
-          </div>
-
-          <div className="administration-form-info">
-            <strong>
-              Référence :
-            </strong>{' '}
-            {documentData.reference}
-
-            <br />
-
-            <strong>
-              Créé le :
-            </strong>{' '}
-            {formatDate(
-              documentData.date_creation
-            )}
-
-            <br />
-
-            <strong>
-              Dernière modification :
-            </strong>{' '}
-            {formatDate(
-              documentData.date_modification
-            )}
-          </div>
-
-          <div className="administration-form-actions">
-            <button
-              type="button"
-              className="administration-button-secondary"
-              onClick={
-                annulerModification
-              }
-              disabled={saving}
-            >
-              <X size={18} />
-              Annuler
-            </button>
-
-            <button
-              type="submit"
-              className="administration-button-primary"
-              disabled={saving}
-            >
-              <Save size={18} />
-
-              {saving
-                ? 'Enregistrement...'
-                : 'Enregistrer'}
-            </button>
-          </div>
-        </form>
+        </>
       ) : (
         <>
-          <div className="administration-details-card">
-            <div className="administration-details-icon">
-              <FileText size={28} />
-            </div>
-
-            <div className="administration-details-main">
-              <div className="administration-details-reference">
-                {documentData.reference}
-              </div>
-
-              <h2>
-                {documentData.objet}
-              </h2>
-
-              <div className="administration-details-meta">
-                <span>
-                  {getTypeLabel(
-                    documentData.type
-                  )}
-                </span>
-
-                <span>
-                  {getStatusLabel(
-                    documentData.statut
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="administration-details-grid">
-            <div className="administration-details-section">
-              <h3>
-                Informations du document
-              </h3>
-
-              <div className="administration-details-row">
-                <span>Référence</span>
-
-                <strong>
-                  {documentData.reference}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Type</span>
-
-                <strong>
-                  {getTypeLabel(
-                    documentData.type
-                  )}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Statut</span>
-
-                <strong>
-                  {getStatusLabel(
-                    documentData.statut
-                  )}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>
-                  Date du document
-                </span>
-
-                <strong>
-                  {formatDate(
-                    documentData.date_document
-                  )}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Auteur</span>
-
-                <strong>
-                  {documentData.auteur ||
-                    '—'}
-                </strong>
-              </div>
-            </div>
-
-            <div className="administration-details-section">
-              <h3>
-                Agent concerné
-              </h3>
-
-              <div className="administration-details-row">
-                <span>Nom</span>
-
-                <strong>
-                  {getAgentName()}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Matricule</span>
-
-                <strong>
-                  {documentData.agent_matricule ||
-                    '—'}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Service</span>
-
-                <strong>
-                  {documentData.agent_service ||
-                    '—'}
-                </strong>
-              </div>
-            </div>
-
-            <div className="administration-details-section">
-              <h3>
-                Dossier RH
-              </h3>
-
-              <div className="administration-details-row">
-                <span>Référence</span>
-
-                <strong>
-                  {documentData.dossier_reference ||
-                    'Aucun dossier'}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>Objet</span>
-
-                <strong>
-                  {documentData.dossier_objet ||
-                    '—'}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>
-                  Statut du dossier
-                </span>
-
-                <strong>
-                  {documentData.dossier_statut ||
-                    '—'}
-                </strong>
-              </div>
-            </div>
-
-            <div className="administration-details-section">
-              <h3>
-                Informations techniques
-              </h3>
-
-              <div className="administration-details-row">
-                <span>Créé le</span>
-
-                <strong>
-                  {formatDate(
-                    documentData.date_creation
-                  )}
-                </strong>
-              </div>
-
-              <div className="administration-details-row">
-                <span>
-                  Modifié le
-                </span>
-
-                <strong>
-                  {formatDate(
-                    documentData.date_modification
-                  )}
-                </strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="administration-details-content">
-            <h3>
-              Contenu du document
-            </h3>
-
-            <div className="administration-document-content">
-              {documentData.contenu ||
-                '—'}
-            </div>
-          </div>
-
-          <div className="administration-form-actions">
-            <button
-              type="button"
-              className="administration-button-secondary"
-              onClick={() =>
-                navigate('/documents')
-              }
+          <section className="rf-hero" aria-label="Résumé">
+            <svg
+              className="rf-hero-art"
+              width="360"
+              height="360"
+              viewBox="0 0 360 360"
+              style={{ right: -90, top: -150 }}
+              aria-hidden="true"
             >
-              <ArrowLeft size={18} />
-              Retour
-            </button>
+              <circle cx="180" cy="180" r="160" fill="none" stroke="#B8863F" strokeOpacity=".35" strokeWidth="2" />
+              <circle cx="180" cy="180" r="110" fill="none" stroke="#B8863F" strokeOpacity=".28" strokeWidth="2" />
+            </svg>
+            <span className="rf-hero-icon"><FileText size={34} /></span>
+            <div className="rf-hero-body">
+              <p className="rf-hero-ref">{documentData.reference}</p>
+              <h2>{documentData.objet}</h2>
+              <div className="document-details-pills">
+                <span className="rf-pill">{getTypeLabel(documentData.type)}</span>
+                <span className={statusClass}>{getStatusLabel(documentData.statut)}</span>
+              </div>
+            </div>
+          </section>
 
-            <button
-              type="button"
-              className="administration-button-primary"
-              onClick={handlePrint}
-            >
-              <Printer size={18} />
-              Imprimer
-            </button>
+          <div className="rf-doc-grid">
+            <section className="rf-card" aria-labelledby="doc-s1">
+              <div className="rf-section-head">
+                {sectionIcon(FileText)}
+                <h3 id="doc-s1">Informations du document</h3>
+              </div>
+              <div className="rf-kv"><span>Référence</span><strong className="rf-mono-plain">{documentData.reference || '—'}</strong></div>
+              <div className="rf-kv"><span>Type</span><strong>{getTypeLabel(documentData.type)}</strong></div>
+              <div className="rf-kv"><span>Statut</span><strong>{getStatusLabel(documentData.statut)}</strong></div>
+              <div className="rf-kv"><span>Date du document</span><strong>{formatDate(documentData.date_document)}</strong></div>
+            </section>
+
+            <section className="rf-card" aria-labelledby="doc-s2">
+              <div className="rf-section-head">
+                {sectionIcon(UserRound)}
+                <h3 id="doc-s2">Agent concerné</h3>
+              </div>
+              <div className="rf-kv"><span>Nom</span><strong>{getAgentName()}</strong></div>
+              <div className="rf-kv"><span>Matricule</span><strong className="rf-mono-plain">{documentData.agent_matricule || '—'}</strong></div>
+              <div className="rf-kv"><span>Service</span><strong>{documentData.agent_service || '—'}</strong></div>
+            </section>
+
+            <section className="rf-card" aria-labelledby="doc-s3">
+              <div className="rf-section-head">
+                {sectionIcon(FolderOpen)}
+                <h3 id="doc-s3">Dossier RH</h3>
+              </div>
+              <div className="rf-kv"><span>Référence</span><strong className="rf-mono-plain">{documentData.dossier_reference || '—'}</strong></div>
+              <div className="rf-kv"><span>Objet</span><strong>{documentData.dossier_objet || '—'}</strong></div>
+              <div className="rf-kv"><span>Statut du dossier</span><strong>{documentData.dossier_statut || '—'}</strong></div>
+            </section>
+
+            <section className="rf-card" aria-labelledby="doc-s4">
+              <div className="rf-section-head">
+                {sectionIcon(Info)}
+                <h3 id="doc-s4">Informations techniques</h3>
+              </div>
+              <div className="rf-kv"><span>Auteur</span><strong>{documentData.auteur || '—'}</strong></div>
+              <div className="rf-kv"><span>Créé le</span><strong>{formatDate(documentData.date_creation)}</strong></div>
+              <div className="rf-kv"><span>Modifié le</span><strong>{formatDate(documentData.date_modification)}</strong></div>
+            </section>
+
+            <section className="rf-card rf-wide" aria-labelledby="doc-s5">
+              <div className="rf-section-head">
+                {sectionIcon(FileText)}
+                <h3 id="doc-s5">Contenu du document</h3>
+              </div>
+              <div className="rf-paper-body">{documentData.contenu || '—'}</div>
+            </section>
           </div>
         </>
       )}
