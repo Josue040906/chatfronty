@@ -4,7 +4,7 @@ import { getNavigableAgents } from './assistant-agents';
 describe('getNavigableAgents', () => {
   it('returns the approximate-search score as a percentage for real candidates', () => {
     expect(getNavigableAgents([{
-      name: 'searchEmployeesApproximately',
+      name: 'search_agents',
       result: {
         agents: [{
           id: 42,
@@ -25,7 +25,7 @@ describe('getNavigableAgents', () => {
 
   it('does not invent a percentage when the backend score is missing or invalid', () => {
     const agents = getNavigableAgents([{
-      name: 'searchEmployeesApproximately',
+      name: 'search_agents',
       result: {
         agents: [{
           id: 42,
