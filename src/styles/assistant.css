@@ -541,49 +541,6 @@
   color: var(--color-brand);
 }
 
-.assistant-welcome {
-  display: flex;
-  gap: 10px;
-
-  margin: 14px;
-  padding: 13px;
-
-  border: 1px solid var(--color-border);
-  border-radius: 13px;
-
-  background: var(--color-surface);
-}
-
-.assistant-welcome-icon {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 9px;
-
-  background: var(--color-surface-sunken);
-  color: var(--color-brand);
-}
-
-.assistant-welcome strong {
-  display: block;
-
-  color: var(--color-text);
-  font-size: 12px;
-}
-
-.assistant-welcome p {
-  margin: 4px 0 0;
-
-  color: var(--color-text-muted);
-  font-size: 11px;
-  line-height: 1.45;
-}
-
 .assistant-messages {
   flex: 1;
   min-height: 0;

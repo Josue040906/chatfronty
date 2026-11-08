@@ -471,8 +471,6 @@ button.rf-row {
   margin: 18px 0 34px 52px;
 }
 
-.rf-grid-flat { margin: 0; }
-
 .rf-field label,
 .rf-field .rf-label {
   display: block;
@@ -660,23 +658,6 @@ button.rf-row {
   font-size: 15px;
   line-height: 1.75;
   white-space: pre-wrap;
-}
-
-.rf-pdf-stage {
-  display: flex;
-  justify-content: center;
-  padding: 34px;
-  border-radius: 22px;
-  background: #E9DFCF;
-}
-
-.rf-pdf-frame {
-  display: block;
-  width: min(100%, 720px);
-  height: 760px;
-  border: 0;
-  background: #fff;
-  box-shadow: 0 18px 40px -18px rgb(var(--shadow-ink) / 0.45);
 }
 
 /* ---------- Fenêtre à deux volets (agents) ---------- */
@@ -1183,7 +1164,6 @@ button.rf-row {
 
 .rf-dialog-note { margin: 0 0 18px; font-size: var(--text-sm); color: var(--color-text-muted); }
 .rf-dialog-loading { align-self: center; font-size: var(--text-xs); color: var(--color-text-muted); }
-.rf-field.rf-field-label { display: block; }
 .rf-field small.agent-create-field-error { color: var(--color-danger); }
 
 /* Garde-fous typographiques : aucun texte long ne déborde de sa carte. */

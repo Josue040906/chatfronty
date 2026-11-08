@@ -260,8 +260,7 @@
   gap: 12px;
 }
 
-.career-seniority-details span,
-.career-rule-meta span {
+.career-seniority-details span {
   display: block;
   margin-bottom: 5px;
   color: var(--color-text-muted);
@@ -270,8 +269,7 @@
   text-transform: uppercase;
 }
 
-.career-seniority-details strong,
-.career-rule-meta strong {
+.career-seniority-details strong {
   color: var(--color-text);
   font-size: 13px;
 }
@@ -337,22 +335,6 @@
   color: var(--color-text-muted);
   font-size: 13px;
   line-height: 1.55;
-}
-
-.career-evolution-condition {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-  padding-top: 18px;
-  margin-top: 18px;
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-.career-evolution-condition strong {
-  color: var(--color-text);
 }
 
 .career-timeline {

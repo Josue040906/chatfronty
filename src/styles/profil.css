@@ -8,7 +8,6 @@
   margin: 0 auto;
 }
 
-
 /* =========================================================
    EN-TÊTE DE PAGE
    ========================================================= */
@@ -40,7 +39,6 @@
   font-size: 13px;
   line-height: 1.6;
 }
-
 
 /* =========================================================
    CARTE D'IDENTITÉ
@@ -139,7 +137,6 @@
   color: var(--color-accent);
 }
 
-
 /* =========================================================
    SECTIONS
    ========================================================= */
@@ -201,7 +198,6 @@
   font-weight: 600;
 }
 
-
 /* =========================================================
    GRILLE DES INFORMATIONS
    ========================================================= */
@@ -216,8 +212,7 @@
   background: var(--color-border);
 }
 
-.profil-info-item,
-.profil-editable-item {
+.profil-info-item {
   min-width: 0;
   padding: 14px 15px;
   background: var(--color-surface);
@@ -252,7 +247,6 @@
   margin-left: auto;
   color: #B6AAA0 !important;
 }
-
 
 /* =========================================================
    MODIFICATION DES COORDONNÉES
@@ -348,7 +342,6 @@
   color: #AAA095;
 }
 
-
 /* =========================================================
    MESSAGES DE SAUVEGARDE
    ========================================================= */
@@ -374,42 +367,9 @@
   color: var(--color-danger);
 }
 
-
 /* =========================================================
    NOTE DE SÉCURITÉ
    ========================================================= */
-
-.profil-security-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  margin-top: 18px;
-  padding: 13px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: 9px;
-  background: var(--color-surface-sunken);
-  color: var(--color-text-muted);
-}
-
-.profil-security-note > svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: var(--color-accent);
-}
-
-.profil-security-note strong {
-  display: block;
-  color: var(--color-brand-strong);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.profil-security-note p {
-  margin: 4px 0 0;
-  color: var(--color-text-muted);
-  font-size: 10px;
-  line-height: 1.6;
-}
 
 /* =========================================================
    MODIFICATION DU MOT DE PASSE
@@ -533,7 +493,6 @@
   font-size: 12px;
   line-height: 1.5;
 }
-
 
 /* =========================================================
    RESPONSIVE

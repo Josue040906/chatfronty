@@ -61,163 +61,17 @@
   color: #63472f;
 }
 
-
 /* =========================================================
    NOTICE
    ========================================================= */
-
-.activities-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 15px 17px;
-  margin-bottom: 22px;
-  border: 1px solid #dbcbb9;
-  border-radius: 13px;
-  background: #f8f1e9;
-}
-
-.activities-notice-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 35px;
-  height: 35px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #eadccc;
-  color: #63472f;
-}
-
-.activities-notice strong {
-  display: block;
-  margin-bottom: 3px;
-  color: #4e3828;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.activities-notice p {
-  margin: 0;
-  color: #776756;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
 
 /* =========================================================
    STATISTIQUES
    ========================================================= */
 
-.activities-statistics {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.activity-stat-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 82px;
-  padding: 14px;
-  border: 1px solid #dfd1c2;
-  border-radius: 13px;
-  background: #fffdfb;
-  box-shadow: 0 3px 12px rgba(58, 42, 30, 0.045);
-}
-
-.activity-stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #f0e4d6;
-  color: #63472f;
-}
-
-.activity-stat-card span {
-  display: block;
-  margin-bottom: 4px;
-  color: #887665;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.activity-stat-card strong {
-  display: block;
-  color: #453124;
-  font-size: 20px;
-  line-height: 1;
-}
-
-
 /* =========================================================
    BARRE DE RECHERCHE
    ========================================================= */
-
-.activities-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-.activities-search {
-  position: relative;
-  flex: 1;
-}
-
-.activities-search svg {
-  position: absolute;
-  top: 50%;
-  left: 14px;
-  color: #917e6d;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.activities-search input,
-.activities-filter select {
-  width: 100%;
-  min-height: 44px;
-  box-sizing: border-box;
-  border: 1px solid #d7c7b6;
-  border-radius: 10px;
-  background: #fffdfb;
-  color: #4a3728;
-  font-family: inherit;
-  font-size: 12px;
-  outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.activities-search input {
-  padding: 0 14px 0 40px;
-}
-
-.activities-search input:focus,
-.activities-filter select:focus {
-  border-color: #9b7957;
-  box-shadow: 0 0 0 3px rgba(155, 121, 87, 0.11);
-}
-
-.activities-filter {
-  width: 205px;
-  flex-shrink: 0;
-}
-
-.activities-filter select {
-  padding: 0 12px;
-  cursor: pointer;
-}
-
 
 /* =========================================================
    HISTORIQUE
@@ -267,51 +121,6 @@
   font-size: 10px;
   font-weight: 700;
 }
-
-.activities-table-wrap {
-  overflow-x: auto;
-}
-
-.activities-table {
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.activities-table th {
-  padding: 13px 18px;
-  border-bottom: 1px solid #e7dbce;
-  background: #fffdfb;
-  color: #786858;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.activities-table td {
-  padding: 0;
-}
-
-.activities-empty-state {
-  display: flex;
-  min-height: 220px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #887868;
-  text-align: center;
-}
-
-.activities-empty-state svg {
-  color: #96785b;
-}
-
-.activities-empty-state p {
-  margin: 0;
-  font-size: 13px;
-}
-
 
 /* =========================================================
    ÉLÉMENTS D'ACTIVITÉ
@@ -378,32 +187,12 @@
   gap: 15px;
 }
 
-.activity-reference {
-  display: block;
-  margin-bottom: 4px;
-  color: #987b5e;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
 .activity-top h3 {
   margin: 0;
   color: #453124;
   font-size: 14px;
   line-height: 1.45;
   font-weight: 750;
-}
-
-.activity-status {
-  flex-shrink: 0;
-  padding: 5px 9px;
-  border: 1px solid #d8c9b8;
-  border-radius: 7px;
-  background: #f5eee7;
-  color: #69533f;
-  font-size: 9px;
-  font-weight: 800;
 }
 
 .activity-status-brouillon {
@@ -423,13 +212,6 @@
   background: #eeeeeb;
 }
 
-.activity-description {
-  margin: 6px 0 10px;
-  color: #766758;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
 .activity-meta {
   display: flex;
   align-items: center;
@@ -444,7 +226,6 @@
   align-items: center;
   gap: 5px;
 }
-
 
 /* =========================================================
    ÉTATS
@@ -491,16 +272,12 @@
   color: #7d4d42;
 }
 
-
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 1050px) {
-  .activities-statistics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-}
 
 @media (max-width: 760px) {
   .activities-header {
@@ -511,15 +288,7 @@
     display: none;
   }
 
-  .activities-statistics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .activities-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
 
 /* Présentation de la chronologie personnelle */
 .activities-page {
@@ -827,16 +596,9 @@
     padding-left: 17px;
   }
 
-  .activities-filter {
-    width: 100%;
   }
-}
 
 @media (max-width: 520px) {
-  .activities-statistics {
-    grid-template-columns: 1fr;
-  }
-
   .activities-section-header {
     align-items: flex-start;
     flex-direction: column;
@@ -844,10 +606,6 @@
 
   .activity-top {
     flex-direction: column;
-  }
-
-  .activity-status {
-    align-self: flex-start;
   }
 
   .activities-list {

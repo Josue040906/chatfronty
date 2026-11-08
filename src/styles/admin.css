@@ -62,13 +62,6 @@
   to { transform: rotate(360deg); }
 }
 
-
-@media (max-width: 900px) {
-}
-
-@media (max-width: 560px) {
-}
-
 @media (prefers-reduced-motion: reduce) {
   .registration-requests-page,
   .is-spinning {
@@ -120,13 +113,11 @@
   opacity: 0.75;
 }
 
-.admin-theme .administration-page-header h1,
-.admin-theme .registration-requests-header h1 {
+.admin-theme .administration-page-header h1 {
   color: var(--admin-text);
 }
 
-.admin-theme .administration-eyebrow,
-.admin-theme .registration-requests-eyebrow {
+.admin-theme .administration-eyebrow {
   color: var(--admin-yellow);
 }
 
@@ -373,19 +364,6 @@
   color: var(--admin-muted);
 }
 
-.admin-theme .app-content .agents-create-button {
-  border-color: var(--admin-yellow);
-  background: var(--admin-yellow);
-  color: var(--color-text);
-}
-
-.admin-theme .app-content .agents-create-button:hover {
-  border-color: var(--admin-yellow-hover);
-  background: var(--admin-yellow-hover);
-  color: var(--color-text);
-  box-shadow: 0 5px 14px rgba(23, 60, 42, 0.18);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .admin-theme *,
   .admin-theme *::before,
@@ -402,23 +380,15 @@
   background: transparent;
 }
 
-.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td):not(.rf-page *),
-.admin-theme .app-content :is(.administration-page-header h1, .registration-requests-header h1):not(.rf-page *) {
+.admin-theme .app-content :is(h1, h2, h3, h4, strong, label, th, td):not(.rf-page *) {
   color: var(--admin-text);
 }
 
-.admin-theme .app-content :is(p, small):not(.rf-page *),
-.admin-theme .administration-page-header p,
-.admin-theme .administration-section-header p,
-.admin-theme .administration-card-content span,
-.admin-theme .administration-list-content p,
-.admin-theme .administration-list-meta,
-.admin-theme .registration-requests-header p {
+.admin-theme .app-content :is(p, small):not(.rf-page *),.admin-theme .administration-page-header p,.admin-theme .administration-section-header p,.admin-theme .administration-card-content span,.admin-theme .administration-list-content p,.admin-theme .administration-list-meta {
   color: var(--admin-muted);
 }
 
-.admin-theme .administration-eyebrow,
-.admin-theme .registration-requests-eyebrow {
+.admin-theme .administration-eyebrow {
   color: var(--color-brand);
 }
 
@@ -431,20 +401,11 @@
   color: var(--admin-green);
 }
 
-.admin-theme .administration-section-header h2,
-.admin-theme .administration-card-content strong,
-.admin-theme .administration-list-content h2,
-.admin-theme .registration-request-name h2,
-.admin-theme .registration-requests-summary strong,
-.admin-theme .registration-empty-state strong {
+.admin-theme .administration-section-header h2,.admin-theme .administration-card-content strong,.admin-theme .administration-list-content h2,.admin-theme .registration-empty-state strong {
   color: var(--admin-text);
 }
 
-.admin-theme .administration-card,
-.admin-theme .administration-list-card,
-.admin-theme .registration-request,
-.admin-theme .registration-requests-summary,
-.admin-theme .registration-empty-state {
+.admin-theme .administration-card,.admin-theme .administration-list-card,.admin-theme .registration-request,.admin-theme .registration-empty-state {
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--admin-text);
@@ -463,43 +424,27 @@
   background: var(--color-surface-sunken);
 }
 
-.admin-theme .administration-card-arrow,
-.admin-theme .registration-request-name span,
-.admin-theme .registration-requests-summary span {
+.admin-theme .administration-card-arrow {
   color: var(--admin-muted);
 }
 
-.admin-theme .administration-card:hover .administration-card-arrow,
-.admin-theme .registration-request-details svg,
-.admin-theme .registration-empty-state svg {
+.admin-theme .administration-card:hover .administration-card-arrow,.admin-theme .registration-empty-state svg {
   color: var(--admin-green);
 }
 
-.admin-theme .administration-back-button,
-.admin-theme .administration-secondary-button,
-.admin-theme .administration-icon-button,
-.admin-theme .administration-modal-close,
-.admin-theme .registration-refresh-button {
+.admin-theme .administration-back-button,.admin-theme .administration-secondary-button,.admin-theme .administration-icon-button,.admin-theme .administration-modal-close {
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--admin-text);
 }
 
-.admin-theme .administration-back-button:hover,
-.admin-theme .administration-secondary-button:hover,
-.admin-theme .administration-icon-button:hover:not(:disabled),
-.admin-theme .administration-modal-close:hover:not(:disabled),
-.admin-theme .registration-refresh-button:hover:not(:disabled) {
+.admin-theme .administration-back-button:hover,.admin-theme .administration-secondary-button:hover,.admin-theme .administration-icon-button:hover:not(:disabled),.admin-theme .administration-modal-close:hover:not(:disabled) {
   border-color: var(--color-border-strong);
   background: var(--color-surface-sunken);
   color: var(--admin-green);
 }
 
-.admin-theme .administration-back-button:active,
-.admin-theme .administration-secondary-button:active,
-.admin-theme .administration-icon-button:active:not(:disabled),
-.admin-theme .administration-modal-close:active:not(:disabled),
-.admin-theme .registration-refresh-button:active:not(:disabled) {
+.admin-theme .administration-back-button:active,.admin-theme .administration-secondary-button:active,.admin-theme .administration-icon-button:active:not(:disabled),.admin-theme .administration-modal-close:active:not(:disabled) {
   background: var(--color-surface-sunken);
 }
 
