@@ -8,17 +8,14 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  ArrowDownUp,
   Building2,
-  ChevronRight,
   CircleHelp,
-  Landmark,
   Maximize,
   Minus,
+  Plus,
   Search,
   Users,
   X,
-  ZoomIn,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,16 +27,16 @@ import {
 } from '../../utils/employee';
 
 const MINISTRY_NAME = 'Ministère de l’Économie et des Finances';
-const DIRECTION_WIDTH = 300;
-const DIRECTION_HEIGHT = 155;
-const SERVICE_WIDTH = 284;
-const SERVICE_HEIGHT = 126;
-const SERVICE_GAP = 22;
+const DIRECTION_WIDTH = 250;
+const DIRECTION_HEIGHT = 100;
+const SERVICE_WIDTH = 280;
+const SERVICE_HEIGHT = 68;
+const SERVICE_GAP = 16;
 const SERVICE_COLUMN_GAP = 90;
 const GROUP_COLUMN_GAP = 120;
-const DIRECTION_SERVICE_GAP = 60;
+const DIRECTION_SERVICE_GAP = 44;
 const DIRECTION_X = 70;
-const MINISTRY_WIDTH = 390;
+const MINISTRY_WIDTH = 220;
 
 function normalized(value) {
   return String(value || '')
@@ -152,58 +149,44 @@ const edgeTypes = {
   serviceBranch: ServiceBranchEdge,
 };
 
-function MinistryNode() {
+function MinistryNode({ data }) {
   return (
     <div className="org-ministry-node">
       <InvisibleHandles />
-      <div className="org-ministry-mark" aria-hidden="true">
-        <Landmark size={25} strokeWidth={1.8} />
-      </div>
-      <div className="org-ministry-copy">
-        <span>RÉPUBLIQUE DE MADAGASCAR</span>
-        <strong>{MINISTRY_NAME}</strong>
-        <small>Structure administrative</small>
-      </div>
-      <div className="org-ministry-indicator" aria-hidden="true" />
+      <span className="org-eyebrow-light">Ministère</span>
+      <strong>{data.directionCount} {data.directionCount > 1 ? 'directions' : 'direction'}</strong>
+      <small>{data.agentCount} {data.agentCount > 1 ? 'agents' : 'agent'}</small>
     </div>
   );
 }
 
 function DirectionNode({ data }) {
   return (
-    <div className="org-direction-node">
+    <div className="org-node-wrap">
       <InvisibleHandles />
-      <div className="org-node-eyebrow">
-        <span className="org-node-icon org-node-icon-direction">
-          <Building2 size={17} />
-        </span>
-        <span>Direction</span>
-      </div>
-      <strong className="org-direction-name">{data.name}</strong>
-      <div className="org-direction-meta">
-        <span>
-          <Building2 size={13} />
+      <button
+        type="button"
+        className="org-direction-node nodrag nopan"
+        onClick={() => data.onSelect(data.direction)}
+        aria-label={`Ouvrir la direction ${data.name} et consulter ${data.agentCount} agents`}
+      >
+        <strong className="org-direction-name">{data.name}</strong>
+        <span className="org-direction-meta">
           {data.serviceCount} {data.serviceCount === 1 ? 'service' : 'services'}
-        </span>
-        <span>
-          <Users size={13} />
+          {' · '}
           {data.agentCount} {data.agentCount === 1 ? 'agent' : 'agents'}
         </span>
-      </div>
-      <div className={`org-leader ${data.leader ? '' : 'org-leader-empty'}`}>
-        <span className="org-leader-dot" aria-hidden="true" />
-        <span className="org-leader-copy">
-          <small>Directeur</small>
-          <strong>{data.leader || 'Non renseigné'}</strong>
+        <span className={`org-leader ${data.leader ? '' : 'org-leader-empty'}`}>
+          Directeur : {data.leader || 'Non renseigné'}
         </span>
-      </div>
+      </button>
     </div>
   );
 }
 
 function ServiceNode({ data }) {
   return (
-    <div className="org-service-node-wrap">
+    <div className="org-node-wrap">
       <InvisibleHandles />
       <button
         type="button"
@@ -211,25 +194,16 @@ function ServiceNode({ data }) {
         onClick={() => data.onSelect(data.service)}
         aria-label={`Ouvrir le service ${data.service.nom} et consulter ${data.agentCount} agents`}
       >
-        <span className="org-service-icon" aria-hidden="true">
-          <Users size={17} />
-        </span>
         <span className="org-service-copy">
-            <span className="org-node-eyebrow">
-              {data.hasDirection === false
-                ? 'RATTACHEMENT NON RENSEIGNÉ'
-                : `SERVICE ${getServiceCode(data.service)}`}
-            </span>
           <strong>{data.service.nom}</strong>
-          <span className="org-service-leader">
-            {data.leader ? `Chef : ${data.leader}` : 'Responsable non renseigné'}
-          </span>
+          <small>
+            {data.agentCount} {data.agentCount === 1 ? 'agent' : 'agents'}
+            {data.leader ? ` · ${data.leader}` : ''}
+          </small>
         </span>
-        <span className="org-service-count">
-          <strong>{data.agentCount}</strong>
-          <small>{data.agentCount === 1 ? 'agent' : 'agents'}</small>
+        <span className="org-service-code">
+          {data.hasDirection === false ? 'Sans direction' : getServiceCode(data.service)}
         </span>
-        <ChevronRight className="org-service-arrow" size={16} aria-hidden="true" />
       </button>
     </div>
   );
@@ -241,11 +215,36 @@ const nodeTypes = {
   service: ServiceNode,
 };
 
-function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
+const AVATAR_TONES = ['gold', 'green', 'blue', 'red'];
+
+function AgentAvatar({ agent, index }) {
+  const photo = getEmployeePhotoUrl(agent?.photo);
+  return (
+    <span className={`org-avatar org-avatar-${AVATAR_TONES[index % AVATAR_TONES.length]}`} aria-hidden="true">
+      {getEmployeeInitials(agent) || '?'}
+      {photo && <EmployeePhoto src={photo} alt="" />}
+    </span>
+  );
+}
+
+/**
+ * Fenêtre d'effectif, commune aux services et aux directions.
+ * `services` (facultatif) active les filtres par service.
+ */
+function OrgAgentsDialog({
+  eyebrow,
+  title,
+  subtitle,
+  agents,
+  services,
+  serviceNames,
+  showManagerTag,
+  onClose,
+  onAgentClick,
+}) {
   const [query, setQuery] = useState('');
+  const [serviceFilter, setServiceFilter] = useState('');
   const closeButtonRef = useRef(null);
-  const manager = agents.find(isServiceManager);
-  const managerName = manager ? getAgentName(manager) : '';
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -263,17 +262,30 @@ function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
     };
   }, [onClose]);
 
+  const serviceCounts = useMemo(() => {
+    const counts = new Map();
+    (services || []).forEach((service) => {
+      const code = normalized(getServiceCode(service));
+      counts.set(code, agents.filter((agent) =>
+        normalized(agent?.code_service || agent?.codeService || agent?.service?.code) === code
+      ).length);
+    });
+    return counts;
+  }, [agents, services]);
+
   const filteredAgents = useMemo(() => {
     const search = normalized(query);
-    if (!search) return agents;
-    return agents.filter((agent) =>
-      normalized([
-        agent.matricule,
-        agent.nom,
-        agent.prenom,
-      ].join(' ')).includes(search)
-    );
-  }, [agents, query]);
+    return agents.filter((agent) => {
+      if (serviceFilter) {
+        const code = normalized(
+          agent?.code_service || agent?.codeService || agent?.service?.code
+        );
+        if (code !== serviceFilter) return false;
+      }
+      if (!search) return true;
+      return normalized([agent.matricule, agent.nom, agent.prenom].join(' ')).includes(search);
+    });
+  }, [agents, query, serviceFilter]);
 
   return (
     <div
@@ -289,49 +301,52 @@ function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
         aria-labelledby="org-dialog-title"
       >
         <header className="org-dialog-header">
-          <div className="org-dialog-heading">
-            <div className="org-dialog-title-group">
-              <span className="org-dialog-icon"><Users size={20} /></span>
-              <div>
-                <span className="org-dialog-eyebrow">EFFECTIF DU SERVICE</span>
-                <h2 id="org-dialog-title">{service.nom}</h2>
-                {service.code && <p>Code service · {service.code}</p>}
-              </div>
-            </div>
-            <div className="org-dialog-manager">
-              <span className="org-dialog-manager-avatar" aria-hidden="true">
-                {getEmployeeInitials(manager) || '?'}
-                {getEmployeePhotoUrl(manager?.photo) && (
-                  <EmployeePhoto
-                    src={getEmployeePhotoUrl(manager.photo)}
-                    alt=""
-                  />
-                )}
-              </span>
-              <span className="org-dialog-manager-copy">
-                <small>Chef de service</small>
-                <strong>{managerName || 'Non renseigné'}</strong>
-              </span>
-            </div>
+          <div>
+            <span className="rf-eyebrow">{eyebrow}</span>
+            <h2 id="org-dialog-title">{title}</h2>
+            <p>{subtitle}</p>
           </div>
           <button
             ref={closeButtonRef}
             type="button"
-            className="org-dialog-close"
+            className="rf-icon-btn"
             onClick={onClose}
             aria-label="Fermer la liste des agents"
           >
-            <X size={19} />
+            <X size={18} />
           </button>
         </header>
 
-        <div className="org-dialog-summary">
-          <span className="org-dialog-count">{agents.length}</span>
-          <span>{agents.length === 1 ? 'agent rattaché' : 'agents rattachés'}</span>
-          <span className="org-dialog-hint">Sélectionnez une carte pour ouvrir le profil</span>
-        </div>
+        <p className="org-dialog-hint">Sélectionnez une carte pour ouvrir le profil</p>
 
-        <label className="org-agent-search">
+        {services && services.length > 1 && (
+          <div className="org-dialog-chips" role="group" aria-label="Filtrer par service">
+            <button
+              type="button"
+              className="rf-chip"
+              aria-pressed={serviceFilter === ''}
+              onClick={() => setServiceFilter('')}
+            >
+              Tous les services <span>{agents.length}</span>
+            </button>
+            {services.map((service) => {
+              const code = normalized(getServiceCode(service));
+              return (
+                <button
+                  type="button"
+                  key={service.id}
+                  className="rf-chip"
+                  aria-pressed={serviceFilter === code}
+                  onClick={() => setServiceFilter(code)}
+                >
+                  {service.nom} <span>{serviceCounts.get(code) || 0}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <label className="rf-search org-dialog-search">
           <Search size={17} aria-hidden="true" />
           <input
             type="search"
@@ -341,45 +356,46 @@ function ServiceAgentsDialog({ service, agents, onClose, onAgentClick }) {
             aria-label="Rechercher un agent par nom ou matricule"
           />
           {query && (
-            <button type="button" onClick={() => setQuery('')} aria-label="Effacer la recherche">
+            <button type="button" className="org-clear" onClick={() => setQuery('')} aria-label="Effacer la recherche">
               <X size={15} />
             </button>
           )}
         </label>
 
         <div className="org-agent-list" aria-live="polite">
-          {filteredAgents.length > 0 ? filteredAgents.map((agent) => (
-            <button
-              className="org-agent-card"
-              type="button"
-              key={agent.id}
-              onClick={() => onAgentClick(agent.id)}
-              aria-label={`Ouvrir le profil de ${getAgentName(agent) || 'cet agent'}`}
-            >
-              <span className="org-agent-avatar" aria-hidden="true">
-                {getEmployeeInitials(agent) || '?'}
-                {getEmployeePhotoUrl(agent.photo) && (
-                  <EmployeePhoto
-                    src={getEmployeePhotoUrl(agent.photo)}
-                    alt=""
-                  />
-                )}
-              </span>
-              <span className="org-agent-identity">
-                <strong>{getAgentName(agent) || 'Nom non renseigné'}</strong>
-                <small>{agent.matricule || 'Matricule non renseigné'}</small>
-                <span className="org-agent-position">{agent.poste || 'Poste non renseigné'}</span>
-              </span>
-              <ChevronRight size={17} className="org-agent-arrow" aria-hidden="true" />
-            </button>
-          )) : (
+          {filteredAgents.length > 0 ? filteredAgents.map((agent, index) => {
+            const serviceName = serviceNames?.get(normalized(
+              agent?.code_service || agent?.codeService || agent?.service?.code
+            ));
+            return (
+              <button
+                className="org-agent-card"
+                type="button"
+                key={agent.id}
+                onClick={() => onAgentClick(agent.id)}
+                aria-label={`Ouvrir le profil de ${getAgentName(agent) || 'cet agent'}`}
+              >
+                <AgentAvatar agent={agent} index={index} />
+                <span className="org-agent-identity">
+                  <strong>{getAgentName(agent) || 'Nom non renseigné'}</strong>
+                  <small>{agent.poste || 'Poste non renseigné'}</small>
+                  <span className="org-agent-matricule">{agent.matricule || 'Matricule non renseigné'}</span>
+                </span>
+                {showManagerTag && isServiceManager(agent) ? (
+                  <span className="org-agent-tag org-agent-tag-chief">Chef de service</span>
+                ) : serviceName ? (
+                  <span className="org-agent-tag">{serviceName}</span>
+                ) : null}
+              </button>
+            );
+          }) : (
             <div className="org-dialog-empty">
               <CircleHelp size={22} />
               <strong>{agents.length ? 'Aucun résultat' : 'Aucun agent rattaché'}</strong>
               <span>
                 {agents.length
                   ? 'Essayez un autre nom ou matricule.'
-                  : 'Aucun agent n’est actuellement associé à ce service.'}
+                  : 'Aucun agent n’est actuellement associé ici.'}
               </span>
             </div>
           )}
@@ -443,6 +459,13 @@ function buildOrganisation(services, agents) {
           )
           .filter(isDirector),
         agentCount: uniqueDirectionAgents.size,
+        allAgents: [...new Map(
+          direction.services
+            .flatMap((service) =>
+              agentsByService.get(normalized(getServiceCode(service))) || []
+            )
+            .map((agent) => [agent.id, agent])
+        ).values()],
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
@@ -457,6 +480,7 @@ export default function OrganisationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedService, setSelectedService] = useState(null);
+  const [selectedDirection, setSelectedDirection] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [structureQuery, setStructureQuery] = useState('');
 
@@ -499,6 +523,10 @@ export default function OrganisationPage() {
   const selectService = useCallback((service) => {
     setSelectedServiceId(service.id);
     setSelectedService(service);
+  }, []);
+
+  const selectDirection = useCallback((direction) => {
+    setSelectedDirection(direction);
   }, []);
 
   const visibleGroups = useMemo(() => {
@@ -560,7 +588,10 @@ export default function OrganisationPage() {
       id: 'ministry',
       type: 'ministry',
       position: { x: (chartWidth - MINISTRY_WIDTH) / 2, y: 24 },
-      data: {},
+      data: {
+        directionCount: organisation.directions.length,
+        agentCount: data.agents.length,
+      },
       draggable: false,
       selectable: false,
     };
@@ -582,9 +613,11 @@ export default function OrganisationPage() {
           type: 'direction',
           position: { x: directionX, y: groupY },
           data: {
+            direction: group.direction,
+            onSelect: selectDirection,
             name: group.direction.name,
             serviceCount: group.services.length,
-            agentCount: group.direction.agentCount,
+            agentCount: group.direction.allAgents.length,
             leader: leader ? getAgentName(leader) || 'Nom non renseigné' : '',
           },
           draggable: false,
@@ -676,17 +709,34 @@ export default function OrganisationPage() {
       nodes: [rootNode, ...directionNodes, ...serviceNodes],
       edges: builtEdges,
     };
-  }, [organisation, selectedServiceId, selectService, visibleGroups]);
+  }, [data.agents.length, organisation, selectedServiceId, selectDirection, selectService, visibleGroups]);
 
   const closeServiceDialog = useCallback(() => setSelectedService(null), []);
+  const closeDirectionDialog = useCallback(() => setSelectedDirection(null), []);
   const openAgent = useCallback((id) => {
     setSelectedService(null);
+    setSelectedDirection(null);
     navigate(`/agents/${id}`);
   }, [navigate]);
 
   const serviceAgents = selectedService
     ? getServiceAgents(organisation.agentsByService, selectedService.code)
     : [];
+  const serviceNames = useMemo(
+    () => new Map(data.services.map((service) => [
+      normalized(getServiceCode(service)),
+      service.nom,
+    ])),
+    [data.services]
+  );
+  const unassignedAgents = useMemo(
+    () => data.agents.filter((agent) =>
+      !serviceNames.has(normalized(
+        agent?.code_service || agent?.codeService || agent?.service?.code
+      ))
+    ).length,
+    [data.agents, serviceNames]
+  );
   const totalAgents = data.agents.length;
   const totalDirectors = organisation.directions.length;
   const totalServices = data.services.length;
@@ -737,66 +787,72 @@ export default function OrganisationPage() {
   }
 
   return (
-    <section className="page-section organisation-page">
-      <header className="org-page-heading">
+    <section className="page-section organisation-page rf-page">
+      <header className="rf-head">
         <div>
-          <span className="org-overline">MINISTÈRE DE L’ÉCONOMIE ET DES FINANCES</span>
-          <h1>Organigramme</h1>
-          <p>Explorez les directions, les services et leurs effectifs.</p>
+          <p className="rf-eyebrow">Ministère de l’Économie et des Finances</p>
+          <h1 className="rf-title">Organigramme</h1>
+          <p className="rf-lead">
+            Directions, services et agents du ministère. Explorez les directions, les services et leurs effectifs.
+          </p>
         </div>
-        <div className="org-heading-note">
-          <span className="org-live-dot" />
-          <span>Structure actuelle</span>
+        <div className="org-head-tools">
+          <span className="org-current-pill">Structure actuelle</span>
+          <button
+            type="button"
+            className="org-tool"
+            onClick={() => flowRef.current?.zoomOut({ duration: 180 })}
+            aria-label="Zoom arrière"
+          >
+            <Minus size={18} />
+          </button>
+          <button
+            type="button"
+            className="org-tool"
+            onClick={() => flowRef.current?.zoomIn({ duration: 180 })}
+            aria-label="Zoom avant"
+          >
+            <Plus size={18} />
+          </button>
+          <button
+            type="button"
+            className="org-tool"
+            onClick={fitDiagram}
+            aria-label="Recentrer et ajuster l’organigramme"
+          >
+            <Maximize size={16} />
+          </button>
         </div>
       </header>
 
-      <div className="org-overview" aria-label="Indicateurs de la structure">
-        <div className="org-overview-card">
-          <span className="org-overview-icon org-overview-icon-blue"><Building2 size={18} /></span>
-          <span><strong>{totalDirectors}</strong><small>Directions</small></span>
-        </div>
-        <div className="org-overview-card">
-          <span className="org-overview-icon org-overview-icon-teal"><Landmark size={18} /></span>
-          <span><strong>{totalServices}</strong><small>Services</small></span>
-        </div>
-        <div className="org-overview-card">
-          <span className="org-overview-icon org-overview-icon-slate"><Users size={18} /></span>
-          <span><strong>{totalAgents}</strong><small>Agents référencés</small></span>
-        </div>
+      <div className="org-stats" aria-label="Indicateurs de la structure">
+        <span><strong>{totalDirectors}</strong> Directions</span>
+        <span><strong>{totalServices}</strong> Services</span>
+        <span><strong>{totalAgents}</strong> Agents référencés</span>
       </div>
 
-      <section className="org-workspace" aria-label="Organigramme interactif">
-        <div className="org-workspace-heading">
-          <div>
-            <span className="org-overline">VUE HIÉRARCHIQUE</span>
-            <h2>Structure administrative</h2>
-          </div>
-          <div className="org-workspace-tools">
-            <label className="org-structure-search">
-              <Search size={16} aria-hidden="true" />
-              <input
-                type="search"
-                value={structureQuery}
-                onChange={(event) => setStructureQuery(event.target.value)}
-                placeholder="Rechercher une direction ou un service"
-                aria-label="Rechercher une direction ou un service"
-              />
-              {structureQuery && (
-                <button
-                  type="button"
-                  onClick={() => setStructureQuery('')}
-                  aria-label="Effacer la recherche"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </label>
-            <div className="org-legend">
-              <span><i className="org-legend-ministry" />Ministère</span>
-              <span><i className="org-legend-direction" />Direction</span>
-              <span><i className="org-legend-service" />Service interactif</span>
-            </div>
-          </div>
+      <section className="rf-card org-workspace" aria-label="Organigramme interactif">
+        <div className="org-structure-bar">
+          <label className="rf-search org-structure-search">
+            <Search size={16} aria-hidden="true" />
+            <input
+              type="search"
+              value={structureQuery}
+              onChange={(event) => setStructureQuery(event.target.value)}
+              placeholder="Rechercher une direction ou un service"
+              aria-label="Rechercher une direction ou un service"
+            />
+            {structureQuery && (
+              <button
+                type="button"
+                className="org-clear"
+                onClick={() => setStructureQuery('')}
+                aria-label="Effacer la recherche"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </label>
         </div>
         <div className="org-flow-shell">
           {totalServices === 0 ? (
@@ -810,7 +866,7 @@ export default function OrganisationPage() {
               <span className="org-empty-icon"><Search size={22} /></span>
               <strong>Aucun résultat pour « {structureQuery} »</strong>
               <span>Essayez un autre nom ou code de direction ou de service.</span>
-              <button type="button" onClick={() => setStructureQuery('')}>
+              <button type="button" className="rf-btn" onClick={() => setStructureQuery('')}>
                 Effacer la recherche
               </button>
             </div>
@@ -839,43 +895,54 @@ export default function OrganisationPage() {
             >
               <Background
                 variant={BackgroundVariant.Dots}
-                gap={24}
-                size={1}
-                color="#d9cfc1"
+                gap={22}
+                size={1.2}
+                color="rgb(43 29 20 / 0.14)"
               />
-              <div className="org-flow-controls" aria-label="Contrôles de l’organigramme">
-                <button type="button" onClick={() => flowRef.current?.zoomIn({ duration: 180 })} aria-label="Zoom avant">
-                  <ZoomIn size={17} />
-                </button>
-                <button type="button" onClick={() => flowRef.current?.zoomOut({ duration: 180 })} aria-label="Zoom arrière">
-                  <Minus size={17} />
-                </button>
-                <span className="org-control-divider" />
-                <button type="button" onClick={fitDiagram} aria-label="Recentrer et ajuster l’organigramme">
-                  <Maximize size={16} />
-                </button>
-              </div>
-              <div className="org-flow-hint">
-                <ArrowDownUp size={14} />
-                Faites glisser pour explorer · Cliquez sur un service pour voir ses agents
-              </div>
             </ReactFlow>
           )}
         </div>
-        <footer className="org-workspace-footer">
-          <span><span className="org-live-dot" /> {structureQuery
-            ? `${visibleGroups.reduce((count, group) => count + group.services.length, 0)} résultat(s) sur ${totalServices} services`
-            : `${totalServices} services affichés`}
+        <footer className="org-legend-bar">
+          <span className="org-legend-item"><i className="org-legend-ministry" />Ministère</span>
+          <span className="org-legend-item"><i className="org-legend-direction" />Direction</span>
+          <span className="org-legend-item"><i className="org-legend-service" />Service</span>
+          <span className="org-legend-note">
+            {structureQuery
+              ? `${visibleGroups.reduce((count, group) => count + group.services.length, 0)} résultat(s) sur ${totalServices} services`
+              : unassignedAgents > 0
+                ? `${unassignedAgents} ${unassignedAgents > 1 ? 'agents sans service renseigné' : 'agent sans service renseigné'}`
+                : `${totalServices} services affichés`}
           </span>
-          <span>Molette ou boutons pour zoomer · Glisser pour déplacer</span>
         </footer>
       </section>
 
       {selectedService && (
-        <ServiceAgentsDialog
-          service={selectedService}
+        <OrgAgentsDialog
+          eyebrow="Effectif du service"
+          title={selectedService.nom}
+          subtitle={[
+            selectedService.direction && typeof selectedService.direction === 'string'
+              ? selectedService.direction
+              : selectedService.direction?.nom,
+            `${serviceAgents.length} ${serviceAgents.length === 1 ? 'agent' : 'agents'}`,
+          ].filter(Boolean).join(' · ')}
           agents={serviceAgents}
+          serviceNames={serviceNames}
+          showManagerTag
           onClose={closeServiceDialog}
+          onAgentClick={openAgent}
+        />
+      )}
+
+      {selectedDirection && (
+        <OrgAgentsDialog
+          eyebrow="Effectif de la direction"
+          title={selectedDirection.name}
+          subtitle={`${selectedDirection.allAgents.length} ${selectedDirection.allAgents.length === 1 ? 'agent' : 'agents'} · ${selectedDirection.services.length} ${selectedDirection.services.length === 1 ? 'service' : 'services'}. Choisissez un service pour restreindre la liste.`}
+          agents={selectedDirection.allAgents}
+          services={selectedDirection.services}
+          serviceNames={serviceNames}
+          onClose={closeDirectionDialog}
           onAgentClick={openAgent}
         />
       )}
