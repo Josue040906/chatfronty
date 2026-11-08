@@ -23,6 +23,18 @@ describe('getNavigableAgents', () => {
     }]);
   });
 
+  it('shows only the candidates close to the best score', () => {
+    const candidate = (id, score) => ({ id, prenom: 'P', nom: `N${id}`, score_correspondance: score });
+    const shown = (scores) => getNavigableAgents([{
+      name: 'search_agents',
+      result: { agents: scores.map((score, index) => candidate(index + 1, score)) },
+    }]).map((agent) => agent.similarityPercent);
+
+    expect(shown([1, 0.44, 0.32])).toEqual([100]);
+    expect(shown([0.7, 0.62, 0.3])).toEqual([70, 62]);
+    expect(shown([null, null])).toEqual([null, null]);
+  });
+
   it('does not invent a percentage when the backend score is missing or invalid', () => {
     const agents = getNavigableAgents([{
       name: 'search_agents',
