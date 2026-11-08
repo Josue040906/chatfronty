@@ -882,3 +882,67 @@
     padding: 18px 14px 12px;
   }
 }
+
+/* ===== Refonte visuelle : assistant Bandy ===== */
+.assistant-floating-panel {
+  border-radius: 22px;
+  font-family: var(--font-ui);
+}
+
+.assistant-panel-header {
+  background: var(--color-surface);
+}
+
+.assistant-panel-avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-brand-strong));
+  box-shadow: 0 4px 12px rgba(47, 33, 27, 0.25);
+}
+
+.assistant-panel-identity strong {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.assistant-panel-identity span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assistant-suggestions button {
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.assistant-message-avatar {
+  border-radius: 50%;
+}
+
+.assistant-message-bot .assistant-message-content {
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+}
+
+.assistant-message-user .assistant-message-content {
+  border-radius: 16px;
+  border-top-right-radius: 4px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-brand-strong));
+}
+
+.assistant-panel-input textarea {
+  border-radius: 999px;
+  padding: 11px 16px;
+  background: var(--color-surface-sunken);
+}
+
+.assistant-panel-input button {
+  border-radius: 50%;
+}
