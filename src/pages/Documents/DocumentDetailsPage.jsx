@@ -443,7 +443,7 @@ export default function DocumentDetailsPage() {
   }
 
   return (
-    <div className="administration-page">
+    <div className="administration-page documents-flow-page">
       <div className="administration-header">
         <div>
           <button

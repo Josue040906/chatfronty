@@ -2749,3 +2749,89 @@ select[aria-label] option {
 .documents-page .administration-search {
   border-radius: var(--radius-pill);
 }
+
+/* Détail d'un document et nouveau document : habillage « maquette » */
+.documents-flow-page .administration-details-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  animation: documents-preview-in 500ms var(--ease-out) both;
+}
+
+/* Cercles dorés concentriques, comme sur les blocs d'en-tête de la maquette */
+.documents-flow-page .administration-details-card::after {
+  content: '';
+  position: absolute;
+  top: -90px;
+  right: -90px;
+  width: 260px;
+  height: 260px;
+  border: 1px solid rgb(184 134 63 / 0.28);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 36px rgb(184 134 63 / 0.06),
+    0 0 0 72px rgb(184 134 63 / 0.04);
+  pointer-events: none;
+  animation: login-breathe 9s ease-in-out infinite;
+}
+
+.documents-flow-page .administration-details-icon {
+  border-radius: 20px;
+  transition: transform var(--duration-base) var(--ease-spring);
+}
+
+.documents-flow-page .administration-details-card:hover .administration-details-icon {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.documents-flow-page .administration-details-section,
+.documents-flow-page .administration-details-content {
+  border-radius: var(--radius-lg);
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.documents-flow-page .administration-details-section:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.documents-flow-page .administration-form {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  animation: documents-preview-in 500ms var(--ease-out) both;
+}
+
+.documents-flow-page .administration-form-group input,
+.documents-flow-page .administration-form-group select {
+  border-radius: var(--radius-pill);
+  padding-inline: 16px;
+}
+
+.documents-flow-page .administration-form-group textarea {
+  border-radius: var(--radius-lg);
+}
+
+.documents-flow-page .administration-form-group input:hover,
+.documents-flow-page .administration-form-group select:hover,
+.documents-flow-page .administration-form-group textarea:hover {
+  border-color: var(--color-accent);
+}
+
+.documents-flow-page .administration-button-primary,
+.documents-flow-page .administration-button-secondary,
+.documents-flow-page .administration-button-danger {
+  border-radius: var(--radius-pill);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    background var(--duration-fast) ease,
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.documents-flow-page .administration-button-primary:hover:not(:disabled),
+.documents-flow-page .administration-button-secondary:hover:not(:disabled),
+.documents-flow-page .administration-button-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+}

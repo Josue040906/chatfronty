@@ -460,7 +460,7 @@ export default function NewDocumentPage({ user }) {
   }
 
   return (
-    <div className="administration-page">
+    <div className="administration-page documents-flow-page">
       <div className="administration-header">
         <div>
           <button
