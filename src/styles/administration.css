@@ -43,7 +43,7 @@
 
   font-family: 'Fraunces', Georgia, serif;
 
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 600;
   letter-spacing: -0.7px;
 }
@@ -99,7 +99,7 @@
 
   color: var(--color-text);
 
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 650;
 }
 
@@ -251,7 +251,7 @@
   }
 
   .administration-page-header h1 {
-    font-size: 30px;
+    font-size: 27px;
   }
 
   .administration-header-icon {
@@ -343,7 +343,7 @@
   background: transparent;
   color: var(--color-info);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .administration-search input::placeholder {
@@ -425,7 +425,7 @@
 .administration-list-content h2 {
   margin: 1px 0 7px;
   color: var(--color-text);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.4;
   font-weight: 650;
 }
@@ -474,7 +474,7 @@
   border-radius: 14px;
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .administration-state-error {
@@ -628,7 +628,7 @@
   color: var(--color-text);
 
   font-family: 'Fraunces', Georgia, serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -705,7 +705,7 @@
   color: var(--color-text);
 
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
 
   outline: none;
 
@@ -897,7 +897,7 @@
   margin: 0;
   color: var(--color-text);
   font-family: 'Fraunces', Georgia, serif;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.5px;
 }
@@ -943,7 +943,7 @@
 .administration-section-header h2 {
   margin: 0;
   color: var(--color-text);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 650;
 }
 
@@ -1015,7 +1015,7 @@
 
 @media (max-width: 640px) {
   .administration-header h1 {
-    font-size: 28px;
+    font-size: 25px;
   }
 
   .administration-form {
@@ -1086,7 +1086,7 @@
   font: 600 clamp(32px, 4vw, 48px) / 1.05 var(--font-display);
   letter-spacing: -0.015em;
 }
-.administration-page.rf-page .administration-hero p:not(.rf-eyebrow) { margin: 0; color: rgb(255 253 249 / 0.85); font-size: 16px; line-height: 1.55; }
+.administration-page.rf-page .administration-hero p:not(.rf-eyebrow) { margin: 0; color: rgb(255 253 249 / 0.85); font-size: 15px; line-height: 1.55; }
 .administration-page.rf-page .administration-header-icon {
   position: relative;
   flex: none;
@@ -1101,7 +1101,7 @@
 
 .administration-page.rf-page .administration-sections { display: grid; gap: 34px; }
 .administration-page.rf-page .administration-section-header { margin-bottom: 16px; }
-.administration-page.rf-page .administration-section-header h2 { margin: 0; font: 600 28px var(--font-display); color: var(--color-text); }
+.administration-page.rf-page .administration-section-header h2 { margin: 0; font: 600 25px var(--font-display); color: var(--color-text); }
 .administration-page.rf-page .administration-section-header p { margin: 4px 0 0; color: var(--color-text-muted); font-size: var(--text-md); }
 
 .administration-page.rf-page .administration-card-grid { display: grid; gap: 20px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1134,7 +1134,7 @@
   color: var(--color-accent-strong);
 }
 .administration-page.rf-page .administration-card-content { display: grid; gap: 4px; }
-.administration-page.rf-page .administration-card-content strong { color: var(--color-text); font: 600 22px var(--font-ui); }
+.administration-page.rf-page .administration-card-content strong { color: var(--color-text); font: 600 20px var(--font-ui); }
 .administration-page.rf-page .administration-card-content span { color: var(--color-text-muted); font-size: var(--text-md); }
 .administration-page.rf-page .administration-card-arrow {
   position: absolute;
@@ -1182,7 +1182,7 @@
   box-shadow: none;
 }
 .administration-page.rf-page .administration-page-header h1 { margin: 0; font: 600 clamp(30px, 3.2vw, 40px) / 1.1 var(--font-display); letter-spacing: -0.015em; color: var(--color-text); }
-.administration-page.rf-page .administration-page-header p { margin: 10px 0 0; color: var(--color-text-muted); font-size: 15px; }
+.administration-page.rf-page .administration-page-header p { margin: 10px 0 0; color: var(--color-text-muted); font-size: 14px; }
 .administration-page.rf-page .administration-eyebrow { display: block; margin: 0 0 8px; color: var(--color-accent-strong); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .administration-page.rf-page .administration-header-icon { display: none; }
 .administration-page.rf-page .administration-back-button {
@@ -1246,7 +1246,7 @@
   color: var(--color-accent-strong);
 }
 .administration-page.rf-page .administration-list-content { flex: 1; min-width: 0; }
-.administration-page.rf-page .administration-list-content h2 { margin: 0; font: 600 18px / 1.25 var(--font-ui); overflow-wrap: anywhere; }
+.administration-page.rf-page .administration-list-content h2 { margin: 0; font: 600 16px / 1.25 var(--font-ui); overflow-wrap: anywhere; }
 .administration-page.rf-page .administration-list-content p { margin: 3px 0 0; font-size: var(--text-md); overflow-wrap: anywhere; }
 .administration-page.rf-page .administration-list-meta {
   display: inline-block;
@@ -1296,7 +1296,7 @@
   animation: rf-pop 0.45s var(--ease-out) backwards;
 }
 .administration-page.rf-page .adm-modal h2,
-.administration-page.rf-page .administration-modal h2 { font: 600 28px / 1.15 var(--font-display) !important; color: var(--color-text) !important; }
+.administration-page.rf-page .administration-modal h2 { font: 600 25px / 1.15 var(--font-display) !important; color: var(--color-text) !important; }
 .administration-page.rf-page .adm-modal :is(input:not([type='checkbox']), select, textarea),
 .administration-page.rf-page .administration-modal :is(input:not([type='checkbox']), select, textarea) {
   min-height: 46px;

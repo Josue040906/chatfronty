@@ -21,7 +21,7 @@
 .profil-heading h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(30px, 3.4vw, 42px);
+  font-size: clamp(27px, 3.4vw, 37px);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.05;
@@ -112,7 +112,7 @@
 .profil-identity-content h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 23px;
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.15;
@@ -156,7 +156,7 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
-.profil-photo-pending > span { min-width: 0; font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.profil-photo-pending > span { min-width: 0; font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
 .profil-photo-pending > div { display: flex; gap: 8px; }
 .profil-photo-pending button { height: 36px; padding: 0 14px; font-size: 12.5px; }
 
@@ -189,7 +189,7 @@
 .profil-section-heading h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 23px;
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--color-text);
@@ -289,7 +289,7 @@
   padding: 0 22px;
   border-radius: 999px;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: transform var(--duration-fast), background var(--duration-fast), box-shadow var(--duration-fast);
@@ -343,7 +343,7 @@
   background: var(--color-accent-soft);
   color: var(--color-accent-strong);
 }
-.profil-password-heading strong { display: block; font-size: 16px; font-weight: 700; color: var(--color-text); }
+.profil-password-heading strong { display: block; font-size: 15px; font-weight: 700; color: var(--color-text); }
 .profil-password-heading p { margin: 2px 0 0; color: var(--color-text-muted); font-size: 13px; }
 
 .profil-password-form {
@@ -392,7 +392,7 @@
   background: var(--color-danger-soft);
   color: var(--color-danger);
 }
-.profil-error h1 { margin: 0 0 4px; font-family: var(--font-display); font-size: 22px; color: var(--color-text); }
+.profil-error h1 { margin: 0 0 4px; font-family: var(--font-display); font-size: 20px; color: var(--color-text); }
 .profil-error p { margin: 0; }
 
 /* ---------- Adaptatif ---------- */
@@ -417,7 +417,7 @@
 
 .profil-avatar-initials {
   font-family: var(--font-display);
-  font-size: 46px;
+  font-size: 40px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }

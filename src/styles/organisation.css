@@ -60,7 +60,7 @@
 
 .org-stats strong {
   color: var(--color-text);
-  font: 600 24px var(--font-display);
+  font: 600 22px var(--font-display);
 }
 
 /* ---------- Toile ---------- */
@@ -131,7 +131,7 @@
   text-transform: uppercase;
 }
 
-.org-ministry-node strong { display: block; margin-top: 6px; font: 600 20px / 1.15 var(--font-display); }
+.org-ministry-node strong { display: block; margin-top: 6px; font: 600 18px / 1.15 var(--font-display); }
 .org-ministry-node small { display: block; margin-top: 2px; font-size: 12px; color: rgb(255 253 249 / 0.78); }
 
 /* Direction */
@@ -223,12 +223,12 @@
   border-radius: 50%;
   background: var(--color-brand);
   color: var(--color-on-brand);
-  font: 600 18px var(--font-display);
+  font: 600 16px var(--font-display);
   box-shadow: 0 0 0 4px rgb(184 134 63 / 0.18);
 }
 
 .org-service-copy { min-width: 0; flex: 1; display: grid; gap: 2px; }
-.org-service-copy strong { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.org-service-copy strong { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .org-service-copy small { font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .org-service-code {
@@ -279,7 +279,7 @@
 
 .org-state-card { margin-top: 48px; border-radius: 30px; background: var(--color-surface); box-shadow: 0 16px 32px -18px rgb(var(--shadow-ink) / 0.18); }
 .org-empty strong,
-.org-state-card strong { color: var(--color-text); font: 600 20px var(--font-display); }
+.org-state-card strong { color: var(--color-text); font: 600 18px var(--font-display); }
 .org-empty-icon,
 .org-loading-mark {
   display: grid;
@@ -326,7 +326,7 @@
 
 .org-dialog-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
 .org-dialog-header .rf-eyebrow { margin-bottom: 8px; }
-.org-dialog-header h2 { margin: 0; font: 600 28px / 1.15 var(--font-display); overflow-wrap: anywhere; }
+.org-dialog-header h2 { margin: 0; font: 600 25px / 1.15 var(--font-display); overflow-wrap: anywhere; }
 .org-dialog-header p { margin: 6px 0 0; color: var(--color-text-muted); font-size: var(--text-md); }
 .org-dialog-hint { margin: 0 0 14px; color: var(--color-text-muted); font-size: var(--text-sm); }
 
@@ -362,7 +362,7 @@
   height: 44px;
   overflow: hidden;
   border-radius: 50%;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 .org-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -399,7 +399,7 @@
   .org-head-tools { flex-wrap: wrap; }
   .org-legend-note { margin-left: 0; width: 100%; }
   .org-dialog { padding: 22px; border-radius: 26px; }
-  .org-dialog-header h2 { font-size: 22px; }
+  .org-dialog-header h2 { font-size: 20px; }
   .org-agent-tag { display: none; }
 }
 

@@ -55,7 +55,7 @@
   color: var(--color-text);
 
   font-family: 'Fraunces', Georgia, serif;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.16em;
 
@@ -179,6 +179,35 @@
    PANNEAU DES NOTIFICATIONS — maquette « Notifications »
    ========================================================= */
 
+.notification-wrapper { position: relative; }
+
+/* Compteur de non lues : même pastille dorée que « Demandes » dans le menu */
+.notification-count {
+  position: absolute;
+  top: -7px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border: 2px solid var(--color-bg);
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-menu);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  animation: notification-count-pulse 2.4s ease-out infinite;
+}
+@keyframes notification-count-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0.5); }
+  70%, 100% { box-shadow: 0 0 0 9px rgb(184 134 63 / 0); }
+}
+@media (prefers-reduced-motion: reduce) { .notification-count { animation: none; } }
+
 .notification-panel {
   position: absolute;
   top: calc(100% + 12px);
@@ -208,7 +237,7 @@
 
 .notification-panel-header strong {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--color-text);
@@ -286,10 +315,10 @@
 }
 
 .notification-item-content { display: grid; gap: 3px; min-width: 0; }
-.notification-item-content strong { font-size: 14.5px; font-weight: 700; color: var(--color-text); }
+.notification-item-content strong { font-size: 13.5px; font-weight: 700; color: var(--color-text); }
 .notification-item-content .notification-message {
   color: var(--color-text-muted);
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.45;
 }
 .notification-item-content > span:last-child { color: var(--color-text-muted); font-size: 12px; }
@@ -329,7 +358,7 @@
   text-align: center;
 }
 .notification-empty svg { color: var(--color-accent); }
-.notification-empty p { margin: 0; font-size: 14px; }
+.notification-empty p { margin: 0; font-size: 13px; }
 
 .notification-error,
 .notification-error-state {
@@ -407,7 +436,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.header-user-info strong { font-size: 14px; font-weight: 700; line-height: 1.2; }
+.header-user-info strong { font-size: 13px; font-weight: 700; line-height: 1.2; }
 .header-user-info span { color: var(--color-text-muted); font-size: 12px; }
 
 .header-user-trigger > svg { color: var(--color-text-muted); transition: transform 0.2s var(--ease-out); }
@@ -440,7 +469,7 @@
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -508,7 +537,7 @@
   }
 
   .header-brand-mobile strong {
-    font-size: 15px;
+    font-size: 14px;
     letter-spacing: 0.13em;
   }
 
