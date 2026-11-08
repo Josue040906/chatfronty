@@ -1071,11 +1071,20 @@ export default function CareerAnalysisPage({ user }) {
             tabIndex="-1"
           >
             <header className="career-dialog-header">
-              <h2 id="career-dialog-title">{dialog === 'personal' ? 'Modifier les informations personnelles'
-                : dialog === 'mutation' ? `Muter ${formatName(agent) || 'cet agent'}`
-                  : dialog === 'diploma' ? 'Ajouter un diplôme'
-                  : dialog === 'reclassement' ? 'Préparer le reclassement'
-                    : 'Vérifier l’avancement d’échelon'}</h2>
+              <div>
+                <span className="career-dialog-eyebrow">
+                  {dialog === 'personal' ? 'Informations personnelles'
+                    : dialog === 'mutation' ? 'Mutation'
+                      : dialog === 'diploma' ? 'Diplôme'
+                        : dialog === 'reclassement' ? 'Reclassement'
+                          : 'Avancement d’échelon'}
+                </span>
+                <h2 id="career-dialog-title">{dialog === 'personal' ? 'Modifier les informations personnelles'
+                  : dialog === 'mutation' ? `Muter ${formatName(agent) || 'cet agent'}`
+                    : dialog === 'diploma' ? 'Ajouter un diplôme'
+                    : dialog === 'reclassement' ? 'Préparer le reclassement'
+                      : 'Vérifier l’avancement d’échelon'}</h2>
+              </div>
               <button type="button" aria-label="Fermer" onClick={closeDialog}><X size={18} /></button>
             </header>
 
