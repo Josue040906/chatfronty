@@ -19,8 +19,26 @@ describe('getNavigableAgents', () => {
       id: '42',
       name: 'Miora RAKOTO',
       meta: 'Gestionnaire · Finances',
+      reason: '',
       similarityPercent: 87,
     }]);
+  });
+
+  it('says on one line why the API kept the agent', () => {
+    const [agent] = getNavigableAgents([{
+      name: 'search_agents',
+      result: {
+        agents: [{
+          id: 7,
+          prenom: 'Zo',
+          nom: 'RABARISON',
+          score_correspondance: null,
+          correspondance: { diplomes: 'Licence Informatique (Université d’Antananarivo, 2017)', age: 36, vide: '' },
+        }],
+      },
+    }]);
+
+    expect(agent.reason).toBe('Licence Informatique (Université d’Antananarivo, 2017) · 36');
   });
 
   it('keeps every approximate candidate, but only near ones beside an exact match', () => {

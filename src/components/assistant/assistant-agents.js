@@ -5,6 +5,23 @@
 const EXACT_SCORE = 0.995;
 const EXACT_MARGIN = 0.15;
 
+const MAX_REASON = 160;
+
+/**
+ * Pourquoi l'API a retenu l'agent (champ « correspondance ») : les valeurs
+ * des critères qui l'ont fait choisir, en clair, sur une ligne.
+ */
+function matchReason(agent) {
+  const match = agent?.correspondance;
+  if (!match || typeof match !== 'object' || Array.isArray(match)) {
+    return '';
+  }
+  const reason = Object.values(match)
+    .filter((value) => ['string', 'number'].includes(typeof value) && String(value).trim())
+    .join(' · ');
+  return reason.length > MAX_REASON ? `${reason.slice(0, MAX_REASON - 1)}…` : reason;
+}
+
 function validScore(agent) {
   return Number.isFinite(agent?.score_correspondance)
     && agent.score_correspondance >= 0
@@ -45,6 +62,7 @@ export function getNavigableAgents(toolResults) {
         meta: [agent.poste, agent.service]
           .filter((part) => typeof part === 'string' && part.trim())
           .join(' · '),
+        reason: matchReason(agent),
         score: validScore(agent),
       });
     }

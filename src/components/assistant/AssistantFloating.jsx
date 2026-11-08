@@ -103,6 +103,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                 <span className="assistant-agent-card-info">
                   <strong>{agent.name}</strong>
                   {agent.meta && <small>{agent.meta}</small>}
+                  {agent.reason && <small className="assistant-agent-card-reason">{agent.reason}</small>}
                   {agent.similarityPercent !== null && (
                     <small>Similarité du nom : {agent.similarityPercent}%</small>
                   )}
