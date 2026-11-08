@@ -2719,3 +2719,33 @@ select[aria-label] option {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Habillage « maquette » de la liste des documents */
+.documents-page .administration-table-wrapper {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  animation: documents-preview-in 500ms var(--ease-out) both;
+}
+
+.documents-page .administration-table tbody tr {
+  transition: background var(--duration-fast) ease;
+}
+
+.documents-page .administration-table-action {
+  border-radius: var(--radius-pill);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    background var(--duration-fast) ease;
+}
+
+.documents-page .administration-table-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.documents-page .administration-status {
+  border-radius: var(--radius-pill);
+}
+
+.documents-page .administration-search {
+  border-radius: var(--radius-pill);
+}
