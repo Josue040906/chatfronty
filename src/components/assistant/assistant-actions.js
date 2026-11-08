@@ -25,10 +25,11 @@ const AGENT_RECORD = /^\/agents\/\d+$/;
  * Le paramètre « nom » d'une navigation sert seulement au libellé du bouton
  * (« Ouvrir la fiche de Hery Randria ») : il est retiré de l'adresse ouverte.
  */
-function navigationTarget(route) {
+function navigationTarget(route, knownNames = new Map()) {
   const [path, query = ''] = route.split('?');
   const params = new URLSearchParams(query);
-  const name = (params.get('nom') || '').trim().slice(0, 80);
+  // Sans « nom », le nom de l'agent trouvé par la recherche du même tour.
+  const name = ((params.get('nom') || '').trim() || knownNames.get(path) || '').slice(0, 80);
   params.delete('nom');
   const rest = params.toString();
   const label = name && AGENT_RECORD.test(path)
@@ -110,42 +111,44 @@ export function getPreparedActions(actions) {
 }
 
 /**
- * Actions de navigation affichables, sans doublon avec les cartes d'agents
- * déjà présentes (agentIds) : une même fiche n'a qu'un seul bouton.
+ * Actions de navigation affichables, une seule par page. knownAgents (les
+ * agents de la recherche du même tour) donne le nom d'un agent dont Bandy
+ * n'a pas transmis le nom.
  */
-export function getNavigationActions(actions, agentIds = []) {
+export function getNavigationActions(actions, knownAgents = []) {
   if (!Array.isArray(actions)) {
     return [];
   }
-  const agentRoutes = new Set(agentIds.map((id) => `/agents/${id}`));
+  const knownNames = new Map(knownAgents.map((agent) => [`/agents/${agent.id}`, agent.name]));
   const routes = new Map();
   for (const action of actions) {
     if (action?.type !== 'NAVIGATE' || !isInternalRoute(action.route)) {
       continue;
     }
-    const target = navigationTarget(action.route);
-    if (agentRoutes.has(target.route) || routes.has(target.route)) {
-      continue;
+    const target = navigationTarget(action.route, knownNames);
+    if (!routes.has(target.route)) {
+      routes.set(target.route, target);
     }
-    routes.set(target.route, target);
   }
   return [...routes.values()];
 }
 
 /**
- * Ce que la bulle de Bandy affiche sous son texte. Quand la réponse contient
- * une tâche préparée ou à confirmer, la recherche qui a servi à trouver
- * l'agent n'est qu'une étape intermédiaire : ses cartes ne sont pas montrées,
- * pour que le bouton de la tâche soit le seul à suivre.
+ * Ce que la bulle de Bandy affiche sous son texte. Quand Bandy propose une
+ * action (ouvrir une page, une tâche préparée ou à confirmer), la recherche
+ * qui a servi à trouver les agents n'est qu'une étape intermédiaire : ses
+ * cartes ne sont pas montrées, pour que les boutons proposés soient les seuls
+ * à suivre.
  */
 export function buildBandyReply(response) {
   const prepared = getPreparedActions(response?.actions);
   const confirmations = getConfirmationActions(response?.actions);
-  const hasTask = prepared.length > 0 || confirmations.length > 0;
-  const agents = hasTask ? [] : getNavigableAgents(response?.toolResults);
+  const found = getNavigableAgents(response?.toolResults);
+  const navigation = getNavigationActions(response?.actions, found);
+  const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
   return {
-    agents,
-    navigation: getNavigationActions(response?.actions, agents.map((agent) => agent.id)),
+    agents: proposesAction ? [] : found,
+    navigation,
     prepared,
     confirmations,
   };

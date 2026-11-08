@@ -105,13 +105,12 @@ describe('getNavigationActions', () => {
     ])).toEqual([]);
   });
 
-  it('ignores other action types and duplicates, and an agent card already shown', () => {
+  it('ignores other action types and duplicates', () => {
     expect(getNavigationActions([
       { type: 'PREPARE', route: '/agents/7', fields: { telephone: '034' } },
-      { type: 'NAVIGATE', route: '/agents/7' },
       { type: 'NAVIGATE', route: '/agents' },
       { type: 'NAVIGATE', route: '/agents' },
-    ], ['7'])).toEqual([
+    ])).toEqual([
       { route: '/agents', label: 'Ouvrir la liste des agents' },
     ]);
   });
@@ -121,10 +120,19 @@ describe('getNavigationActions', () => {
       { type: 'NAVIGATE', route: '/agents/16?nom=Hery%20Randria' },
       { type: 'NAVIGATE', route: '/agents/18?nom=Haja%20Ramanana' },
       { type: 'NAVIGATE', route: '/agents/16' },
-      { type: 'NAVIGATE', route: '/agents/7?nom=Tiana' },
-    ], ['7'])).toEqual([
+    ])).toEqual([
       { route: '/agents/16', label: 'Ouvrir la fiche de Hery Randria' },
       { route: '/agents/18', label: 'Ouvrir la fiche de Haja Ramanana' },
+    ]);
+  });
+
+  it('takes the name from the search of the same turn when Bandy sent none', () => {
+    expect(getNavigationActions(
+      [{ type: 'NAVIGATE', route: '/agents/13' }, { type: 'NAVIGATE', route: '/agents/99' }],
+      [{ id: '13', name: 'Tiana ANDRIAMIHARISOA' }],
+    )).toEqual([
+      { route: '/agents/13', label: 'Ouvrir la fiche de Tiana ANDRIAMIHARISOA' },
+      { route: '/agents/99', label: 'Ouvrir la fiche de l’agent' },
     ]);
   });
 
@@ -165,6 +173,18 @@ describe('buildBandyReply', () => {
     expect(reply.agents).toEqual([]);
     expect(reply.prepared).toHaveLength(1);
     expect(reply.prepared[0].label).toBe('Ouvrir la modification préremplie');
+  });
+
+  it('shows only the proposed buttons when Bandy opens records it found', () => {
+    const reply = buildBandyReply({
+      toolResults: searchCards,
+      actions: [{ type: 'NAVIGATE', tool: 'open_agent_record', route: '/agents/3' }],
+    });
+
+    expect(reply.agents).toEqual([]);
+    expect(reply.navigation).toEqual([
+      { route: '/agents/3', label: 'Ouvrir la fiche de Toky RAZAFINDRAIBE' },
+    ]);
   });
 
   it('keeps the search cards for a plain search', () => {

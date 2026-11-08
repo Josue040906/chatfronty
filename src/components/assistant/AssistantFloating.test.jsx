@@ -23,7 +23,7 @@ describe('getNavigableAgents', () => {
     }]);
   });
 
-  it('shows only the candidates close to the best score', () => {
+  it('keeps every approximate candidate, but only near ones beside an exact match', () => {
     const candidate = (id, score) => ({ id, prenom: 'P', nom: `N${id}`, score_correspondance: score });
     const shown = (scores) => getNavigableAgents([{
       name: 'search_agents',
@@ -31,7 +31,8 @@ describe('getNavigableAgents', () => {
     }]).map((agent) => agent.similarityPercent);
 
     expect(shown([1, 0.44, 0.32])).toEqual([100]);
-    expect(shown([0.7, 0.62, 0.3])).toEqual([70, 62]);
+    expect(shown([1, 0.9, 0.5])).toEqual([100, 90]);
+    expect(shown([0.7, 0.62, 0.3])).toEqual([70, 62, 30]);
     expect(shown([null, null])).toEqual([null, null]);
   });
 
