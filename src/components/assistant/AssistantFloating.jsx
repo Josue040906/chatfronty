@@ -35,6 +35,7 @@ import {
   storeConversation,
 } from './assistant-conversation-storage';
 import { toUiMessages } from './assistant-history';
+import AssistantTodo from './AssistantTodo';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
@@ -1124,6 +1125,7 @@ export default function AssistantFloating({ user }) {
                 </p>
                 {!archivedConversation && (
                   <>
+                    <AssistantTodo onOpen={openRoute} disabled={loading || Boolean(failedSend)} />
                     <div className="assistant-suggestions" aria-label="Suggestions">
                       {SUGGESTIONS.map((suggestion) => (
                         <button

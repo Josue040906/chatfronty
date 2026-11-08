@@ -38,6 +38,22 @@ function navigationTarget(route, knownNames = new Map()) {
   return { route: rest ? `${path}?${rest}` : path, label };
 }
 
+/**
+ * Éléments « À faire » affichables : un libellé, un nombre positif et une
+ * route interne. L'API décide de ce qui est listé ; le front ne fait que
+ * l'afficher, sans rien suivre d'autre qu'une route de l'application.
+ */
+export function getTodoItems(elements) {
+  if (!Array.isArray(elements)) {
+    return [];
+  }
+  return elements
+    .filter((element) => typeof element?.libelle === 'string' && element.libelle.trim()
+      && Number.isSafeInteger(element.nombre) && element.nombre > 0
+      && isInternalRoute(element.route))
+    .map(({ libelle, nombre, route }) => ({ label: libelle.trim(), count: nombre, route }));
+}
+
 const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
 
 /** « dateEffetSouhaitee » → « Date effet souhaitee » : libellé lisible d'un champ. */

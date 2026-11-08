@@ -5,6 +5,7 @@ import {
   getConfirmationActions,
   getNavigationActions,
   getPreparedActions,
+  getTodoItems,
   isInternalRoute,
 } from './assistant-actions';
 
@@ -193,5 +194,28 @@ describe('buildBandyReply', () => {
     // Micka (53 %) est trop loin de Toky (100 %) pour être proposé.
     expect(reply.agents.map((agent) => agent.id)).toEqual(['3']);
     expect(reply.prepared).toEqual([]);
+  });
+});
+
+describe('getTodoItems', () => {
+  it('keeps what the RH API listed, in its order', () => {
+    expect(getTodoItems([
+      { code: 'documents_brouillon', libelle: 'Documents en brouillon', nombre: 6, route: '/documents' },
+      { code: 'dossiers_incomplets', libelle: 'Dossiers d’agents incomplets', nombre: 24, route: '/agents' },
+    ])).toEqual([
+      { label: 'Documents en brouillon', count: 6, route: '/documents' },
+      { label: 'Dossiers d’agents incomplets', count: 24, route: '/agents' },
+    ]);
+  });
+
+  it('never follows an external route and drops empty or malformed items', () => {
+    expect(getTodoItems([
+      { libelle: 'Piège', nombre: 1, route: 'https://evil.test' },
+      { libelle: 'Zéro', nombre: 0, route: '/documents' },
+      { libelle: ' ', nombre: 2, route: '/documents' },
+      { libelle: 'Décimal', nombre: 1.5, route: '/documents' },
+      null,
+    ])).toEqual([]);
+    expect(getTodoItems(undefined)).toEqual([]);
   });
 });
