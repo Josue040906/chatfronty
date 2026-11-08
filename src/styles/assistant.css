@@ -1116,3 +1116,106 @@
   transform: translateY(-50%);
   gap: 0;
 }
+
+/* Bulles : couleur unie, sans dégradé */
+.assistant-message-user .assistant-message-content {
+  background: var(--color-brand-strong);
+}
+
+.assistant-message-bot .assistant-message-content {
+  background: var(--color-surface-sunken);
+  border-color: transparent;
+}
+
+.assistant-panel-input button:not(:disabled) {
+  background: var(--color-brand-strong);
+}
+
+/* Carte de fiche proposée par Bandy (maquette : « Ouvrir la fiche ») */
+.assistant-message-action.assistant-agent-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px 14px;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 20px;
+  background: linear-gradient(150deg, #6b4a32, #3e2a1d);
+  color: #fffdf9;
+}
+
+.assistant-message-action.assistant-agent-card:hover {
+  background: linear-gradient(150deg, #7a553a, #46301f);
+}
+
+.assistant-agent-card-avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f3e6cf;
+  color: #7c5818;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.assistant-agent-card-info {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.assistant-agent-card-info strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.assistant-message-action.assistant-agent-card small {
+  color: rgba(255, 253, 249, 0.78);
+}
+
+.assistant-agent-card-cta {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fffdf9;
+  color: #4e3422;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.assistant-message {
+  align-items: flex-start;
+}
+
+.assistant-message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(86%, 680px);
+}
+
+.assistant-message-user .assistant-message-body {
+  align-items: flex-end;
+}
+
+.assistant-message-body .assistant-message-content {
+  max-width: 100%;
+}
+
+.assistant-message-body .assistant-message-actions {
+  width: 100%;
+  margin: 0;
+}

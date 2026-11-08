@@ -59,6 +59,15 @@ function formatChatDate(value) {
   }).format(date);
 }
 
+function getInitials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+}
+
 const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
   return (
     <div
@@ -67,28 +76,37 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenAgent }) {
       {item.role === 'assistant' && (
         <div className="assistant-message-avatar"><Bot size={14} /></div>
       )}
-      <div className="assistant-message-content">{item.content}</div>
-      {item.agents?.length > 0 && (
-        <div className="assistant-message-actions">
-          {item.agents.map((agent) => (
-            <button
-              key={agent.id}
-              type="button"
-              className="assistant-message-action"
-              onClick={() => onOpenAgent(agent.id)}
-            >
-              <span>
-                Ouvrir la fiche de {agent.name}
-                {agent.meta && <small>{agent.meta}</small>}
-                {agent.similarityPercent !== null && (
-                  <small>Similarité du nom : {agent.similarityPercent}%</small>
-                )}
-              </span>
-              <ChevronRight size={15} />
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="assistant-message-body">
+        <div className="assistant-message-content">{item.content}</div>
+        {item.agents?.length > 0 && (
+          <div className="assistant-message-actions">
+            {item.agents.map((agent) => (
+              <button
+                key={agent.id}
+                type="button"
+                className="assistant-message-action assistant-agent-card"
+                aria-label={`Ouvrir la fiche de ${agent.name}`}
+                onClick={() => onOpenAgent(agent.id)}
+              >
+                <span className="assistant-agent-card-avatar" aria-hidden="true">
+                  {getInitials(agent.name)}
+                </span>
+                <span className="assistant-agent-card-info">
+                  <strong>{agent.name}</strong>
+                  {agent.meta && <small>{agent.meta}</small>}
+                  {agent.similarityPercent !== null && (
+                    <small>Similarité du nom : {agent.similarityPercent}%</small>
+                  )}
+                </span>
+                <span className="assistant-agent-card-cta" aria-hidden="true">
+                  Ouvrir la fiche
+                  <ChevronRight size={15} />
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 });
