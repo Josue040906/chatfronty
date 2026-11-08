@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Eye,
   FileText,
@@ -110,6 +110,9 @@ export default function DocumentsPage() {
   const [statusFilter, setStatusFilter] = useState('TOUS');
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openingPdfId, setOpeningPdfId] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -216,6 +219,39 @@ export default function DocumentsPage() {
       );
     } finally {
       setOpeningPdfId(null);
+    }
+  }
+
+  const closePreview = useCallback(() => {
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return '';
+    });
+    setPreviewError('');
+  }, []);
+
+  function closeDetail() {
+    closePreview();
+    setSelectedDocument(null);
+  }
+
+  async function handlePreviewPdf(documentData) {
+    setPreviewLoading(true);
+    setPreviewError('');
+
+    try {
+      const pdf = await getDocumentRequestPdf(documentData.id);
+      setPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current);
+        return URL.createObjectURL(pdf);
+      });
+    } catch (err) {
+      console.error(err);
+      setPreviewError(
+        err?.message || 'Le PDF de ce document ne peut pas être affiché.'
+      );
+    } finally {
+      setPreviewLoading(false);
     }
   }
 
@@ -413,7 +449,7 @@ export default function DocumentsPage() {
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setSelectedDocument(null);
+              closeDetail();
             }
           }}
         >
@@ -431,7 +467,7 @@ export default function DocumentsPage() {
               <button
                 type="button"
                 className="administration-modal-close"
-                onClick={() => setSelectedDocument(null)}
+                onClick={() => closeDetail()}
                 aria-label="Fermer les détails"
               >
                 <X size={18} />
@@ -521,13 +557,46 @@ export default function DocumentsPage() {
                   Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
                 </p>
               )}
+              {previewError && (
+                <p className="administration-form-info" role="alert">
+                  {previewError}
+                </p>
+              )}
+              {previewUrl && (
+                <iframe
+                  className="documents-pdf-preview"
+                  src={previewUrl}
+                  title="Aperçu du document PDF"
+                />
+              )}
               <div className="administration-form-actions">
                 <button
                   type="button"
                   className="administration-button-secondary"
-                  onClick={() => setSelectedDocument(null)}
+                  onClick={closeDetail}
                 >
                   Fermer
+                </button>
+                <button
+                  type="button"
+                  className="administration-button-secondary"
+                  onClick={() =>
+                    previewUrl
+                      ? closePreview()
+                      : handlePreviewPdf(selectedDocument)
+                  }
+                  disabled={
+                    !canOpenPdf(
+                      typeById.get(String(selectedDocument.typeDocumentId))
+                    ) || previewLoading
+                  }
+                >
+                  <Eye size={18} />
+                  {previewLoading
+                    ? 'Chargement...'
+                    : previewUrl
+                      ? 'Masquer l’aperçu'
+                      : 'Aperçu PDF'}
                 </button>
                 <button
                   type="button"
