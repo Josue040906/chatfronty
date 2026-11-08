@@ -392,7 +392,7 @@ export default function ProfilPage({ user, onUserUpdated }) {
   const nomComplet = formatName(profil);
 
   return (
-    <div className="profil-page">
+    <div className="profil-page rf-page">
 
       <section className="profil-heading">
         <div>
@@ -409,7 +409,13 @@ export default function ProfilPage({ user, onUserUpdated }) {
         </div>
       </section>
 
+      <div className="profil-layout">
+      <div className="profil-side">
       <section className="profil-identity-card">
+        <svg className="profil-identity-circles" viewBox="0 0 340 200" aria-hidden="true">
+          <circle cx="170" cy="150" r="110" />
+          <circle cx="170" cy="150" r="160" />
+        </svg>
 
         <div className="profil-avatar-wrapper">
           <div className="profil-avatar">
@@ -419,7 +425,9 @@ export default function ProfilPage({ user, onUserUpdated }) {
                 alt={`Photo de ${nomComplet}`}
               />
             ) : (
-              <UserRound size={38} />
+              <span className="profil-avatar-initials" aria-hidden="true">
+                {`${profil.prenom?.[0] || ''}${profil.nom?.[0] || ''}`.toUpperCase() || <UserRound size={38} />}
+              </span>
             )}
           </div>
 
@@ -495,7 +503,9 @@ export default function ProfilPage({ user, onUserUpdated }) {
           </div>
         </div>
       )}
+      </div>
 
+      <div className="profil-main">
       <section className="profil-section">
 
         <div className="profil-section-heading">
@@ -808,6 +818,9 @@ export default function ProfilPage({ user, onUserUpdated }) {
 <div className="profil-password-section">
 
   <div className="profil-password-heading">
+    <span className="profil-password-icon" aria-hidden="true">
+      <Lock size={18} />
+    </span>
     <div>
       <strong>Modifier mon mot de passe</strong>
 
@@ -895,6 +908,8 @@ export default function ProfilPage({ user, onUserUpdated }) {
 </div>
 
       </section>
+      </div>
+      </div>
 
     </div>
   );

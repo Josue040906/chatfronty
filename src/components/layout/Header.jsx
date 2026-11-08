@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bell,
   ChevronDown,
+  LogOut,
   Menu,
   Trash2,
   UserRound,
@@ -438,7 +439,12 @@ export default function Header({
                   onError={() => setFailedAvatarUrl(avatarUrl)}
                 />
               ) : (
-                <UserRound size={17} />
+                (displayName || '')
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((part) => part[0].toUpperCase())
+                  .join('') || <UserRound size={17} />
               )}
             </span>
 
@@ -463,6 +469,7 @@ export default function Header({
               <div className="header-user-dropdown-divider" />
 
               <button type="button" onClick={deconnecter}>
+                <LogOut size={16} />
                 <span>Déconnexion</span>
               </button>
             </div>

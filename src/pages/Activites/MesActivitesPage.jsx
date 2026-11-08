@@ -94,19 +94,31 @@ export default function MesActivitesPage() {
     };
   }, []);
 
+  // Regroupement par jour (présentation uniquement) : l'ordre reçu est conservé.
+  const jours = [];
+  activites.forEach((activite) => {
+    const { date } = formaterDateHeure(activite.dateHeure);
+    const dernier = jours[jours.length - 1];
+    if (dernier && dernier.date === date) {
+      dernier.items.push(activite);
+    } else {
+      jours.push({ date, items: [activite] });
+    }
+  });
+
   return (
-    <section className="activities-page">
+    <section className="activities-page rf-page">
       <div className="activities-header">
+        <svg className="activities-hero-circles" viewBox="0 0 380 380" aria-hidden="true">
+          <circle cx="190" cy="190" r="120" />
+          <circle cx="190" cy="190" r="170" />
+          <circle cx="190" cy="190" r="220" />
+        </svg>
+
         <div>
-          <span className="activities-eyebrow">
-            Espace personnel
-          </span>
-
+          <span className="activities-eyebrow">Espace personnel</span>
           <h1>Mes activités</h1>
-
-          <p>
-            Consultez l’historique des actions réalisées dans SYGPERS.
-          </p>
+          <p>Consultez l’historique des actions réalisées dans SYGPERS.</p>
         </div>
 
         <div className="activities-header-icon">
@@ -117,10 +129,7 @@ export default function MesActivitesPage() {
       <div className="activities-content">
         <div className="activities-section-header">
           <div className="activities-section-title">
-            <span className="activities-section-label">
-              Votre espace
-            </span>
-
+            <span className="activities-section-label">Votre espace</span>
             <h2>Historique des activités</h2>
           </div>
 
@@ -167,44 +176,48 @@ export default function MesActivitesPage() {
           </div>
         ) : (
           <div className="activities-list" aria-live="polite">
-            {activites.map((activite) => {
-              const { date, heure } = formaterDateHeure(activite.dateHeure);
-              const type = activite.typeAction || '';
-              const Icon = TYPE_ICONS[type] || History;
+            {jours.map((jour) => (
+              <section className="activities-day" key={jour.date}>
+                <h3 className="activities-day-title">
+                  <span>
+                    <CalendarDays size={14} />
+                    {jour.date}
+                  </span>
+                </h3>
 
-              return (
-                <article className="activity-item" key={activite.id}>
-                  <div className={`activity-timeline activity-timeline-${type.toLowerCase()}`}>
-                    <span className="activity-timeline-icon">
-                      <Icon size={17} />
-                    </span>
-                  </div>
+                {jour.items.map((activite) => {
+                  const { heure } = formaterDateHeure(activite.dateHeure);
+                  const type = activite.typeAction || '';
+                  const Icon = TYPE_ICONS[type] || History;
 
-                  <div className="activity-main">
-                    <div className="activity-top">
-                      <div className="activity-heading">
-                        <span className={`activity-type-pill activity-type-${type.toLowerCase()}`}>
-                          {TYPE_ACTIONS[type] || type || 'Activité'}
+                  return (
+                    <article className="activity-item" key={activite.id}>
+                      <div className={`activity-timeline activity-timeline-${type.toLowerCase()}`}>
+                        <span className="activity-timeline-icon">
+                          <Icon size={17} />
                         </span>
-                        <h3>{activite.description || 'Aucune description disponible.'}</h3>
                       </div>
 
-                      <time className="activity-time" dateTime={activite.dateHeure || undefined}>
-                        <Clock3 size={14} />
-                        {heure}
-                      </time>
-                    </div>
+                      <div className="activity-main">
+                        <div className="activity-top">
+                          <div className="activity-heading">
+                            <span className={`activity-type-pill activity-type-${type.toLowerCase()}`}>
+                              {TYPE_ACTIONS[type] || type || 'Activité'}
+                            </span>
+                            <h4>{activite.description || 'Aucune description disponible.'}</h4>
+                          </div>
 
-                    <div className="activity-meta">
-                      <span>
-                        <CalendarDays size={14} />
-                        {date}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+                          <time className="activity-time" dateTime={activite.dateHeure || undefined}>
+                            <Clock3 size={14} />
+                            {heure}
+                          </time>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </section>
+            ))}
           </div>
         )}
       </div>
