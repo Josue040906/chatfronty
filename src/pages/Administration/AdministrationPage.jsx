@@ -5,7 +5,7 @@ import {
   Landmark,
   ShieldCheck,
   UsersRound,
-  ChevronRight,
+  ArrowRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -75,41 +75,35 @@ export default function AdministrationPage() {
     }
 
   return (
-    <div className="administration-page">
-      <header className="administration-page-header">
-        <div>
-          <span className="administration-eyebrow">
-            CONFIGURATION
-          </span>
-
+    <div className="administration-page rf-page">
+      <header className="administration-hero">
+        <svg className="administration-hero-circles" viewBox="0 0 360 220" aria-hidden="true">
+          <circle cx="280" cy="80" r="150" />
+          <circle cx="280" cy="80" r="105" />
+          <circle cx="280" cy="80" r="60" />
+        </svg>
+        <div className="administration-hero-copy">
+          <p className="rf-eyebrow administration-hero-eyebrow">Configuration</p>
           <h1>Administration</h1>
-
           <p>
             Gérez les référentiels et les paramètres utilisés
             par SYGPERS pour la gestion des ressources humaines.
           </p>
         </div>
-
         <div className="administration-header-icon">
-          <ShieldCheck size={24} strokeWidth={1.7} />
+          <ShieldCheck size={30} strokeWidth={1.6} />
         </div>
       </header>
 
       <div className="administration-sections">
         {administrationSections.map((section) => (
-          <section
-            key={section.id}
-            className="administration-section"
-          >
+          <section key={section.id} className="administration-section">
             <div className="administration-section-header">
-              <div>
-                <h2>{section.title}</h2>
-
-                <p>{section.description}</p>
-              </div>
+              <h2>{section.title}</h2>
+              <p>{section.description}</p>
             </div>
 
-            <div className="administration-card-grid">
+            <div className={`administration-card-grid administration-card-grid-${section.items.length}`}>
               {section.items.map((item) => {
                 const Icon = item.icon;
 
@@ -117,31 +111,19 @@ export default function AdministrationPage() {
                   <button
                     key={item.label}
                     type="button"
-                    className="administration-card"
-                    onClick={() =>
-                      handleSectionClick(item)
-                    }
+                    className="rf-card administration-card"
+                    onClick={() => handleSectionClick(item)}
                   >
-                    <div className="administration-card-icon">
-                      <Icon
-                        size={20}
-                        strokeWidth={1.7}
-                      />
-                    </div>
-
-                    <div className="administration-card-content">
+                    <span className="administration-card-icon">
+                      <Icon size={26} strokeWidth={1.6} />
+                    </span>
+                    <span className="administration-card-content">
                       <strong>{item.label}</strong>
-
-                      <span>
-                        {item.description}
-                      </span>
-                    </div>
-
-                    <ChevronRight
-                      className="administration-card-arrow"
-                      size={18}
-                      strokeWidth={1.8}
-                    />
+                      <span>{item.description}</span>
+                    </span>
+                    <span className="administration-card-arrow" aria-hidden="true">
+                      <ArrowRight size={16} strokeWidth={1.8} />
+                    </span>
                   </button>
                 );
               })}

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Building2,
   Check,
+  UserRound,
   Pencil,
   Plus,
   Search,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import { getAgents } from '../../api/agents';
 import {
   createDirection,
   deleteDirection,
@@ -43,6 +45,7 @@ export default function DirectionsPage() {
   const [saving, setSaving] = useState(false);
 
   const [deletingId, setDeletingId] = useState(null);
+  const [agentCounts, setAgentCounts] = useState({});
 
   async function loadDirections() {
     try {
@@ -64,6 +67,25 @@ export default function DirectionsPage() {
 
   useEffect(() => {
     void Promise.resolve().then(() => loadDirections());
+  }, []);
+
+  // Effectifs par direction (affichage seul : un échec n'empêche pas la page).
+  useEffect(() => {
+    let cancelled = false;
+    getAgents()
+      .then((agents) => {
+        if (cancelled || !Array.isArray(agents)) return;
+        const counts = {};
+        agents.forEach((agent) => {
+          const key = String(agent?.direction || '').trim().toLowerCase();
+          if (key) counts[key] = (counts[key] || 0) + 1;
+        });
+        setAgentCounts(counts);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function resetForm() {
@@ -236,482 +258,183 @@ export default function DirectionsPage() {
   );
 
   return (
-    <div className="administration-page">
-      <header className="administration-page-header">
+    <div className="administration-page rf-page">
+      <button
+        type="button"
+        className="rf-back"
+        onClick={() => navigate('/administration')}
+      >
+        <ArrowLeft size={17} />
+        Administration
+      </button>
+
+      <header className="rf-head">
         <div>
-          <button
-            type="button"
-            className="administration-back-button"
-            onClick={() =>
-              navigate('/administration')
-            }
-          >
-            <ArrowLeft size={17} />
-            Administration
-          </button>
-
-          <span className="administration-eyebrow">
-            ORGANISATION
-          </span>
-
-          <h1>Directions</h1>
-
-          <p>
-            Consultez et gérez les directions qui
-            composent l'organisation du MEF.
+          <p className="rf-eyebrow">Organisation</p>
+          <h1 className="rf-title">Directions</h1>
+          <p className="rf-lead">
+            Consultez et gérez les directions qui composent l'organisation du MEF.
           </p>
         </div>
-
-        <div className="administration-header-icon">
-          <Building2
-            size={24}
-            strokeWidth={1.7}
-          />
-        </div>
-      </header>
-
-      <div className="administration-toolbar">
-        <div className="administration-search">
-          <Search size={17} />
-
-          <input
-            type="search"
-            placeholder="Rechercher une direction..."
-            value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
-          />
-        </div>
-
         <button
           type="button"
-          className="administration-primary-button"
+          className="rf-btn rf-btn-primary"
           onClick={openCreateForm}
         >
           <Plus size={17} />
           Nouvelle direction
         </button>
-      </div>
+      </header>
 
       {success && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '16px',
-            padding: '12px 14px',
-            borderRadius: '10px',
-            background: '#ecfdf3',
-            color: '#18794e',
-            border: '1px solid #bbf7d0',
-            fontSize: '14px',
-          }}
-        >
+        <div className="adm-notice adm-notice-success" role="status">
           <Check size={17} />
           {success}
         </div>
       )}
 
       {!loading && error && (
-        <div
-          className="administration-state administration-state-error"
-          style={{ marginBottom: '16px' }}
-        >
+        <div className="adm-notice adm-notice-error" role="alert">
           {error}
         </div>
       )}
 
-      {loading && (
-        <div className="administration-state">
-          Chargement des directions...
+      <label className="rf-search adm-search">
+        <Search size={17} aria-hidden="true" />
+        <input
+          type="search"
+          placeholder="Rechercher une direction..."
+          aria-label="Rechercher une direction"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      </label>
+
+      {loading && <div className="adm-state">Chargement des directions...</div>}
+
+      {!loading && !error && filteredDirections.length === 0 && (
+        <div className="adm-state">
+          {search.trim()
+            ? 'Aucune direction ne correspond à votre recherche.'
+            : 'Aucune direction trouvée.'}
         </div>
       )}
 
-      {!loading &&
-        !error &&
-        filteredDirections.length === 0 && (
-          <div className="administration-state">
-            {search.trim()
-              ? 'Aucune direction ne correspond à votre recherche.'
-              : 'Aucune direction trouvée.'}
-          </div>
-        )}
-
-      {!loading &&
-        !error &&
-        filteredDirections.length > 0 && (
-          <div className="administration-list">
-            {filteredDirections.map(
-              (direction) => (
-                <article
-                  key={direction.id}
-                  className="administration-list-card"
-                >
-                  <div className="administration-list-icon">
-                    <Building2
-                      size={20}
-                      strokeWidth={1.7}
-                    />
-                  </div>
-
-                  <div className="administration-list-content">
-                    <h2>
-                      {direction.nom}
-                    </h2>
-
-                    <p>
-                      {direction.description ||
-                        'Aucune description disponible.'}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginLeft: '16px',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      title="Modifier"
-                      onClick={() =>
-                        openEditForm(direction)
-                      }
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border:
-                          '1px solid #e5e7eb',
-                        borderRadius: '9px',
-                        background: '#fff',
-                        color: '#4b5563',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Pencil size={16} />
-                    </button>
-
-                    <button
-                      type="button"
-                      title="Supprimer"
-                      disabled={
-                        deletingId ===
-                        direction.id
-                      }
-                      onClick={() =>
-                        handleDelete(direction)
-                      }
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border:
-                          '1px solid #fecaca',
-                        borderRadius: '9px',
-                        background: '#fff',
-                        color: '#dc2626',
-                        cursor:
-                          deletingId ===
-                          direction.id
-                            ? 'wait'
-                            : 'pointer',
-                        opacity:
-                          deletingId ===
-                          direction.id
-                            ? 0.5
-                            : 1,
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-
-                  <span className="administration-list-id">
-                    #{direction.id}
+      {!loading && !error && filteredDirections.length > 0 && (
+        <div className="adm-list">
+          {filteredDirections.map((direction) => {
+            const count = agentCounts[String(direction.nom || '').trim().toLowerCase()];
+            return (
+              <article key={direction.id} className="rf-row adm-row">
+                <span className="adm-row-icon"><Building2 size={22} strokeWidth={1.6} /></span>
+                <div className="adm-row-body">
+                  <h2>{direction.nom}</h2>
+                  <p>{direction.description || 'Aucune description disponible.'}</p>
+                </div>
+                {count !== undefined && (
+                  <span className="adm-pill">
+                    <UserRound size={14} />
+                    {count} {count > 1 ? 'agents' : 'agent'}
                   </span>
-                </article>
-              )
-            )}
-          </div>
-        )}
+                )}
+                <div className="adm-actions">
+                  <button
+                    type="button"
+                    className="adm-icon-btn"
+                    title="Modifier"
+                    aria-label={`Modifier ${direction.nom}`}
+                    onClick={() => openEditForm(direction)}
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className="adm-icon-btn adm-icon-btn-danger"
+                    title="Supprimer"
+                    aria-label={`Supprimer ${direction.nom}`}
+                    disabled={deletingId === direction.id}
+                    onClick={() => handleDelete(direction)}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {showForm && (
         <div
+          className="adm-backdrop"
           role="dialog"
           aria-modal="true"
           aria-labelledby="direction-form-title"
           onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              closeForm();
-            }
-          }}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-            background:
-              'rgba(15, 23, 42, 0.42)',
-            backdropFilter: 'blur(3px)',
+            if (event.target === event.currentTarget) closeForm();
           }}
         >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '600px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              background: '#fff',
-              borderRadius: '16px',
-              boxShadow:
-                '0 24px 70px rgba(15, 23, 42, 0.20)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent:
-                  'space-between',
-                gap: '20px',
-                padding: '22px 24px',
-                borderBottom:
-                  '1px solid #eef0f3',
-              }}
-            >
+          <div className="adm-modal">
+            <div className="adm-modal-head">
               <div>
-                <span className="administration-eyebrow">
-                  ORGANISATION
-                </span>
-
-                <h2
-                  id="direction-form-title"
-                  style={{
-                    margin: '5px 0 0',
-                    fontSize: '20px',
-                    color: '#172033',
-                  }}
-                >
-                  {editingDirection
-                    ? 'Modifier la direction'
-                    : 'Nouvelle direction'}
+                <p className="rf-eyebrow">Organisation</p>
+                <h2 id="direction-form-title">
+                  {editingDirection ? 'Modifier la direction' : 'Nouvelle direction'}
                 </h2>
-
-                <p
-                  style={{
-                    margin: '6px 0 0',
-                    color: '#6b7280',
-                    fontSize: '14px',
-                  }}
-                >
+                <p>
                   {editingDirection
                     ? 'Modifiez les informations de la direction.'
                     : 'Ajoutez une nouvelle direction à l’organisation.'}
                 </p>
               </div>
-
               <button
                 type="button"
+                className="rf-icon-btn"
                 onClick={closeForm}
                 disabled={saving}
                 aria-label="Fermer"
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent:
-                    'center',
-                  border:
-                    '1px solid #e5e7eb',
-                  borderRadius: '9px',
-                  background: '#fff',
-                  color: '#6b7280',
-                  cursor: saving
-                    ? 'not-allowed'
-                    : 'pointer',
-                }}
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
-              <div
-                style={{
-                  display: 'grid',
-                  gap: '18px',
-                  padding: '24px',
-                }}
-              >
-                {formError && (
-                  <div
-                    style={{
-                      padding: '11px 13px',
-                      borderRadius: '9px',
-                      background: '#fef2f2',
-                      border:
-                        '1px solid #fecaca',
-                      color: '#b91c1c',
-                      fontSize: '14px',
-                    }}
-                  >
-                    {formError}
-                  </div>
-                )}
+              {formError && <div className="adm-notice adm-notice-error" role="alert">{formError}</div>}
 
-                <label
-                  style={{
-                    display: 'grid',
-                    gap: '7px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: '#374151',
-                    }}
-                  >
-                    Nom de la direction
-                  </span>
-
-                  <input
-                    type="text"
-                    name="nom"
-                    value={form.nom}
-                    onChange={handleChange}
-                    maxLength={200}
-                    placeholder="Ex. Direction des Ressources Humaines"
-                    required
-                    autoFocus
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      padding: '11px 13px',
-                      border:
-                        '1px solid #dfe3e8',
-                      borderRadius: '9px',
-                      outline: 'none',
-                      fontSize: '14px',
-                      color: '#172033',
-                    }}
-                  />
-
-                  <span
-                    style={{
-                      textAlign: 'right',
-                      fontSize: '12px',
-                      color: '#9ca3af',
-                    }}
-                  >
-                    {form.nom.length}/200
-                  </span>
-                </label>
-
-                <label
-                  style={{
-                    display: 'grid',
-                    gap: '7px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: '#374151',
-                    }}
-                  >
-                    Description
-                  </span>
-
-                  <textarea
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                    rows={4}
-                    placeholder="Description de la direction..."
-                    style={{
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      padding: '11px 13px',
-                      border:
-                        '1px solid #dfe3e8',
-                      borderRadius: '9px',
-                      outline: 'none',
-                      resize: 'vertical',
-                      fontFamily: 'inherit',
-                      fontSize: '14px',
-                      color: '#172033',
-                    }}
-                  />
-                </label>
+              <div className="rf-field adm-field">
+                <label htmlFor="direction-nom">Nom de la direction</label>
+                <input
+                  id="direction-nom"
+                  type="text"
+                  name="nom"
+                  value={form.nom}
+                  onChange={handleChange}
+                  maxLength={200}
+                  placeholder="Ex. Direction des Ressources Humaines"
+                  required
+                  autoFocus
+                />
+                <small className="adm-counter">{form.nom.length}/200</small>
               </div>
 
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent:
-                    'flex-end',
-                  gap: '10px',
-                  padding: '16px 24px',
-                  borderTop:
-                    '1px solid #eef0f3',
-                  background: '#fafbfc',
-                  borderRadius:
-                    '0 0 16px 16px',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={closeForm}
-                  disabled={saving}
-                  style={{
-                    padding: '10px 16px',
-                    border:
-                      '1px solid #dfe3e8',
-                    borderRadius: '9px',
-                    background: '#fff',
-                    color: '#4b5563',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: saving
-                      ? 'not-allowed'
-                      : 'pointer',
-                  }}
-                >
+              <div className="rf-field adm-field">
+                <label htmlFor="direction-description">Description</label>
+                <textarea
+                  id="direction-description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="Description de la direction..."
+                />
+              </div>
+
+              <div className="adm-modal-foot">
+                <button type="button" className="rf-btn" onClick={closeForm} disabled={saving}>
                   Annuler
                 </button>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="administration-primary-button"
-                  style={{
-                    border: 'none',
-                    opacity: saving ? 0.7 : 1,
-                    cursor: saving
-                      ? 'wait'
-                      : 'pointer',
-                  }}
-                >
+                <button type="submit" className="rf-btn rf-btn-primary" disabled={saving}>
                   <Check size={17} />
-
                   {saving
                     ? 'Enregistrement...'
                     : editingDirection
