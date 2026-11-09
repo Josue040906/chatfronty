@@ -91,6 +91,8 @@ const documentFieldLabels = {
   situationActuelle: 'Situation actuelle',
   situationDemandee: 'Situation demandée',
   dateEffetSouhaitee: 'Date d’effet souhaitée',
+  // Constaté par Bandy sur la pièce scannée d'où vient la demande, à vérifier.
+  constatsPiece: 'Constats sur la pièce scannée',
 };
 
 function formatDocumentValue(key, value) {
