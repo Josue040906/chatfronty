@@ -172,14 +172,18 @@ export function sendConversationMessage(
   conversationId,
   message,
   idempotencyKey,
-  { signal, onToken } = {}
+  { signal, onToken, attachment } = {}
 ) {
   if (!UUID_PATTERN.test(idempotencyKey || '')) {
     throw new Error('Idempotency-Key doit être un UUID.');
   }
+  // La pièce jointe (photo ou PDF) part avec le message, pour ce tour seulement.
+  const body = attachment
+    ? { message, attachment: { name: attachment.name, mimeType: attachment.mimeType, data: attachment.data } }
+    : { message };
   return request(`/${encodeURIComponent(conversationId)}/messages/stream`, {
     method: 'POST',
-    body: { message },
+    body,
     headers: {
       'Idempotency-Key': idempotencyKey,
       Accept: 'text/event-stream',

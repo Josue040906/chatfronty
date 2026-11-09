@@ -10,7 +10,6 @@ import {
   MessageSquareText,
   Pencil,
   Plus,
-  Send,
   Sparkles,
   Trash2,
   X,
@@ -36,6 +35,8 @@ import {
 } from './assistant-conversation-storage';
 import { toUiMessages } from './assistant-history';
 import AssistantTodo from './AssistantTodo';
+import AssistantComposer from './AssistantComposer';
+import { messageWithAttachment } from './assistant-attachment';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
@@ -229,6 +230,8 @@ export default function AssistantFloating({ user }) {
   const expanded = expandedState || onAssistantPage;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
+  // Photo ou PDF joint au prochain message (voir assistant-attachment.js).
+  const [attachment, setAttachment] = useState(null);
   const [pendingInitialMessage, setPendingInitialMessage] = useState('');
   const [chats, setChats] = useState(() => {
     const conversation = readStoredConversation(conversationStorageKey);
@@ -641,7 +644,9 @@ export default function AssistantFloating({ user }) {
     event?.preventDefault();
 
     const text = (suggestedMessage ?? message).trim();
-    if (!text || sendingRef.current || failedSend
+    // Une suggestion part seule ; sinon la pièce jointe accompagne le texte.
+    const sentAttachment = suggestedMessage === undefined ? attachment : null;
+    if ((!text && !sentAttachment) || sendingRef.current || failedSend
       || activeChat?.status === 'ARCHIVED') {
       return;
     }
@@ -686,7 +691,7 @@ export default function AssistantFloating({ user }) {
       const userMessage = {
         id: idempotencyKey,
         role: 'user',
-        content: text,
+        content: messageWithAttachment(text, sentAttachment),
       };
 
       shouldScrollToBottomRef.current = true;
@@ -702,8 +707,9 @@ export default function AssistantFloating({ user }) {
       optimisticMessageAdded = true;
       setPendingInitialMessage('');
       setMessage('');
+      setAttachment(null);
 
-      await completeSend(conversationId, text, idempotencyKey);
+      await completeSend(conversationId, text, idempotencyKey, sentAttachment);
     } catch (error) {
       sendOutcome = error.status ? 'http_error' : 'client_or_network_error';
       sendStatus = error.status || null;
@@ -714,10 +720,12 @@ export default function AssistantFloating({ user }) {
           conversationId,
           idempotencyKey,
           text,
+          attachment: sentAttachment,
           optimisticMessageAdded,
         });
         if (!optimisticMessageAdded) {
           setMessage(text);
+          setAttachment(sentAttachment);
         }
       }
     } finally {
@@ -735,7 +743,7 @@ export default function AssistantFloating({ user }) {
     }
   }
 
-  async function completeSend(conversationId, text, idempotencyKey) {
+  async function completeSend(conversationId, text, idempotencyKey, sentAttachment = null) {
     const assistantMessageId = crypto.randomUUID();
     shouldScrollToBottomRef.current = true;
     setChats((previous) => previous.map((chat) => (
@@ -760,6 +768,7 @@ export default function AssistantFloating({ user }) {
         text,
         idempotencyKey,
         {
+          attachment: sentAttachment,
           onToken: (token) => {
             setChats((previous) => previous.map((chat) => (
               chat.id === conversationId
@@ -859,7 +868,7 @@ export default function AssistantFloating({ user }) {
                   {
                     id: failedSend.idempotencyKey,
                     role: 'user',
-                    content: failedSend.text,
+                    content: messageWithAttachment(failedSend.text, failedSend.attachment),
                   },
                 ],
                 totalMessages: (chat.totalMessages || 0) + 1,
@@ -872,7 +881,8 @@ export default function AssistantFloating({ user }) {
       await completeSend(
         conversationId,
         failedSend.text,
-        failedSend.idempotencyKey
+        failedSend.idempotencyKey,
+        failedSend.attachment
       );
     } catch (error) {
       if (error.status !== 401) {
@@ -1179,20 +1189,18 @@ export default function AssistantFloating({ user }) {
                         </button>
                       ))}
                     </div>
-                    <form className="assistant-panel-input assistant-panel-input-centered" onSubmit={handleSend}>
-                      <textarea
-                        value={message}
-                        onChange={(event) => setMessage(event.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Posez votre question sur les agents, services ou procédures..."
-                        rows={2}
-                        disabled={loading || Boolean(failedSend)}
-                        aria-label="Message à l'assistant SYGPERS"
-                      />
-                      <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
-                        <Send size={17} />
-                      </button>
-                    </form>
+                    <AssistantComposer
+                      className="assistant-panel-input assistant-panel-input-centered"
+                      value={message}
+                      onChange={setMessage}
+                      onKeyDown={handleKeyDown}
+                      onSubmit={handleSend}
+                      placeholder="Posez votre question, ou joignez une photo ou un PDF..."
+                      rows={2}
+                      disabled={loading || Boolean(failedSend)}
+                      attachment={attachment}
+                      onAttachmentChange={setAttachment}
+                    />
                   </>
                 )}
               </div>
@@ -1215,20 +1223,18 @@ export default function AssistantFloating({ user }) {
             archivedConversation ? (
               <p className="assistant-archive-notice">Cette conversation est archivée et ne peut plus recevoir de messages.</p>
             ) : (
-              <form className="assistant-panel-input" onSubmit={handleSend}>
-                <textarea
-                  value={message}
-                  onChange={(event) => setMessage(event.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Écrivez votre demande..."
-                  rows={1}
-                  disabled={loading || Boolean(failedSend)}
-                  aria-label="Message à l'assistant SYGPERS"
-                />
-                <button type="submit" disabled={!message.trim() || loading || Boolean(failedSend)} aria-label="Envoyer" title="Envoyer">
-                  <Send size={17} />
-                </button>
-              </form>
+              <AssistantComposer
+                className="assistant-panel-input"
+                value={message}
+                onChange={setMessage}
+                onKeyDown={handleKeyDown}
+                onSubmit={handleSend}
+                placeholder="Écrivez votre demande..."
+                rows={1}
+                disabled={loading || Boolean(failedSend)}
+                attachment={attachment}
+                onAttachmentChange={setAttachment}
+              />
             )
           )}
         </div>

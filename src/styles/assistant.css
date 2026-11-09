@@ -770,6 +770,7 @@
 
 .assistant-panel-input {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 8px;
 
@@ -1461,4 +1462,60 @@
   margin: 6px 0 0;
   color: var(--color-text-muted);
   font-size: 11px;
+}
+
+/* Pièce jointe d'un message (photo ou PDF) : trombone, pastille et refus. */
+.assistant-attachment-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.assistant-attachment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.assistant-attachment-pill > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assistant-panel-input .assistant-attachment-pill button {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.assistant-panel-input .assistant-attachment-pill button:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.assistant-attachment-error {
+  color: var(--color-danger);
+  font-size: 12px;
+}
+
+.assistant-panel-input .assistant-attach-button {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.assistant-panel-input .assistant-attach-button:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
 }

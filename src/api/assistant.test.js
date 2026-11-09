@@ -175,6 +175,20 @@ describe('Bandy conversation API', () => {
     expect(fetchMock.mock.calls[0][1].headers.Accept).toBe('text/event-stream');
   });
 
+  it('sends an attached photo or PDF with the message, never the browser file object', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ conversationId: 'conversation-1', message: 'Lu.' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await api.sendConversationMessage('conversation-1', 'Ajoute ce diplôme', '6f1f4c16-2c0d-4cd2-a702-5fd05011b707', {
+      attachment: { name: 'diplome.jpg', mimeType: 'image/jpeg', size: 12, data: 'QUJD', file: { any: 'file' } },
+    });
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      message: 'Ajoute ce diplôme',
+      attachment: { name: 'diplome.jpg', mimeType: 'image/jpeg', data: 'QUJD' },
+    });
+  });
+
   it('consumes server-sent tokens and returns the final response event', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response([
       'event: token',
