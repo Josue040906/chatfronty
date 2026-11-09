@@ -75,6 +75,19 @@ describe('getConfirmationActions with an API preview', () => {
 });
 
 describe('getPreparedActions', () => {
+  it('opens the diploma form of an agent, prefilled from a scanned diploma', () => {
+    expect(getPreparedActions([{
+      type: 'PREPARE',
+      tool: 'prepare_new_diploma',
+      route: '/carrieres/30/analyse',
+      fields: { niveauId: 3, domaineId: 6, dateObtention: '2017-07-15' },
+    }])).toEqual([{
+      route: '/carrieres/30/analyse',
+      fields: { niveauId: 3, domaineId: 6, dateObtention: '2017-07-15' },
+      label: 'Ouvrir le diplôme prérempli',
+    }]);
+  });
+
   it('keeps the proposed fields and labels the form to open', () => {
     expect(getPreparedActions([
       { type: 'PREPARE', route: '/agents/101', fields: { telephone: '034 12 345 67' } },

@@ -109,6 +109,7 @@ export function confirmationOutcomeMessage(outcome) {
 const PREPARED_LABELS = [
   { pattern: /^\/agents\/\d+$/, label: 'Ouvrir la modification préremplie' },
   { pattern: /^\/documents\/nouveau$/, label: 'Ouvrir le nouveau document prérempli' },
+  { pattern: /^\/carrieres\/\d+\/analyse$/, label: 'Ouvrir le diplôme prérempli' },
 ];
 
 /**

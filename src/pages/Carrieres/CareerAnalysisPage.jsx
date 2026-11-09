@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -190,8 +191,26 @@ function hasRequiredProposalData(type, proposal) {
   return false;
 }
 
+/**
+ * Catalogue du formulaire de diplôme : niveaux, domaines du niveau choisi,
+ * établissements du niveau et du domaine choisis, mentions. Renvoie les
+ * options, ou l'erreur à afficher.
+ */
+async function loadDiplomaCatalogue({ niveauId, domaineId }) {
+  try {
+    const options = await getDiplomaOptions({
+      ...(niveauId ? { niveauId } : {}),
+      ...(niveauId && domaineId ? { domaineId } : {}),
+    });
+    return { options: normalizeDiplomaOptions(options) };
+  } catch (loadError) {
+    return { error: loadError.message || 'Impossible de charger le catalogue des diplômes.' };
+  }
+}
+
 export default function CareerAnalysisPage({ user }) {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const canManageHr = ['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role);
 
@@ -217,6 +236,8 @@ export default function CareerAnalysisPage({ user }) {
   const [dialog, setDialog] = useState('');
   const [personalForm, setPersonalForm] = useState(EMPTY_PERSONAL_FORM);
   const [diplomaForm, setDiplomaForm] = useState(EMPTY_DIPLOMA_FORM);
+  // Champs du diplôme proposés par Bandy (lus sur une pièce), à vérifier avant d'enregistrer.
+  const [diplomaPrefilled, setDiplomaPrefilled] = useState([]);
   const [assignmentForm, setAssignmentForm] = useState(EMPTY_ASSIGNMENT_FORM);
   const [establishmentRequest, setEstablishmentRequest] = useState({ nom: '', ville: '' });
   const [establishmentRequestMessage, setEstablishmentRequestMessage] = useState('');
@@ -346,29 +367,59 @@ export default function CareerAnalysisPage({ user }) {
     };
   }, [canManageHr, id]);
 
-  async function openAddDiploma() {
+  /** Le dialogue d'ajout d'un diplôme, vide ou prérempli (proposition de Bandy). */
+  function showDiplomaDialog(proposition) {
     setFeedback('');
     setFormError('');
-    setDiplomaForm(EMPTY_DIPLOMA_FORM);
+    setDiplomaForm(proposition.form);
+    setDiplomaPrefilled(proposition.changed);
     setDiplomaOptions(EMPTY_DIPLOMA_OPTIONS);
     setEstablishmentRequest({ nom: '', ville: '' });
     setEstablishmentRequestMessage('');
     setDialog('diploma');
-    setCatalogueLoading(true);
-    const requestId = ++diplomaOptionsRequestRef.current;
-    try {
-      const options = await getDiplomaOptions();
-      if (requestId === diplomaOptionsRequestRef.current) {
-        setDiplomaOptions(normalizeDiplomaOptions(options));
-      }
-    } catch (loadError) {
-      if (requestId === diplomaOptionsRequestRef.current) {
-        setFormError(loadError.message || 'Impossible de charger le catalogue des diplômes.');
-      }
-    } finally {
-      if (requestId === diplomaOptionsRequestRef.current) setCatalogueLoading(false);
+  }
+
+  function applyDiplomaCatalogue(result) {
+    if (result.options) {
+      setDiplomaOptions(result.options);
+    } else {
+      setFormError(result.error);
     }
   }
+
+  async function openAddDiploma() {
+    showDiplomaDialog(applyPrefill(EMPTY_DIPLOMA_FORM, null));
+    setCatalogueLoading(true);
+    const requestId = ++diplomaOptionsRequestRef.current;
+    const result = await loadDiplomaCatalogue(EMPTY_DIPLOMA_FORM);
+    if (requestId === diplomaOptionsRequestRef.current) {
+      applyDiplomaCatalogue(result);
+      setCatalogueLoading(false);
+    }
+  }
+
+  // Tâche préparée par Bandy (prepare_new_diploma) : le dialogue s'ouvre
+  // prérempli, avec les listes en cascade du niveau et du domaine proposés.
+  // Rien n'est enregistré avant « Enregistrer ». location.key : une nouvelle
+  // proposition rouvre le dialogue, même si la page était déjà ouverte.
+  useEffect(() => {
+    const fields = readPrefill(location.state);
+    if (!fields || !canManageHr) {
+      return undefined;
+    }
+    const proposition = applyPrefill(EMPTY_DIPLOMA_FORM, fields);
+    const requestId = ++diplomaOptionsRequestRef.current;
+    let cancelled = false;
+    loadDiplomaCatalogue(proposition.form).then((result) => {
+      if (!cancelled && requestId === diplomaOptionsRequestRef.current) {
+        showDiplomaDialog(proposition);
+        applyDiplomaCatalogue(result);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [location.key, location.state, canManageHr]);
 
   async function openAssignmentDialog() {
     setFeedback('');
@@ -1020,7 +1071,7 @@ export default function CareerAnalysisPage({ user }) {
             <div className="career-panel-icon"><GraduationCap size={19} /></div>
             <div><h2>Historique des diplômes</h2><p>Diplômes enregistrés indépendamment de la carrière.</p></div>
             {canManageHr && (
-              <button type="button" className="career-action-button primary" onClick={openAddDiploma}>
+              <button type="button" className="career-action-button primary" onClick={() => openAddDiploma()}>
                 <Plus size={16} />Ajouter un diplôme
               </button>
             )}
@@ -1227,9 +1278,14 @@ export default function CareerAnalysisPage({ user }) {
 
             {dialog === 'diploma' && (
               <form className="career-form" onSubmit={handleDiplomaSave}>
+                {diplomaPrefilled.length > 0 && (
+                  <p className="bandy-prefill-notice" role="status">
+                    Champs préremplis par Bandy d’après la pièce : vérifiez-les avant d’enregistrer.
+                  </p>
+                )}
                 {catalogueLoading ? <p>Chargement du catalogue…</p> : (
                   <div className="career-form-grid">
-                    <label className="wide">Niveau
+                    <label className={prefillClass('wide', 'niveauId', diplomaPrefilled)}>Niveau
                       <select name="niveauId" required value={diplomaForm.niveauId} onChange={handleDiplomaLevelChange}>
                         <option value="">Sélectionner un niveau</option>
                         {diplomaOptions.niveaux.map((item) => (
@@ -1240,7 +1296,7 @@ export default function CareerAnalysisPage({ user }) {
                     {!diplomaOptions.niveaux.length && (
                       <p className="wide career-form-note">Aucun niveau avec une offre active n’est disponible.</p>
                     )}
-                    <label className="wide">Domaine
+                    <label className={prefillClass('wide', 'domaineId', diplomaPrefilled)}>Domaine
                       <select name="domaineId" required value={diplomaForm.domaineId} onChange={handleDiplomaDomainChange} disabled={!diplomaForm.niveauId || diplomaOptionsLoading}>
                         <option value="">Sélectionner un domaine</option>
                         {diplomaOptions.domaines.map((item) => (
@@ -1248,7 +1304,7 @@ export default function CareerAnalysisPage({ user }) {
                         ))}
                       </select>
                     </label>
-                    <label className="wide">Établissement de délivrance
+                    <label className={prefillClass('wide', 'etablissementId', diplomaPrefilled)}>Établissement de délivrance
                       <select name="etablissementId" required value={diplomaForm.etablissementId} onChange={handleFieldChange(setDiplomaForm)} disabled={!diplomaForm.domaineId || diplomaOptionsLoading}>
                         <option value="">Sélectionner un établissement</option>
                         {diplomaOptions.etablissements.map((item) => (
@@ -1256,10 +1312,10 @@ export default function CareerAnalysisPage({ user }) {
                         ))}
                       </select>
                     </label>
-                    <label>Date d’obtention
+                    <label className={prefillClass('', 'dateObtention', diplomaPrefilled)}>Date d’obtention
                       <input name="dateObtention" type="date" max={todayInputValue()} required value={diplomaForm.dateObtention} onChange={handleFieldChange(setDiplomaForm)} />
                     </label>
-                    <label>Mention
+                    <label className={prefillClass('', 'mentionId', diplomaPrefilled)}>Mention
                       <select name="mentionId" value={diplomaForm.mentionId} onChange={handleFieldChange(setDiplomaForm)}>
                         <option value="">Aucune mention</option>
                         {diplomaOptions.mentions.map((item) => (
@@ -1267,7 +1323,7 @@ export default function CareerAnalysisPage({ user }) {
                         ))}
                       </select>
                     </label>
-                    <label className="wide">Observation
+                    <label className={prefillClass('wide', 'observation', diplomaPrefilled)}>Observation
                       <textarea name="observation" maxLength="2000" rows="2" value={diplomaForm.observation} onChange={handleFieldChange(setDiplomaForm)} />
                     </label>
                     <div className="wide">
