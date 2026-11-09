@@ -16,6 +16,7 @@ import {
   getDocumentRequests,
   getDocumentTypes,
 } from '../../api/documents';
+import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -599,6 +600,8 @@ export default function DocumentsPage() {
                 type={selectedType}
               />
             </dl>
+
+            <PieceScanneeLinks cibleType="DOCUMENT" cibleId={selectedDocument.id} />
 
             {!canOpenPdf(selectedType) && (
               <p className="rf-note">

@@ -37,6 +37,7 @@ import { toUiMessages } from './assistant-history';
 import AssistantTodo from './AssistantTodo';
 import AssistantComposer from './AssistantComposer';
 import { messageWithAttachment } from './assistant-attachment';
+import { deposerPieceScannee } from '../../api/piecesScannees';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
@@ -71,6 +72,24 @@ function getInitials(name) {
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
     .join('');
+}
+
+/**
+ * Après une tâche confirmée qui a créé un document à partir d'une pièce
+ * jointe, l'original est déposé sur ce document. Renvoie la phrase à ajouter
+ * au résultat affiché (vide s'il n'y avait pas de pièce).
+ */
+async function attachScan(outcome, scan) {
+  const documentId = outcome?.result?.id;
+  if (!scan || outcome?.status !== 'CONFIRMED' || !Number.isSafeInteger(documentId)) {
+    return '';
+  }
+  try {
+    await deposerPieceScannee('DOCUMENT', documentId, scan);
+    return ' La pièce scannée est jointe au brouillon.';
+  } catch (error) {
+    return ` La pièce scannée n’a pas pu être jointe : ${error.message || 'erreur inconnue'}.`;
+  }
 }
 
 // Bulle de Bandy complétée par sa réponse finale : son texte et ses actions.
@@ -159,7 +178,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                 key={action.route}
                 type="button"
                 className="assistant-message-action assistant-message-action-primary"
-                onClick={() => onOpenRoute(action.route, prefillNavigationState(action.fields))}
+                onClick={() => onOpenRoute(action.route, prefillNavigationState(action.fields, item.scan))}
               >
                 <span>
                   {action.label}
@@ -197,7 +216,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                   type="button"
                   className="assistant-confirmation-confirm"
                   disabled={confirmation.status === 'running'}
-                  onClick={() => onSettle(item.id, confirmation.confirmationId, 'confirm')}
+                  onClick={() => onSettle(item.id, confirmation.confirmationId, 'confirm', item.scan)}
                 >
                   {confirmation.status === 'running' ? 'Exécution…' : 'Confirmer'}
                 </button>
@@ -268,7 +287,7 @@ export default function AssistantFloating({ user }) {
   const userName = [user?.prenom, user?.nom].filter(Boolean).join(' ') || user?.email || 'Utilisateur';
   // Clic « Confirmer » ou « Annuler » sur une tâche confirmée. Bandy exécute
   // au plus une fois ; l'API décide des droits et la carte affiche l'issue.
-  const settleConfirmation = useCallback(async (messageId, confirmationId, decision) => {
+  const settleConfirmation = useCallback(async (messageId, confirmationId, decision, scan = null) => {
     const conversationId = activeChatId;
     const update = (changes) => setChats((previous) => previous.map((chat) => (
       chat.id !== conversationId
@@ -294,7 +313,10 @@ export default function AssistantFloating({ user }) {
     try {
       if (decision === 'confirm') {
         const outcome = await confirmPendingAction(conversationId, confirmationId);
-        update({ status: 'done', outcome: confirmationOutcomeMessage(outcome) });
+        update({
+          status: 'done',
+          outcome: `${confirmationOutcomeMessage(outcome)}${await attachScan(outcome, scan)}`,
+        });
       } else {
         await cancelPendingAction(conversationId, confirmationId);
         update({ status: 'cancelled', outcome: 'Action annulée : rien n’a été exécuté.' });
@@ -756,6 +778,9 @@ export default function AssistantFloating({ user }) {
                 id: assistantMessageId,
                 role: 'assistant',
                 content: '',
+                // La pièce jointe du tour (un File), gardée en mémoire seulement :
+                // elle sera attachée à ce que l'utilisateur validera.
+                scan: sentAttachment?.file || null,
               },
             ],
           }

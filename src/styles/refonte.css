@@ -1621,3 +1621,20 @@ button.rf-row {
 .header-user-trigger { padding: 4px 12px 4px 4px; }
 .header-avatar { width: 34px; height: 34px; }
 .header-icon-button { width: 36px; height: 36px; }
+
+/* Liens vers les pièces scannées d'un document ou d'un diplôme. */
+.piece-scannee-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.piece-scannee-links .rf-chip {
+  gap: 6px;
+}
+
+.piece-scannee-links small {
+  color: var(--color-danger);
+}

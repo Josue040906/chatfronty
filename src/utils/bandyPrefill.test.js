@@ -4,6 +4,7 @@ import {
   prefillClass,
   prefillNavigationState,
   readPrefill,
+  readPrefillScan,
 } from './bandyPrefill';
 
 describe('bandyPrefill', () => {
@@ -47,6 +48,14 @@ describe('bandyPrefill', () => {
     expect(readPrefill(state)).toEqual({ motif: 'Congé annuel' });
     expect(readPrefill(null)).toBeNull();
     expect(readPrefill({ bandyPrefill: { fields: ['x'] } })).toBeNull();
+  });
+
+  it('carries the scanned piece with the fields, and only a real file', () => {
+    const scan = new File(['%PDF-1.7'], 'diplome.pdf', { type: 'application/pdf' });
+
+    expect(readPrefillScan(prefillNavigationState({ niveauId: 3 }, scan))).toBe(scan);
+    expect(readPrefillScan(prefillNavigationState({ niveauId: 3 }))).toBeNull();
+    expect(readPrefillScan({ bandyPrefill: { fields: {}, scan: 'diplome.pdf' } })).toBeNull();
   });
 
   it('marks only prefilled field blocks', () => {

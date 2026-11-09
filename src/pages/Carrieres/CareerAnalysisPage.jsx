@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
+import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
+import { deposerPieceScannee } from '../../api/piecesScannees';
+import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -238,6 +240,8 @@ export default function CareerAnalysisPage({ user }) {
   const [diplomaForm, setDiplomaForm] = useState(EMPTY_DIPLOMA_FORM);
   // Champs du diplôme proposés par Bandy (lus sur une pièce), à vérifier avant d'enregistrer.
   const [diplomaPrefilled, setDiplomaPrefilled] = useState([]);
+  // La pièce scannée d'où vient la proposition : jointe au diplôme une fois enregistré.
+  const [diplomaScan, setDiplomaScan] = useState(null);
   const [assignmentForm, setAssignmentForm] = useState(EMPTY_ASSIGNMENT_FORM);
   const [establishmentRequest, setEstablishmentRequest] = useState({ nom: '', ville: '' });
   const [establishmentRequestMessage, setEstablishmentRequestMessage] = useState('');
@@ -368,11 +372,12 @@ export default function CareerAnalysisPage({ user }) {
   }, [canManageHr, id]);
 
   /** Le dialogue d'ajout d'un diplôme, vide ou prérempli (proposition de Bandy). */
-  function showDiplomaDialog(proposition) {
+  function showDiplomaDialog(proposition, scan = null) {
     setFeedback('');
     setFormError('');
     setDiplomaForm(proposition.form);
     setDiplomaPrefilled(proposition.changed);
+    setDiplomaScan(scan);
     setDiplomaOptions(EMPTY_DIPLOMA_OPTIONS);
     setEstablishmentRequest({ nom: '', ville: '' });
     setEstablishmentRequestMessage('');
@@ -408,11 +413,12 @@ export default function CareerAnalysisPage({ user }) {
       return undefined;
     }
     const proposition = applyPrefill(EMPTY_DIPLOMA_FORM, fields);
+    const scan = readPrefillScan(location.state);
     const requestId = ++diplomaOptionsRequestRef.current;
     let cancelled = false;
     loadDiplomaCatalogue(proposition.form).then((result) => {
       if (!cancelled && requestId === diplomaOptionsRequestRef.current) {
-        showDiplomaDialog(proposition);
+        showDiplomaDialog(proposition, scan);
         applyDiplomaCatalogue(result);
       }
     });
@@ -628,7 +634,7 @@ export default function CareerAnalysisPage({ user }) {
     savingRef.current = true;
     setSaving(true);
     try {
-      await addEmployeeDiploma(id, {
+      const created = await addEmployeeDiploma(id, {
         niveauId: Number(diplomaForm.niveauId),
         domaineId: Number(diplomaForm.domaineId),
         etablissementId: Number(diplomaForm.etablissementId),
@@ -636,11 +642,21 @@ export default function CareerAnalysisPage({ user }) {
         mentionId: diplomaForm.mentionId ? Number(diplomaForm.mentionId) : null,
         observation: diplomaForm.observation.trim() || null,
       });
+      let scanNote = '';
+      if (diplomaScan && Number.isSafeInteger(created?.id)) {
+        try {
+          await deposerPieceScannee('DIPLOME', created.id, diplomaScan);
+          scanNote = ' La pièce scannée est jointe au diplôme.';
+        } catch (scanError) {
+          scanNote = ` La pièce scannée n’a pas pu être jointe : ${scanError.message || 'erreur inconnue'}.`;
+        }
+      }
       const diplomasRefreshed = await refreshDiplomas();
       setDialog('');
-      setFeedback(diplomasRefreshed
+      setFeedback((diplomasRefreshed
         ? 'Le diplôme a été ajouté à l’historique sans modifier la carrière.'
-        : 'Le diplôme a été enregistré, mais l’historique n’a pas pu être actualisé. Rechargez la page.');
+        : 'Le diplôme a été enregistré, mais l’historique n’a pas pu être actualisé. Rechargez la page.')
+        + scanNote);
     } catch (saveError) {
       setFormError(saveError.message || 'Impossible d’ajouter le diplôme.');
     } finally {
@@ -1102,6 +1118,7 @@ export default function CareerAnalysisPage({ user }) {
                   {item.mention && <small>Mention : {item.mention}</small>}
                   {item.domaine && <small>Spécialité : {item.domaine}</small>}
                   {item.observation && <small>{item.observation}</small>}
+                  <PieceScanneeLinks cibleType="DIPLOME" cibleId={item.id} />
                 </article>
               ))}
             </div>
@@ -1281,6 +1298,7 @@ export default function CareerAnalysisPage({ user }) {
                 {diplomaPrefilled.length > 0 && (
                   <p className="bandy-prefill-notice" role="status">
                     Champs préremplis par Bandy d’après la pièce : vérifiez-les avant d’enregistrer.
+                    {diplomaScan && ` La pièce « ${diplomaScan.name} » sera jointe au diplôme.`}
                   </p>
                 )}
                 {catalogueLoading ? <p>Chargement du catalogue…</p> : (

@@ -4,9 +4,19 @@
 
 export const PREFILL_STATE_KEY = 'bandyPrefill';
 
-/** État de navigation qui porte les champs proposés vers le formulaire. */
-export function prefillNavigationState(fields) {
-  return { [PREFILL_STATE_KEY]: { fields } };
+/**
+ * État de navigation qui porte les champs proposés vers le formulaire et,
+ * s'ils ont été lus sur une pièce jointe, cette pièce (un File), à attacher
+ * à l'enregistrement une fois validé.
+ */
+export function prefillNavigationState(fields, scan = null) {
+  return { [PREFILL_STATE_KEY]: scan ? { fields, scan } : { fields } };
+}
+
+/** La pièce scannée d'où viennent les champs proposés, ou null. */
+export function readPrefillScan(locationState) {
+  const scan = locationState?.[PREFILL_STATE_KEY]?.scan;
+  return typeof File !== 'undefined' && scan instanceof File ? scan : null;
 }
 
 /** Champs proposés lus dans l'état de navigation, ou null. */
