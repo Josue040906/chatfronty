@@ -172,6 +172,9 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
         {item.confirmations?.map((confirmation) => (
           <div key={confirmation.confirmationId} className="assistant-confirmation">
             <p className="assistant-confirmation-title">Action à confirmer</p>
+            {confirmation.verified && (
+              <p className="assistant-confirmation-verified">Vérifié par le service RH, rien n’est encore enregistré.</p>
+            )}
             {confirmation.details.length > 0 && (
               <dl className="assistant-confirmation-details">
                 {confirmation.details.map((detail) => (

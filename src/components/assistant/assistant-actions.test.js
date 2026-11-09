@@ -24,6 +24,7 @@ describe('getConfirmationActions', () => {
       confirmationId: id,
       status: 'pending',
       outcome: '',
+      verified: false,
       details: [
         { label: 'Motif', value: 'Congé annuel' },
         { label: 'Date effet souhaitee', value: '2026-12-01' },
@@ -51,6 +52,25 @@ describe('getConfirmationActions', () => {
       .toBe('Action refusée : Type inconnu.');
     expect(confirmationOutcomeMessage({ status: 'FAILED' }))
       .toBe('Action refusée par le service RH.');
+  });
+});
+
+describe('getConfirmationActions with an API preview', () => {
+  it('shows what the API verified, in its own words, instead of the identifiers sent', () => {
+    const [card] = getConfirmationActions([{
+      type: 'CONFIRM',
+      tool: 'create_document_draft',
+      confirmationId: '7f1c2a9e-1b2c-4d3e-8f90-123456789abc',
+      fields: { employeId: 28, typeDocumentId: 3 },
+      summary: { Document: 'Demande de congé', Agent: 'BEFANAMBINANA Hasina (AG-028)', Du: '01/12/2026' },
+    }]);
+
+    expect(card.verified).toBe(true);
+    expect(card.details).toEqual([
+      { label: 'Document', value: 'Demande de congé' },
+      { label: 'Agent', value: 'BEFANAMBINANA Hasina (AG-028)' },
+      { label: 'Du', value: '01/12/2026' },
+    ]);
   });
 });
 

@@ -58,6 +58,10 @@ export function getTodoItems(elements) {
 
 const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
 /** « dateEffetSouhaitee » → « Date effet souhaitee » : libellé lisible d'un champ. */
 function fieldLabel(name) {
   const words = name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ').toLowerCase();
@@ -74,18 +78,20 @@ export function getConfirmationActions(actions) {
   }
   return actions
     .filter((action) => action?.type === 'CONFIRM' && UUID.test(action.confirmationId || ''))
-    .map((action) => ({
-      confirmationId: action.confirmationId,
-      status: 'pending',
-      outcome: '',
-      details: Object.entries(
-        action.fields && typeof action.fields === 'object' && !Array.isArray(action.fields)
-          ? action.fields
-          : {}
-      )
-        .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
-        .map(([name, value]) => ({ label: fieldLabel(name), value: String(value) })),
-    }));
+    .map((action) => {
+      // Le résumé vérifié par l'API (aperçu) dit en clair ce qui sera créé ;
+      // sans lui, la carte montre les champs envoyés.
+      const verified = isPlainObject(action.summary) && Object.keys(action.summary).length > 0;
+      return {
+        confirmationId: action.confirmationId,
+        status: 'pending',
+        outcome: '',
+        verified,
+        details: Object.entries(verified ? action.summary : (isPlainObject(action.fields) ? action.fields : {}))
+          .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+          .map(([name, value]) => ({ label: verified ? name : fieldLabel(name), value: String(value) })),
+      };
+    });
 }
 
 /** Message affiché après le clic « Confirmer », d'après la réponse de Bandy. */
