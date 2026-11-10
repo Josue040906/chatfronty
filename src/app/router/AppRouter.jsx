@@ -20,8 +20,7 @@ import AdministrationPage from '../../pages/Administration/AdministrationPage';
 import DirectionsPage from '../../pages/Administration/DirectionsPage';
 import ServicesPage from '../../pages/Administration/ServicesPage';
 import PostesPage from '../../pages/Administration/PostesPage';
-import GradesPage from '../../pages/Administration/GradesPage';
-import StatutsPage from '../../pages/Administration/StatutsPage';
+import ParcoursPage from '../../pages/Administration/ParcoursPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
 
@@ -194,13 +193,8 @@ export default function AppRouter({
         />
 
         <Route
-          path="/administration/grades"
-          element={<GradesPage user={user} />}
-        />
-
-        <Route
-          path="/administration/statuts"
-          element={<StatutsPage user={user} />}
+          path="/administration/parcours"
+          element={<ParcoursPage />}
         />
 
         <Route

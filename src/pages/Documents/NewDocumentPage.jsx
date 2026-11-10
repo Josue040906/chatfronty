@@ -852,7 +852,7 @@ export default function NewDocumentPage({ user }) {
           <p className="rf-eyebrow">Récapitulatif</p>
           <h2 id="new-document-summary">Votre saisie</h2>
           {selectedType && (
-            <span className="rf-pill rf-pill-signe new-document-type-pill">
+            <span className="rf-pill new-document-type-pill">
               {selectedType.libelle}
             </span>
           )}

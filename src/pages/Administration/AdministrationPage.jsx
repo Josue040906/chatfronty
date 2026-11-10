@@ -4,7 +4,6 @@ import {
   GraduationCap,
   Landmark,
   ShieldCheck,
-  UsersRound,
   ArrowRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -40,14 +39,9 @@ const administrationSections = [
       'Gérez les informations de référence utilisées par SYGPERS.',
     items: [
       {
-        label: 'Grades',
-        description: 'Gérer les grades et niveaux',
+        label: 'Parcours et grades',
+        description: 'Consulter les parcours de chaque type d’emploi et leurs grades',
         icon: GraduationCap,
-      },
-      {
-        label: 'Statuts',
-        description: 'Gérer les statuts administratifs',
-        icon: UsersRound,
       },
     ],
   },
@@ -65,11 +59,8 @@ export default function AdministrationPage() {
         if (item.label === 'Postes') {
              navigate('/administration/postes');
         }
-        if (item.label === 'Grades') {
-             navigate('/administration/grades');
-        }
-        if (item.label === 'Statuts') {
-            navigate('/administration/statuts');
+        if (item.label === 'Parcours et grades') {
+             navigate('/administration/parcours');
         }
 
     }

@@ -298,9 +298,8 @@
 }
 
 .rf-pill-brouillon { background: var(--color-surface-sunken); color: var(--color-text-muted); }
-.rf-pill-a_verifier { background: var(--color-accent-soft); color: var(--color-accent-strong); }
 .rf-pill-valide { background: var(--color-success-soft); color: var(--color-success); }
-.rf-pill-signe { background: var(--color-info-soft); color: var(--color-info); }
+.rf-pill-annule { background: var(--color-danger-soft); color: var(--color-danger); }
 .rf-pill-archive { background: #EFE6DA; color: var(--color-brand-strong); }
 
 /* ---------- Cartes-lignes ---------- */
@@ -636,8 +635,7 @@ button.rf-row {
 .rf-hero h2 { margin: 6px 0 12px; font: 600 clamp(24px, 2.4vw, 30px) / 1.15 var(--font-display); overflow-wrap: anywhere; }
 .rf-hero .rf-pill { background: rgb(255 253 249 / 0.14); color: var(--color-on-brand); }
 .rf-hero .rf-pill-valide { background: var(--color-success-soft); color: var(--color-success); }
-.rf-hero .rf-pill-signe { background: var(--color-info-soft); color: var(--color-info); }
-.rf-hero .rf-pill-a_verifier { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.rf-hero .rf-pill-annule { background: var(--color-danger-soft); color: var(--color-danger); }
 .rf-hero .rf-pill-brouillon { background: var(--color-surface-sunken); color: var(--color-text-muted); }
 .rf-hero .rf-pill-archive { background: #EFE6DA; color: var(--color-brand-strong); }
 
@@ -1676,3 +1674,13 @@ button.rf-row {
 /* Dans une barre d'outils, les puces s'alignent avec la recherche et le compteur. */
 .rf-toolbar { align-items: center; }
 .rf-toolbar .rf-chips { margin: 0; }
+
+/* ---------- Parcours et grades ---------- */
+.parcours-type { display: grid; gap: 18px; margin-top: 20px; }
+.parcours-type h2 { margin: 0; font: 600 21px var(--font-display); }
+.parcours-type h3 { margin: 0 0 8px; font-size: 14px; color: var(--color-text-muted); }
+.parcours-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.parcours-table th, .parcours-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--color-border); }
+.parcours-table th { font-weight: 600; color: var(--color-text-muted); }
+.parcours-table td:first-child { font-family: var(--font-mono); white-space: nowrap; }
+@media (max-width: 640px) { .parcours-table th:last-child, .parcours-table td:last-child { display: none; } }

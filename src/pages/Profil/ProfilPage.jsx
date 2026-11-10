@@ -25,6 +25,7 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
+import { gradeLabel } from '../../utils/parcours';
 
 function formatDate(value) {
   if (!value) {
@@ -753,7 +754,7 @@ export default function ProfilPage({ user, onUserUpdated }) {
 
           <InfoItem
             label="Grade"
-            value={profil.grade}
+            value={gradeLabel(profil.grade_libelle, profil.grade_code)}
             locked
           />
 
