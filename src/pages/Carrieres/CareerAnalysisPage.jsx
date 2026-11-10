@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
-import { gradeLabel } from '../../utils/parcours';
+import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
   BriefcaseBusiness,
@@ -881,7 +881,7 @@ export default function CareerAnalysisPage({ user }) {
         <div className="career-current-grid">
           <div className="career-current-card"><div className="career-current-icon"><UserRound size={19} /></div><span>Catégorie</span><strong>{situation.categorieCode || agent.categorie || '—'}</strong></div>
           <div className="career-current-card"><div className="career-current-icon"><BriefcaseBusiness size={19} /></div><span>Corps</span><strong>{agent.corps_libelle || agent.corps || '—'}</strong></div>
-          <div className="career-current-card"><div className="career-current-icon"><TrendingUp size={19} /></div><span>Grade</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</strong></div>
+          <div className="career-current-card"><div className="career-current-icon"><TrendingUp size={19} /></div><span>Grade</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</strong><small>{indiceLabel(situation.indice)}</small></div>
           <div className="career-current-card"><div className="career-current-icon"><GraduationCap size={19} /></div><span>Parcours</span><strong>{[agent.type_emploi, situation.parcours].filter(Boolean).join(' · ') || '—'}</strong></div>
           <div className="career-current-card"><div className="career-current-icon"><CalendarDays size={19} /></div><span>Depuis</span><strong>{formatDate(situation.dateDebut)}</strong></div>
         </div>
@@ -926,9 +926,9 @@ export default function CareerAnalysisPage({ user }) {
           <div><h2>Évolution possible</h2><p>Projection indicative; un avancement doit être confirmé séparément.</p></div>
         </div>
         {evolution.type === 'ECHELON' && nextSituation ? (
-          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution d’échelon</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong></div></div>
+          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution d’échelon</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong><p>{indiceLabel(situation.indice)} → {indiceLabel(nextSituation.indice)}</p></div></div>
         ) : evolution.type === 'CLASSE' && nextSituation ? (
-          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution de classe indicative</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong><p>Cette projection ne permet pas de confirmer un avancement d’échelon.</p></div></div>
+          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution de classe indicative</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong><p>{indiceLabel(situation.indice)} → {indiceLabel(nextSituation.indice)}</p><p>Cette projection ne permet pas de confirmer un avancement d’échelon.</p></div></div>
         ) : (
           <div className="career-next-result neutral"><XCircle size={20} /><div><span>Évolution identifiée</span><strong>Aucune évolution suivante identifiée.</strong></div></div>
         )}
@@ -994,7 +994,7 @@ export default function CareerAnalysisPage({ user }) {
                       <strong>{gradeLabel(item.gradeLibelle, item.gradeCode)}</strong>
                       <span>{formatDate(item.dateDebut)}</span>
                     </div>
-                    {item.categorieCode && <p>Catégorie {item.categorieCode}</p>}
+                    {item.categorieCode && <p>Catégorie {item.categorieCode} · {indiceLabel(item.indice)}</p>}
                     {item.dateFin && <div className="career-timeline-details"><span>Fin : {formatDate(item.dateFin)}</span></div>}
                   </div>
                 </div>

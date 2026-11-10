@@ -1684,3 +1684,9 @@ button.rf-row {
 .parcours-table th { font-weight: 600; color: var(--color-text-muted); }
 .parcours-table td:first-child { font-family: var(--font-mono); white-space: nowrap; }
 @media (max-width: 640px) { .parcours-table th:last-child, .parcours-table td:last-child { display: none; } }
+.parcours-grille-title { margin-top: 16px !important; }
+.parcours-grille-scroll { overflow-x: auto; max-width: 100%; }
+.parcours-grille th, .parcours-grille td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.parcours-grille th:first-child, .parcours-grille td:first-child { text-align: left; }
+.parcours-grille td:first-child { font-family: inherit; }
+@media (max-width: 640px) { .parcours-grille th:last-child, .parcours-grille td:last-child { display: table-cell; } }

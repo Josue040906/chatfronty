@@ -1,22 +1,60 @@
 import { useEffect, useState } from 'react';
-import { getParcoursGrades } from '../../api/parcours';
-import { groupParcours } from '../../utils/parcours';
+import { getGrilleIndiciaire, getParcoursGrades } from '../../api/parcours';
+import { grilleDuParcours, groupParcours } from '../../utils/parcours';
 
 function duree(annees) {
   if (annees == null) return '—';
   return `${annees} an${Number(annees) > 1 ? 's' : ''}`;
 }
 
+/** Catégories en lignes, grades en colonnes : l'indice à leur croisement. */
+function GrilleIndiciaire({ parcours, cases }) {
+  const grille = grilleDuParcours(cases, parcours.code);
+  if (grille.categories.length === 0) return null;
+  return (
+    <>
+      <h3 className="parcours-grille-title">Grille indiciaire (valeurs fictives)</h3>
+      <div className="parcours-grille-scroll">
+        <table className="parcours-table parcours-grille">
+          <thead>
+            <tr>
+              <th scope="col">Catégorie</th>
+              {parcours.grades.map((grade) => (
+                <th scope="col" key={grade.grade_id} title={grade.libelle}>{grade.code}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {grille.categories.map((categorie) => (
+              <tr key={categorie}>
+                <th scope="row">{categorie}</th>
+                {parcours.grades.map((grade) => (
+                  <td key={grade.grade_id}>{grille.indice(categorie, grade.code) ?? '—'}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 /** Parcours de chaque type d'emploi et leurs grades, en lecture seule. */
 export default function ParcoursPage() {
   const [types, setTypes] = useState([]);
+  const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let active = true;
-    getParcoursGrades()
-      .then((grades) => { if (active) setTypes(groupParcours(grades)); })
+    Promise.all([getParcoursGrades(), getGrilleIndiciaire()])
+      .then(([grades, grille]) => {
+        if (!active) return;
+        setTypes(groupParcours(grades));
+        setCases(grille);
+      })
       .catch((err) => { if (active) setError(err?.message || 'Impossible de charger les parcours.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -58,6 +96,7 @@ export default function ParcoursPage() {
                   ))}
                 </tbody>
               </table>
+              <GrilleIndiciaire parcours={parcours} cases={cases} />
             </div>
           ))}
         </section>

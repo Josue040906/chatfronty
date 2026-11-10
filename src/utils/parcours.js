@@ -17,6 +17,29 @@ export function groupParcours(grades) {
   return types;
 }
 
+/**
+ * La grille d'un parcours : catégories en lignes, dans l'ordre reçu, et l'indice
+ * de chaque case (catégorie, code de grade) ; une case absente reste vide.
+ */
+export function grilleDuParcours(cases, parcoursCode) {
+  const categories = [];
+  const indices = new Map();
+  for (const item of cases || []) {
+    if (item.parcours_code !== parcoursCode) continue;
+    if (!categories.includes(item.categorie)) categories.push(item.categorie);
+    indices.set(`${item.categorie}|${item.grade_code}`, item.indice);
+  }
+  return {
+    categories,
+    indice: (categorie, gradeCode) => indices.get(`${categorie}|${gradeCode}`) ?? null,
+  };
+}
+
+/** « Indice 470 », ou une mention claire quand la grille n'a pas la case. */
+export function indiceLabel(indice) {
+  return indice == null ? 'Indice non renseigné' : `Indice ${indice}`;
+}
+
 /** « 2e classe, 2e échelon (2C2E) » : le libellé d'abord, le code en appui. */
 export function gradeLabel(libelle, code) {
   if (!libelle) return code || '—';

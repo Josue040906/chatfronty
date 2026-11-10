@@ -759,6 +759,12 @@ export default function ProfilPage({ user, onUserUpdated }) {
           />
 
           <InfoItem
+            label="Indice"
+            value={profil.indice ?? 'Non renseigné'}
+            locked
+          />
+
+          <InfoItem
             label="Corps"
             value={profil.corps}
             locked
