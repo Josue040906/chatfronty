@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ArrowRight,
-} from 'lucide-react';
-
 import { getDashboardData } from '../../api/dashboard';
 import {
-  Avatar,
   Button,
   Card,
   EmptyState,
@@ -14,10 +9,6 @@ import {
   Segmented,
   Skeleton,
 } from '../../components/ui';
-import {
-  getEmployeePhotoUrl,
-  getEmployeeInitials,
-} from '../../utils/employee';
 import {
   fillYearGaps,
   getHiringSummary,
@@ -38,10 +29,6 @@ const DISTRIBUTION_OPTIONS = [
   { value: 'direction', label: 'Par direction' },
 ];
 const MAX_RECORD_YEARS = 3;
-
-function formatName(employee) {
-  return `${employee.prenom || ''} ${employee.nom || ''}`.trim();
-}
 
 function formatRecordYears(years) {
   if (years.length === 0) {
@@ -73,7 +60,7 @@ function DashboardSkeleton() {
       </div>
 
       <div className="dash-stat-grid" aria-hidden="true">
-        {[0, 1, 2].map((index) => (
+        {[0, 1, 2, 3].map((index) => (
           <Card key={index} className="dash-skeleton-card">
             <Skeleton width={90} height={16} />
             <Skeleton width={70} height={36} />
@@ -153,7 +140,6 @@ export default function DashboardPage() {
     () => getHiringSummary(hiringYearStats),
     [hiringYearStats]
   );
-  const recentEmployees = data.employees.slice(0, 5);
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -181,10 +167,6 @@ export default function DashboardPage() {
     );
   }
 
-  const goToAgents = () => {
-    window.location.href = '/agents';
-  };
-
   return (
     <div className="dashboard-page rf-page">
       <header className="rf-head">
@@ -195,47 +177,27 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <section className="dash-board" aria-label="Chiffres clés">
-        <article className="dash-hero">
-          <svg className="dash-hero-circles" viewBox="0 0 320 320" aria-hidden="true">
-            <circle cx="260" cy="120" r="180" />
-            <circle cx="260" cy="120" r="130" />
-            <circle cx="260" cy="120" r="80" />
-          </svg>
-          <p className="dash-hero-eyebrow">Effectif total</p>
-          <strong className="dash-hero-value">{NUMBER_FORMATTER.format(data.employees.length)}</strong>
-          <p className="dash-hero-caption">
-            {data.employees.length === 1 ? 'agent enregistré' : 'agents enregistrés'}
-            , répartis dans {NUMBER_FORMATTER.format(data.services.length)}{' '}
-            {data.services.length === 1 ? 'service' : 'services'}
-          </p>
-          <button type="button" className="rf-btn dash-hero-button" onClick={goToAgents}>
-            Voir tous les agents
-            <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
-          </button>
+      {/* Chiffres clés, discrets : les graphiques sont l'essentiel de la page. */}
+      <section className="dash-kpis" aria-label="Chiffres clés">
+        <article className="dash-kpi dash-kpi-main">
+          <span>Effectif total</span>
+          <strong>{NUMBER_FORMATTER.format(data.employees.length)}</strong>
+          <small>{data.employees.length === 1 ? 'agent enregistré' : 'agents enregistrés'}</small>
         </article>
-
-        <article className="dash-mini">
+        <article className="dash-kpi">
           <span>Services</span>
           <strong>{NUMBER_FORMATTER.format(data.services.length)}</strong>
           <small>services référencés</small>
         </article>
-
-        <article className="dash-mini">
+        <article className="dash-kpi">
           <span>Postes</span>
           <strong>{NUMBER_FORMATTER.format(data.postes.length)}</strong>
           <small>postes référencés</small>
         </article>
-
-        <article className="dash-record">
-          <div>
-            <p className="dash-record-eyebrow">Années record</p>
-            <strong>{formatRecordYears(hiringSummary.peakYears)}</strong>
-          </div>
-          <div className="dash-record-peak">
-            <strong>{NUMBER_FORMATTER.format(hiringSummary.peak)}</strong>
-            <span>recrutements / an</span>
-          </div>
+        <article className="dash-kpi">
+          <span>Années record</span>
+          <strong>{formatRecordYears(hiringSummary.peakYears)}</strong>
+          <small>{NUMBER_FORMATTER.format(hiringSummary.peak)} recrutements / an</small>
         </article>
       </section>
 
@@ -300,43 +262,6 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="dash-main-grid">
-        <Card className="dash-panel" index={6}>
-          <div className="dash-panel-header">
-            <div>
-              <Eyebrow>Agents</Eyebrow>
-              <h2>Agents enregistrés</h2>
-            </div>
-          </div>
-
-          <ul className="dash-employees">
-            {recentEmployees.map((employee) => (
-              <li key={employee.id}>
-                <Avatar
-                  src={getEmployeePhotoUrl(employee.photo)}
-                  initials={getEmployeeInitials(employee)}
-                  alt={formatName(employee)}
-                />
-
-                <div className="dash-employee-info">
-                  <strong>{formatName(employee)}</strong>
-                  <span>{employee.poste || 'Poste non renseigné'}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            className="dash-all-agents"
-            onClick={goToAgents}
-          >
-            Voir tous les agents
-            <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
-          </Button>
-        </Card>
-      </section>
     </div>
   );
 }

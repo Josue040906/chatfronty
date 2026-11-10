@@ -15,8 +15,9 @@ function getColor(index) {
 }
 
 /**
- * Anneau des effectifs. Le survol (ou le focus clavier) d'une ligne de la
- * légende met l'arc correspondant en avant et affiche son effectif au centre.
+ * Anneau des effectifs. Le survol d'un arc, comme celui (ou le focus
+ * clavier) d'une ligne de la légende, met l'arc et sa ligne en avant et
+ * affiche son effectif au centre.
  * Les données viennent de getEmployeeDistribution ; rien n'est ajouté.
  */
 export default function WorkforceDonut({ items }) {
@@ -58,6 +59,8 @@ export default function WorkforceDonut({ items }) {
               stroke: getColor(index),
               strokeWidth: isActive ? STROKE_WIDTH + 6 : STROKE_WIDTH,
               pathLength: 100,
+              onMouseEnter: () => setActiveIndex(index),
+              onMouseLeave: () => setActiveIndex(null),
               style: {
                 '--draw-length': 100,
                 animationDelay: `${index * 90}ms`,
