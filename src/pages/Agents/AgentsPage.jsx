@@ -141,6 +141,14 @@ export default function AgentsPage({ user }) {
     });
   }, [agents, dossierFilter, search, selectedIds]);
 
+  // Recherche, dossier ou sélection de Bandy : un clic ramène à la liste complète.
+  const filtered = Boolean(search.trim() || dossierFilter || recherche);
+  function resetFilters() {
+    setSearch('');
+    // Une seule navigation retire tous les filtres de l'adresse (dossier, recherche).
+    navigate({ search: '' }, { replace: true });
+  }
+
   const selectedAgent = filteredAgents.find(
     (agent) => String(agent.id) === String(selectedId)
   );
@@ -277,15 +285,26 @@ export default function AgentsPage({ user }) {
             aria-label="Rechercher un agent"
           />
         </label>
-        <button
-          type="button"
-          className="rf-chip"
-          aria-pressed={dossierFilter === 'incomplet'}
-          onClick={() => setDossierFilter(dossierFilter === 'incomplet' ? '' : 'incomplet')}
-        >
-          Dossiers incomplets
-          <span>{incompleteCount}</span>
-        </button>
+        <div className="rf-chips" role="group" aria-label="Dossiers">
+          <button
+            type="button"
+            className="rf-chip"
+            aria-pressed={dossierFilter === ''}
+            onClick={() => setDossierFilter('')}
+          >
+            Tous
+            <span>{agents.length}</span>
+          </button>
+          <button
+            type="button"
+            className="rf-chip"
+            aria-pressed={dossierFilter === 'incomplet'}
+            onClick={() => setDossierFilter('incomplet')}
+          >
+            Dossiers incomplets
+            <span>{incompleteCount}</span>
+          </button>
+        </div>
         {recherche && (
           <button
             type="button"
@@ -301,8 +320,13 @@ export default function AgentsPage({ user }) {
         )}
         <span className="agents-count" aria-live="polite">
           {filteredAgents.length} agent{filteredAgents.length > 1 ? 's' : ''}
-          {search.trim() || dossierFilter || recherche ? ` sur ${agents.length}` : ''}
+          {filtered ? ` sur ${agents.length}` : ''}
         </span>
+        {filtered && (
+          <button type="button" className="rf-btn agents-reset" onClick={resetFilters}>
+            Réinitialiser
+          </button>
+        )}
       </div>
 
       <div className="agents-layout">
@@ -311,6 +335,11 @@ export default function AgentsPage({ user }) {
             <div className="rf-card agents-empty">
               <h2>Aucun agent trouvé</h2>
               <p>Aucun agent ne correspond à votre recherche.</p>
+              {filtered && (
+                <button type="button" className="rf-btn" onClick={resetFilters}>
+                  Revoir tous les agents
+                </button>
+              )}
             </div>
           ) : (
             <>
