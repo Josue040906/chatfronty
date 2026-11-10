@@ -15,6 +15,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import AgentPresence from '../../components/agents/AgentPresence';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import CreateAgentModal from './CreateAgentModal';
 
@@ -383,6 +384,7 @@ export default function AgentsPage({ user }) {
                           />
                         </span>
                         <strong>{formatName(agent)}</strong>
+                        <AgentPresence agent={agent} />
                       </span>
                       <span className="rf-mono agents-row-matricule">
                         {agent.matricule || '—'}

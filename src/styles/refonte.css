@@ -1788,3 +1788,18 @@ button.rf-row {
   background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 14px;
 }
 .new-document-retraite strong { color: var(--color-text); }
+
+/* ---------- Présence de l'agent et solde de congé ---------- */
+.agent-presence {
+  display: inline-flex; align-items: center; gap: 5px; width: fit-content; margin-top: 4px;
+  padding: 2px 9px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.agent-presence.is-conge { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.agent-presence.is-retraite { background: var(--color-surface-sunken); color: var(--color-text-muted); }
+.agents-row-person { flex-wrap: wrap; }
+.new-document-conge {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 14px;
+  border-radius: var(--radius-md); background: var(--color-success-soft); color: var(--color-success); font-size: 14px;
+}
+.new-document-conge strong { font-size: 16px; }
+.new-document-conge.is-insuffisant { background: var(--color-danger-soft); color: var(--color-danger); }

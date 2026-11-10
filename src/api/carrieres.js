@@ -101,3 +101,9 @@ export async function getRetraiteAnalyse(employeId) {
 export async function prendreRetraite(employeId, dateEffet) {
   return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/retraite`, { dateEffet });
 }
+
+/** Congés : acquis, pris et solde au jour donné (aujourd'hui par défaut), congé en cours, congés de l'année. */
+export async function getConges(employeId, date) {
+  const suffixe = date ? `?date=${encodeURIComponent(date)}` : '';
+  return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/conges${suffixe}`);
+}

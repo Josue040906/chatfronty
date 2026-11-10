@@ -14,8 +14,8 @@ import {
 } from '../../api/documents';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
-import { getRetraiteAnalyse } from '../../api/carrieres';
-import { formatJour } from '../../utils/documentCycle';
+import { getConges, getRetraiteAnalyse } from '../../api/carrieres';
+import { formatJour, formatJours, joursConge } from '../../utils/documentCycle';
 
 function downloadPdfInNewTab(pdfWindow, blob) {
   const url = URL.createObjectURL(blob);
@@ -92,6 +92,7 @@ export default function NewDocumentPage() {
   const [pdfError, setPdfError] = useState('');
   const [createdDocument, setCreatedDocument] = useState(null);
   const [retraite, setRetraite] = useState(null);
+  const [soldeConge, setSoldeConge] = useState(null);
   const location = useLocation();
   const [demandeCarriere] = useState(() => readDemandeCarriere(location.state));
   // Tâche préparée par Bandy : les champs proposés remplissent le formulaire
@@ -238,6 +239,16 @@ export default function NewDocumentPage() {
       .catch(() => { if (!cancelled) setRetraite(null); });
     return () => { cancelled = true; };
   }, [formData.employeId, isRetirementRequest]);
+
+  // Congé : le solde au premier jour demandé, recalculé à chaque changement.
+  useEffect(() => {
+    if (!isLeaveRequest || !formData.employeId || !formData.dateDebut) return undefined;
+    let cancelled = false;
+    getConges(formData.employeId, formData.dateDebut)
+      .then((result) => { if (!cancelled) setSoldeConge(result); })
+      .catch(() => { if (!cancelled) setSoldeConge(null); });
+    return () => { cancelled = true; };
+  }, [formData.employeId, formData.dateDebut, isLeaveRequest]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -704,6 +715,27 @@ export default function NewDocumentPage() {
                         required
                       />
                     </div>
+                    {(() => {
+                      const jours = joursConge(formData.dateDebut, formData.dateFin);
+                      if (!jours || !soldeConge || !formData.employeId) return null;
+                      const reste = Number(soldeConge.solde) - jours;
+                      const deuxAnnees = formData.dateDebut.slice(0, 4) !== formData.dateFin.slice(0, 4);
+                      return (
+                        <div className={`new-document-conge${reste < 0 || deuxAnnees ? ' is-insuffisant' : ''}`} role="status">
+                          <span><strong>{jours}</strong> jour{jours > 1 ? 's' : ''} demandé{jours > 1 ? 's' : ''}</span>
+                          <span>
+                            <strong>{formatJours(soldeConge.solde)}</strong> disponibles au {formatJour(formData.dateDebut)}
+                          </span>
+                          <span>
+                            {deuxAnnees
+                              ? 'Un congé ne peut pas chevaucher deux années : les droits repartent à zéro au 1er janvier.'
+                              : reste < 0
+                              ? `Il manque ${formatJours(-reste)} jours : la demande pourra être créée, mais pas appliquée.`
+                              : `Reste ${formatJours(reste)} jours après ce congé.`}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BriefcaseBusiness, CalendarDays, Hourglass, Palmtree, TrendingUp } from 'lucide-react';
-import { getRetraiteAnalyse, prendreRetraite } from '../../api/carrieres';
-import { formatJour, isoToday, joursJusqua } from '../../utils/documentCycle';
+import { getConges, getRetraiteAnalyse, prendreRetraite } from '../../api/carrieres';
+import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
 function dateAvancementPossible(analysis) {
@@ -29,6 +29,7 @@ export default function DemandesCarriere({ employeId, analysis, canManageHr, onC
   const navigate = useNavigate();
   const today = isoToday();
   const [retraite, setRetraite] = useState(null);
+  const [conges, setConges] = useState(null);
   const [confirmer, setConfirmer] = useState(false);
   const [dateDepart, setDateDepart] = useState(today);
   const [envoi, setEnvoi] = useState({ running: false, error: '', message: '' });
@@ -38,6 +39,9 @@ export default function DemandesCarriere({ employeId, analysis, canManageHr, onC
     getRetraiteAnalyse(employeId)
       .then((result) => { if (!cancelled) setRetraite(result); })
       .catch(() => { if (!cancelled) setRetraite(null); });
+    getConges(employeId)
+      .then((result) => { if (!cancelled) setConges(result); })
+      .catch(() => { if (!cancelled) setConges(null); });
     return () => { cancelled = true; };
   }, [employeId, envoi.message]);
 
@@ -78,8 +82,15 @@ export default function DemandesCarriere({ employeId, analysis, canManageHr, onC
       code: 'CONGE',
       titre: 'Congé',
       icone: Palmtree,
-      detail: 'Un mois de congé par an',
-      ton: 'neutre',
+      detail: conges
+        ? conges.enCongeJusquau
+          ? `En congé jusqu’au ${formatJour(conges.enCongeJusquau)} · ${formatJours(conges.solde)} jours restants`
+          : `${formatJours(conges.solde)} jours disponibles · ${formatJours(conges.pris)} pris en ${conges.annee}`
+        : 'Solde indisponible',
+      ton: conges && Number(conges.solde) > 0 ? 'pret' : 'neutre',
+      progression: conges && conges.joursParMois
+        ? Math.max(0, Math.min(1, Number(conges.solde) / (Number(conges.joursParMois) * 12)))
+        : null,
     },
     {
       code: 'RETRAITE',

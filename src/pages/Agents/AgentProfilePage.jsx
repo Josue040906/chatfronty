@@ -27,6 +27,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import AgentPresence from '../../components/agents/AgentPresence';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import LocaliteField from '../../components/forms/LocaliteField';
@@ -430,6 +431,7 @@ export default function AgentProfilePage({ user }) {
             </div>
             <p className="rf-eyebrow" style={{ marginTop: 16 }}>Profil agent</p>
             <h1>{formatName(agent)}</h1>
+            <AgentPresence agent={agent} />
             <p className="rf-lead" style={{ margin: 0 }}>
               {agent.poste || 'Poste non renseigné'}
             </p>

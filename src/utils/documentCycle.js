@@ -35,6 +35,19 @@ export function formatJour(date) {
   return jour && mois && annee ? `${jour}/${mois}/${annee}` : String(date);
 }
 
+/** Jours calendaires d'un congé, du premier au dernier inclus ; 0 si les dates sont incomplètes. */
+export function joursConge(debut, fin) {
+  if (!debut || !fin || fin < debut) return 0;
+  return joursJusqua(fin, String(debut).slice(0, 10)) + 1;
+}
+
+/** « 17,5 » : un nombre de jours à la française. */
+export function formatJours(valeur) {
+  const nombre = Number(valeur);
+  if (!Number.isFinite(nombre)) return '—';
+  return nombre.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+}
+
 /** « dans 12 jours », « demain », « aujourd'hui ». */
 export function delaiLabel(jours) {
   if (jours == null) return '';
@@ -120,9 +133,15 @@ export function documentEffect(document, typeCode) {
     return { titre: 'Départ à la retraite', avant: ['En service'], apres: ['À la retraite'] };
   }
   if (typeCode === 'CONGE') {
+    const jours = joursConge(donnees.dateDebut, donnees.dateFin);
+    if (!jours) return null;
     return {
       titre: 'Congé',
-      note: 'La demande sera marquée appliquée ; l’absence et le solde de congé arriveront avec la gestion des congés.',
+      avant: ['Présent'],
+      apres: [
+        `Absent du ${formatJour(donnees.dateDebut)} au ${formatJour(donnees.dateFin)}`,
+        `${jours} jour${jours > 1 ? 's' : ''} déduit${jours > 1 ? 's' : ''} du solde`,
+      ],
     };
   }
   return null;

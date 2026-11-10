@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { APPLICABLE, delaiLabel, documentActions, documentEffect, documentPhase, joursJusqua } from './documentCycle';
+import {
+  APPLICABLE, delaiLabel, documentActions, documentEffect, documentPhase, formatJours, joursConge, joursJusqua,
+} from './documentCycle';
 
 const today = '2026-11-10';
 const auteur = { userId: 5, role: 'SPERS_AGENT' };
@@ -63,5 +65,18 @@ describe('delays', () => {
     expect(joursJusqua('2026-11-13', today)).toBe(3);
     expect(delaiLabel(1)).toBe('demain');
     expect(delaiLabel(12)).toBe('dans 12 jours');
+  });
+});
+
+describe('leave', () => {
+  it('counts calendar days, first and last included', () => {
+    expect(joursConge('2026-12-10', '2026-12-12')).toBe(3);
+    expect(joursConge('2026-12-12', '2026-12-10')).toBe(0);
+    expect(formatJours(17.5)).toBe('17,5');
+  });
+
+  it('shows the absence and the days taken from the balance', () => {
+    expect(documentEffect({ donnees: { dateDebut: '2026-12-10', dateFin: '2026-12-12' } }, 'CONGE').apres)
+      .toEqual(['Absent du 10/12/2026 au 12/12/2026', '3 jours déduits du solde']);
   });
 });
