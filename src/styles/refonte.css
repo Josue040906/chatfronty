@@ -1657,3 +1657,20 @@ button.rf-row {
   font-size: var(--text-sm);
   font-weight: 600;
 }
+
+/* Analyse de carrière : un aperçu du profil, étroit, pour laisser la place à la carrière. */
+.career-profile-preview {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.career-profile-preview .career-profile-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 700px) {
+  .career-profile-preview .career-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -12,7 +12,6 @@ import {
   FileText,
   GraduationCap,
   History,
-  Pencil,
   Plus,
   Save,
   TrendingUp,
@@ -24,7 +23,6 @@ import {
 import {
   getAgentById,
   updateAgentAssignment,
-  updateAgentPersonalDetails,
 } from '../../api/agents';
 import {
   addEmployeeDiploma,
@@ -43,25 +41,9 @@ import {
   getEmployeeInitials,
 } from '../../utils/employee';
 import PersonPhoto from '../../components/agents/PersonPhoto';
-import LocaliteField from '../../components/forms/LocaliteField';
-import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
-import { isPhoneNumberValid } from '../../utils/phone';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
-
-const EMPTY_PERSONAL_FORM = {
-  nom: '',
-  prenom: '',
-  sexe: '',
-  adresse: '',
-  localiteResidenceId: '',
-  effacerLocaliteResidence: false,
-  cin: '',
-  telephone: '',
-  dateNaissance: '',
-  lieuNaissance: '',
-};
 
 const EMPTY_DIPLOMA_FORM = {
   niveauId: '',
@@ -151,21 +133,6 @@ function emptyCareerAnalysis(employeId) {
   };
 }
 
-function personalFormFromAgent(agent) {
-  return {
-    nom: agent?.nom || '',
-    prenom: agent?.prenom || '',
-    sexe: agent?.sexe || '',
-    adresse: agent?.adresse || '',
-    localiteResidenceId: agent?.localite_residence_id || '',
-    effacerLocaliteResidence: false,
-    cin: agent?.cin || '',
-    telephone: agent?.telephone || '',
-    dateNaissance: dateInputValue(agent?.date_naissance),
-    lieuNaissance: agent?.lieu_naissance || '',
-  };
-}
-
 function hasRequiredProposalData(type, proposal) {
   if (proposal?.eligible !== true) {
     return false;
@@ -236,7 +203,6 @@ export default function CareerAnalysisPage({ user }) {
   const [diplomasError, setDiplomasError] = useState('');
   const [feedback, setFeedback] = useState('');
   const [dialog, setDialog] = useState('');
-  const [personalForm, setPersonalForm] = useState(EMPTY_PERSONAL_FORM);
   const [diplomaForm, setDiplomaForm] = useState(EMPTY_DIPLOMA_FORM);
   // Champs du diplôme proposés par Bandy (lus sur une pièce), à vérifier avant d'enregistrer.
   const [diplomaPrefilled, setDiplomaPrefilled] = useState([]);
@@ -582,42 +548,6 @@ export default function CareerAnalysisPage({ user }) {
     }
   }
 
-  async function handlePersonalSave(event) {
-    event.preventDefault();
-    setFormError('');
-    if (!personalForm.nom.trim()) {
-      setFormError('Le nom est obligatoire.');
-      return;
-    }
-    if (!isPhoneNumberValid(personalForm.telephone)) {
-      setFormError(
-        'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
-      );
-      return;
-    }
-    if (savingRef.current) return;
-    savingRef.current = true;
-    setSaving(true);
-    try {
-      await updateAgentPersonalDetails(id, user?.userId, personalForm);
-      setDialog('');
-      setFeedback('Les informations personnelles ont été mises à jour.');
-      try {
-        await refreshCareerData();
-      } catch (refreshError) {
-        console.error(refreshError);
-        setFeedback(
-          'Les informations ont été enregistrées, mais la fiche n’a pas pu être actualisée. Rechargez la page.'
-        );
-      }
-    } catch (saveError) {
-      setFormError(saveError.message || 'Impossible d’enregistrer les informations personnelles.');
-    } finally {
-      savingRef.current = false;
-      setSaving(false);
-    }
-  }
-
   async function handleDiplomaSave(event) {
     event.preventDefault();
     setFormError('');
@@ -858,13 +788,9 @@ export default function CareerAnalysisPage({ user }) {
   });
   const latestDiploma = sortedDiplomas.find((item) => item.date_obtention);
   const profileDetails = [
-    { label: 'Adresse', value: agent.adresse || '—' },
-    { label: 'Téléphone', value: agent.telephone || '—' },
-    { label: 'Date de naissance', value: formatDate(agent.date_naissance) },
-    { label: 'Lieu de naissance', value: agent.lieu_naissance || '—' },
-    { label: 'Date d’embauche', value: formatDate(agent.date_embauche) },
     { label: 'Service', value: agent.service || '—' },
     { label: 'Direction', value: agent.direction || '—' },
+    { label: 'Date d’embauche', value: formatDate(agent.date_embauche) },
   ];
 
   return (
@@ -910,26 +836,20 @@ export default function CareerAnalysisPage({ user }) {
         </section>
       )}
 
-      <section className="career-panel">
+      {/* Un simple aperçu : le profil complet (et sa modification) est sur la fiche agent. */}
+      <section className="career-panel career-profile-preview">
         <div className="career-panel-header career-panel-header-actions">
           <div className="career-panel-icon"><UserRound size={19} /></div>
           <div>
-            <h2>Profil du collaborateur</h2>
-            <p>Informations personnelles et professionnelles synchronisées depuis le backend.</p>
+            <h2>Profil</h2>
           </div>
-          {canManageHr && (
-            <button
-              type="button"
-              className="career-action-button secondary"
-              onClick={() => {
-                setPersonalForm(personalFormFromAgent(agent));
-                setFormError('');
-                setDialog('personal');
-              }}
-            >
-              <Pencil size={16} />Modifier les informations personnelles
-            </button>
-          )}
+          <button
+            type="button"
+            className="career-action-button secondary"
+            onClick={() => navigate(`/agents/${id}`)}
+          >
+            <UserRound size={16} />Voir le profil
+          </button>
         </div>
         <div className="career-profile-grid">
           {profileDetails.map((detail) => (
@@ -1141,14 +1061,12 @@ export default function CareerAnalysisPage({ user }) {
             <header className="career-dialog-header">
               <div>
                 <span className="career-dialog-eyebrow">
-                  {dialog === 'personal' ? 'Informations personnelles'
-                    : dialog === 'mutation' ? 'Mutation'
+                  {dialog === 'mutation' ? 'Mutation'
                       : dialog === 'diploma' ? 'Diplôme'
                         : dialog === 'reclassement' ? 'Reclassement'
                           : 'Avancement d’échelon'}
                 </span>
-                <h2 id="career-dialog-title">{dialog === 'personal' ? 'Modifier les informations personnelles'
-                  : dialog === 'mutation' ? `Muter ${formatName(agent) || 'cet agent'}`
+                <h2 id="career-dialog-title">{dialog === 'mutation' ? `Muter ${formatName(agent) || 'cet agent'}`
                     : dialog === 'diploma' ? 'Ajouter un diplôme'
                     : dialog === 'reclassement' ? 'Préparer le reclassement'
                       : 'Vérifier l’avancement d’échelon'}</h2>
@@ -1244,51 +1162,6 @@ export default function CareerAnalysisPage({ user }) {
                   <button type="submit" className="career-action-button primary" disabled={saving || assignmentOptionsLoading || !assignmentServices.length}>
                     <Save size={16} />{saving ? 'Mutation…' : 'Muter l’agent'}
                   </button>
-                </div>
-              </form>
-            )}
-
-            {dialog === 'personal' && (
-              <form className="career-form" onSubmit={handlePersonalSave}>
-                <div className="career-form-grid">
-                  <label>Nom<input name="nom" maxLength="100" required value={personalForm.nom} onChange={handleFieldChange(setPersonalForm)} /></label>
-                  <label>Prénoms<input name="prenom" maxLength="100" value={personalForm.prenom} onChange={handleFieldChange(setPersonalForm)} /></label>
-                  <label>Sexe<input name="sexe" maxLength="20" value={personalForm.sexe} onChange={handleFieldChange(setPersonalForm)} /></label>
-                  <label>CIN<input name="cin" maxLength="30" value={personalForm.cin} onChange={handleFieldChange(setPersonalForm)} /></label>
-                  <div className="career-form-field">
-                    <label htmlFor="personal-telephone">Téléphone</label>
-                    <PhoneField
-                      id="personal-telephone"
-                      value={personalForm.telephone}
-                      onChange={(telephone) => setPersonalForm((current) => ({
-                        ...current,
-                        telephone,
-                      }))}
-                      disabled={saving}
-                    />
-                  </div>
-                  <label>Date de naissance<input name="dateNaissance" type="date" max={todayInputValue()} value={personalForm.dateNaissance} onChange={handleFieldChange(setPersonalForm)} /></label>
-                  <label className="wide">Lieu de naissance<VilleField id="career-lieu-naissance" name="lieuNaissance" value={personalForm.lieuNaissance} onChange={handleFieldChange(setPersonalForm)} disabled={saving} /></label>
-                  <div className="career-form-field wide">
-                    <span>Adresse</span>
-                    <LocaliteField
-                      selectedId={personalForm.localiteResidenceId}
-                      currentAddress={personalForm.adresse}
-                      onChange={(localiteResidenceId, adresse) => setPersonalForm((current) => ({
-                        ...current,
-                        localiteResidenceId: localiteResidenceId || '',
-                        effacerLocaliteResidence: !localiteResidenceId,
-                        adresse,
-                      }))}
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
-                <p className="career-form-note">Les informations de compte, le mot de passe et les rôles ne sont pas modifiés ici.</p>
-                {formError && <p className="career-inline-error" role="alert">{formError}</p>}
-                <div className="career-dialog-actions">
-                  <button type="button" className="career-action-button secondary" onClick={closeDialog} disabled={saving}>Annuler</button>
-                  <button type="submit" className="career-action-button primary" disabled={saving}><Save size={16} />{saving ? 'Enregistrement…' : 'Enregistrer'}</button>
                 </div>
               </form>
             )}

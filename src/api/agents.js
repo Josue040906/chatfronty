@@ -119,28 +119,6 @@ export async function updateAgentAssignment(id, data) {
   );
 }
 
-export async function updateAgentPersonalDetails(id, userId, data) {
-  if (!userId) {
-    throw new Error("L'identifiant de l'utilisateur connecté est obligatoire.");
-  }
-
-  return apiPut(`/api/employes/${encodeURIComponent(id)}`, {
-    acteurId: userId,
-    nom: data.nom,
-    prenom: data.prenom,
-    sexe: data.sexe || null,
-    adresse: data.adresse || null,
-    localiteResidenceId: data.localiteResidenceId
-      ? Number(data.localiteResidenceId)
-      : null,
-    cin: data.cin || null,
-    telephone: data.telephone || null,
-    dateNaissance: data.dateNaissance || null,
-    lieuNaissance: data.lieuNaissance || null,
-    effacerLocaliteResidence: Boolean(data.effacerLocaliteResidence),
-  });
-}
-
 export async function uploadAgentPhoto(id, file, acteurId) {
   if (!acteurId) {
     throw new Error(
