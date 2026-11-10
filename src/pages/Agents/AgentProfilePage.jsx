@@ -34,7 +34,9 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
-import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
+import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
+import { deposerPieceScannee } from '../../api/piecesScannees';
+import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -67,6 +69,9 @@ export default function AgentProfilePage({ user }) {
   const [editing, setEditing] = useState(false);
   // Champs proposés par Bandy et différents de la valeur actuelle.
   const [prefilled, setPrefilled] = useState([]);
+  // La pièce (CIN…) d'où viennent les champs proposés par Bandy : jointe à la fiche une fois enregistrée.
+  const [scan, setScan] = useState(null);
+  const [scanRefresh, setScanRefresh] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -108,6 +113,7 @@ export default function AgentProfilePage({ user }) {
           );
           setForm(proposition.form);
           setPrefilled(proposition.changed);
+          setScan(proposition.changed.length > 0 ? readPrefillScan(location.state) : null);
           if (proposition.changed.length > 0) {
             setEditing(true);
           }
@@ -219,6 +225,7 @@ export default function AgentProfilePage({ user }) {
   function openEditModal() {
     setForm(initializeForm(agent));
     setPrefilled([]);
+    setScan(null);
     setPhotoFile(null);
     setPhotoPreview('');
     setSaveError('');
@@ -231,6 +238,7 @@ export default function AgentProfilePage({ user }) {
 
     setForm(initializeForm(agent));
     setPrefilled([]);
+    setScan(null);
     setPhotoFile(null);
 
     setPhotoPreview((currentPreview) => {
@@ -275,6 +283,19 @@ export default function AgentProfilePage({ user }) {
          await uploadAgentPhoto(id, photoFile, user?.userId);
       }
 
+      // La pièce lue par Bandy (CIN…) est jointe à la fiche, pour qui vérifiera.
+      let scanNote = '';
+      if (scan) {
+        try {
+          await deposerPieceScannee('AGENT', id, scan);
+          scanNote = ' La pièce scannée est jointe à la fiche.';
+          setScanRefresh((value) => value + 1);
+        } catch (scanError) {
+          scanNote = ` La pièce scannée n’a pas pu être jointe : ${scanError.message || 'erreur inconnue'}.`;
+        }
+        setScan(null);
+      }
+
       /*
        * 3. On recharge les données depuis PostgreSQL
        * pour avoir la photo et les informations réellement
@@ -298,7 +319,7 @@ export default function AgentProfilePage({ user }) {
       setEditing(false);
 
       setSaveSuccess(
-        "Les informations de l'agent ont été enregistrées."
+        `Les informations de l'agent ont été enregistrées.${scanNote}`
       );
     } catch (err) {
       console.error(err);
@@ -436,6 +457,7 @@ export default function AgentProfilePage({ user }) {
                 </div>
               ))}
             </dl>
+            <PieceScanneeLinks cibleType="AGENT" cibleId={agent.id} refreshKey={scanRefresh} />
           </section>
 
           <a
@@ -520,6 +542,7 @@ export default function AgentProfilePage({ user }) {
                 <p className="bandy-prefill-notice" role="status">
                   Bandy a prérempli les champs surlignés en vert. Vérifiez-les,
                   puis enregistrez : rien n’est modifié avant.
+                  {scan && ` La pièce « ${scan.name} » sera jointe à la fiche.`}
                 </p>
               )}
 
