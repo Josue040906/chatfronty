@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BriefcaseBusiness, CalendarDays, Hourglass, Palmtree, TrendingUp } from 'lucide-react';
 import { getConges, getRetraiteAnalyse, prendreRetraite } from '../../api/carrieres';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
+import TitularisationCarte from './TitularisationCarte';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
 function dateAvancementPossible(analysis) {
@@ -118,6 +119,7 @@ export default function DemandesCarriere({ employeId, analysis, canManageHr, onC
           <h2 id="demandes-carriere-titre">Faire une demande</h2>
         </div>
       </div>
+      <TitularisationCarte employeId={employeId} canManageHr={canManageHr} onChanged={onChanged} />
       <div className="demandes-carriere-grille">
         {cartes.map((carte) => {
           const Icone = carte.icone;

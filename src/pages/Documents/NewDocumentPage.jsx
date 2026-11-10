@@ -14,7 +14,7 @@ import {
 } from '../../api/documents';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
-import { getConges, getRetraiteAnalyse } from '../../api/carrieres';
+import { getConges, getRetraiteAnalyse, getTitularisation } from '../../api/carrieres';
 import { formatJour, formatJours, joursConge } from '../../utils/documentCycle';
 
 function downloadPdfInNewTab(pdfWindow, blob) {
@@ -52,6 +52,12 @@ function documentRequest(formData, type) {
       ? { motif: motif || null, dateEffetSouhaitee: formData.dateEffetSouhaitee || null }
       : type?.code === 'RETRAITE'
         ? { dateDepartSouhaitee: formData.dateDepartSouhaitee || null, motif: motif || null }
+      : type?.code === 'TITULARISATION'
+        ? {
+            dateEffetSouhaitee: formData.dateEffetSouhaitee || null,
+            gradeSouhaiteId: formData.gradeSouhaiteId ? Number(formData.gradeSouhaiteId) : null,
+            motif: motif || null,
+          }
       : type?.code === 'MUTATION'
         ? {
             directionSouhaiteeId: formData.directionSouhaiteeId ? Number(formData.directionSouhaiteeId) : null,
@@ -93,6 +99,7 @@ export default function NewDocumentPage() {
   const [createdDocument, setCreatedDocument] = useState(null);
   const [retraite, setRetraite] = useState(null);
   const [soldeConge, setSoldeConge] = useState(null);
+  const [titularisation, setTitularisation] = useState(null);
   const location = useLocation();
   const [demandeCarriere] = useState(() => readDemandeCarriere(location.state));
   // Tâche préparée par Bandy : les champs proposés remplissent le formulaire
@@ -111,6 +118,7 @@ export default function NewDocumentPage() {
     lieuTravailSouhaite: '',
     dateEffetSouhaitee: '',
     dateDepartSouhaitee: '',
+    gradeSouhaiteId: '',
   }, readPrefill(location.state)));
   const prefilled = proposition.changed;
   const [formData, setFormData] = useState(proposition.form);
@@ -166,6 +174,7 @@ export default function NewDocumentPage() {
   const isAdvancementRequest = selectedType?.code === 'AVANCEMENT';
   const isMutationRequest = selectedType?.code === 'MUTATION';
   const isRetirementRequest = selectedType?.code === 'RETRAITE';
+  const isTitularisationRequest = selectedType?.code === 'TITULARISATION';
   const hasPdfTemplate = canOpenPdf(selectedType);
   const selectedAgent = agents.find(
     (agent) => String(agent.id) === formData.employeId
@@ -239,6 +248,24 @@ export default function NewDocumentPage() {
       .catch(() => { if (!cancelled) setRetraite(null); });
     return () => { cancelled = true; };
   }, [formData.employeId, isRetirementRequest]);
+
+  // Titularisation : les grades de fonctionnaire de l'agent, le proposé d'abord choisi.
+  useEffect(() => {
+    if (!isTitularisationRequest || !formData.employeId) return undefined;
+    let cancelled = false;
+    getTitularisation(formData.employeId)
+      .then((result) => {
+        if (cancelled) return;
+        setTitularisation(result);
+        setFormData((current) => ({
+          ...current,
+          gradeSouhaiteId: current.gradeSouhaiteId
+            || (result?.suggestion ? String(result.suggestion.echelon_id) : ''),
+        }));
+      })
+      .catch(() => { if (!cancelled) setTitularisation(null); });
+    return () => { cancelled = true; };
+  }, [formData.employeId, isTitularisationRequest]);
 
   // Congé : le solde au premier jour demandé, recalculé à chaque changement.
   useEffect(() => {
@@ -325,11 +352,12 @@ export default function NewDocumentPage() {
       return;
     }
 
-    if ((isAdvancementRequest || isMutationRequest) && !formData.dateEffetSouhaitee) {
+    if ((isAdvancementRequest || isMutationRequest || isTitularisationRequest) && !formData.dateEffetSouhaitee) {
       setError('La date d’effet est obligatoire : la demande prendra effet ce jour-là.');
       return;
     }
-    if ((isAdvancementRequest || isMutationRequest) && formData.dateEffetSouhaitee < todayInputValue()) {
+    if ((isAdvancementRequest || isMutationRequest || isTitularisationRequest)
+      && formData.dateEffetSouhaitee < todayInputValue()) {
       setError('La date d’effet ne peut pas être passée : une demande vise l’avenir.');
       return;
     }
@@ -406,6 +434,7 @@ export default function NewDocumentPage() {
       lieuTravailSouhaite: '',
       dateEffetSouhaitee: '',
       dateDepartSouhaitee: '',
+      gradeSouhaiteId: '',
     }));
     setPostes([]);
     setLoadingPostes(false);
@@ -480,8 +509,13 @@ export default function NewDocumentPage() {
     );
   }
 
-  const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest || isRetirementRequest;
-  const hasDetails = isLeaveRequest || isMutationRequest || isAdvancementRequest || isRetirementRequest;
+  const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest || isRetirementRequest
+    || isTitularisationRequest;
+  const hasDetails = isLeaveRequest || isMutationRequest || isAdvancementRequest || isRetirementRequest
+    || isTitularisationRequest;
+  const gradeTitularisation = titularisation?.options?.find(
+    (option) => String(option.echelon_id) === formData.gradeSouhaiteId
+  );
   const retraiteApplicable = retraite?.datePossible && formData.dateDepartSouhaitee
     ? (formData.dateDepartSouhaitee < retraite.datePossible ? retraite.datePossible : formData.dateDepartSouhaitee)
     : null;
@@ -517,6 +551,16 @@ export default function NewDocumentPage() {
       : []),
     ...(isAdvancementRequest
       ? [['Date d’effet', formData.dateEffetSouhaitee ? formatJour(formData.dateEffetSouhaitee) : notFilled]]
+      : []),
+    ...(isTitularisationRequest
+      ? [
+          ['Situation actuelle', titularisation?.situationActuelle?.gradeCode
+            ? `${titularisation.typeEmploi} · ${titularisation.situationActuelle.gradeCode} · indice ${titularisation.situationActuelle.indice}`
+            : notFilled],
+          ['Grade visé', gradeTitularisation
+            ? `${gradeTitularisation.code} · indice ${gradeTitularisation.indice}` : notFilled],
+          ['Date d’effet', formData.dateEffetSouhaitee ? formatJour(formData.dateEffetSouhaitee) : notFilled],
+        ]
       : []),
     ...(isRetirementRequest
       ? [
@@ -657,12 +701,15 @@ export default function NewDocumentPage() {
                 <div>
                   <h2>
                     {isMutationRequest ? 'Affectation souhaitée'
+                      : isTitularisationRequest ? 'Grade de fonctionnaire'
                       : isAdvancementRequest ? 'Prise d’effet'
                         : isRetirementRequest ? 'Départ' : 'Période'}
                   </h2>
                   <p>
                     {isMutationRequest
                       ? 'Choisissez au moins un élément et la date d’effet.'
+                      : isTitularisationRequest
+                        ? 'La catégorie est conservée ; l’indice actuel guide le grade proposé.'
                       : isAdvancementRequest
                         ? 'L’éligibilité est vérifiée à cette date.'
                         : isRetirementRequest
@@ -739,7 +786,32 @@ export default function NewDocumentPage() {
                   </>
                 )}
 
-                {(isAdvancementRequest || isMutationRequest) && (
+                {isTitularisationRequest && (
+                  titularisation && !titularisation.possible ? (
+                    <p className="new-document-retraite" role="alert">{titularisation.raison}</p>
+                  ) : (
+                    <div className={prefillClass('rf-field', 'gradeSouhaiteId', prefilled)}>
+                      <label htmlFor="gradeSouhaiteId">Grade visé <b>*</b></label>
+                      <select
+                        id="gradeSouhaiteId"
+                        name="gradeSouhaiteId"
+                        value={formData.gradeSouhaiteId}
+                        onChange={handleChange}
+                        disabled={saving || !titularisation}
+                        required
+                      >
+                        {(titularisation?.options || []).map((option) => (
+                          <option key={option.echelon_id} value={option.echelon_id}>
+                            {option.code} — {option.libelle} (indice {option.indice})
+                            {option.echelon_id === titularisation?.suggestion?.echelon_id ? ' · proposé' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )
+                )}
+
+                {(isAdvancementRequest || isMutationRequest || isTitularisationRequest) && (
                   <div className={prefillClass('rf-field', 'dateEffetSouhaitee', prefilled)}>
                     <label htmlFor="dateEffetSouhaitee">Date d’effet <b>*</b></label>
                     <input

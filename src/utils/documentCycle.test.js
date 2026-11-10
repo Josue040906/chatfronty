@@ -80,3 +80,16 @@ describe('leave', () => {
       .toEqual(['Absent du 10/12/2026 au 12/12/2026', '3 jours déduits du solde']);
   });
 });
+
+describe('titularisation', () => {
+  it('shows the employment type, grade and indice before and after', () => {
+    expect(documentEffect({ donnees: {
+      situationActuelle: { typeEmploi: 'Agent contractuel', gradeCode: 'A19E', indice: 520 },
+      situationDemandee: { typeEmploi: 'Fonctionnaire', gradeCode: '2C2E', indice: 530 },
+    } }, 'TITULARISATION')).toEqual({
+      titre: 'Titularisation',
+      avant: ['Agent contractuel · A19E', 'Indice 520'],
+      apres: ['Fonctionnaire · 2C2E', 'Indice 530'],
+    });
+  });
+});

@@ -1803,3 +1803,37 @@ button.rf-row {
 }
 .new-document-conge strong { font-size: 16px; }
 .new-document-conge.is-insuffisant { background: var(--color-danger-soft); color: var(--color-danger); }
+
+/* ---------- Titularisation ---------- */
+.titularisation-carte {
+  display: grid; gap: 14px; margin-bottom: 14px; padding: 20px; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-accent-soft), var(--color-surface) 70%);
+  border: 1px solid var(--color-border); box-shadow: var(--shadow-card);
+}
+.titularisation-tete { display: flex; gap: 12px; align-items: flex-start; }
+.titularisation-tete h3 { margin: 0; font: 600 20px var(--font-display); }
+.titularisation-tete p { margin: 2px 0 0; color: var(--color-text-muted); font-size: 14px; }
+.titularisation-echelle { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); gap: 8px; }
+.titularisation-echelle li {
+  position: relative; display: grid; gap: 2px; justify-items: center; padding: 10px 6px;
+  border-radius: 12px; background: var(--color-surface); border: 1px solid var(--color-border);
+}
+.titularisation-echelle li strong { font-family: var(--font-mono); font-size: 14px; }
+.titularisation-echelle li span { font-size: 13px; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.titularisation-echelle li.is-dessous { opacity: 0.55; }
+.titularisation-echelle li.is-propose {
+  background: var(--color-success-soft); border-color: var(--color-success); box-shadow: 0 0 0 3px rgb(47 107 79 / 0.12);
+}
+.titularisation-echelle li.is-propose strong { color: var(--color-success); }
+.titularisation-echelle li em {
+  font-style: normal; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-success);
+}
+.titularisation-explication { margin: 0; font-size: 14px; }
+.titularisation-choix { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 10px; }
+.titularisation-choix label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.titularisation-choix select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; max-width: 100%; }
+
+.titularisation-carte .documents-aside-actions,
+.demande-carte .documents-aside-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.titularisation-carte .documents-aside-actions .rf-btn,
+.demande-carte .documents-aside-actions .rf-btn { width: auto; }

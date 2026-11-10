@@ -107,3 +107,13 @@ export async function getConges(employeId, date) {
   const suffixe = date ? `?date=${encodeURIComponent(date)}` : '';
   return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/conges${suffixe}`);
 }
+
+/** Titularisation : situation actuelle, grades de fonctionnaire avec leur indice, grade proposé. */
+export async function getTitularisation(employeId) {
+  return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`);
+}
+
+/** Titularisation immédiate (même effet qu'une demande de titularisation appliquée). */
+export async function titulariser(employeId, dateEffet, echelonId) {
+  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet, echelonId });
+}

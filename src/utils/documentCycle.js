@@ -129,6 +129,12 @@ export function documentEffect(document, typeCode) {
       apres: apres.map(([l, v]) => `${l} : ${v}`),
     };
   }
+  if (typeCode === 'TITULARISATION') {
+    const ligne = (s) => (s && s.gradeCode ? [`${s.typeEmploi} · ${s.gradeCode}`, `Indice ${s.indice ?? '—'}`] : null);
+    const avant = ligne(donnees.situationActuelle);
+    const apres = ligne(donnees.situationDemandee);
+    return avant && apres ? { titre: 'Titularisation', avant, apres } : null;
+  }
   if (typeCode === 'RETRAITE') {
     return { titre: 'Départ à la retraite', avant: ['En service'], apres: ['À la retraite'] };
   }
