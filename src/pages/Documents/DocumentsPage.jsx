@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
   FileText,
@@ -328,26 +328,46 @@ export default function DocumentsPage() {
   }, []);
 
   function closeDetail() {
+    previewRequestRef.current += 1;
+    setPreviewLoading(false);
     closePreview();
     setSelectedDocument(null);
   }
 
-  async function handlePreviewPdf(documentData) {
+  // Le dernier document choisi : un aperçu plus lent d'un document précédent est ignoré.
+  const previewRequestRef = useRef(0);
+
+  async function loadPreview(documentData) {
+    const requestId = ++previewRequestRef.current;
     setPreviewLoading(true);
     setPreviewError('');
 
     try {
       const pdf = await getDocumentRequestPdf(documentData.id);
+      if (requestId !== previewRequestRef.current) return;
       setPreviewUrl((current) => {
         if (current) URL.revokeObjectURL(current);
         return URL.createObjectURL(pdf);
       });
     } catch (err) {
+      if (requestId !== previewRequestRef.current) return;
       console.error(err);
       setPreviewError(
         err?.message || 'Le PDF de ce document ne peut pas être affiché.'
       );
     } finally {
+      if (requestId === previewRequestRef.current) setPreviewLoading(false);
+    }
+  }
+
+  /** Ouvre le détail d'un document ; son PDF s'affiche aussitôt en aperçu. */
+  function selectDocument(documentData) {
+    closePreview();
+    setSelectedDocument(documentData);
+    if (canOpenPdf(typeById.get(String(documentData.typeDocumentId)))) {
+      void loadPreview(documentData);
+    } else {
+      previewRequestRef.current += 1;
       setPreviewLoading(false);
     }
   }
@@ -474,7 +494,6 @@ export default function DocumentsPage() {
             <div className="rf-list">
               {filteredDocuments.map((item, index) => {
                 const type = typeById.get(String(item.typeDocumentId));
-                const pdfUnavailable = !canOpenPdf(type);
                 const status = String(item.statut || '').toLowerCase();
 
                 return (
@@ -511,25 +530,9 @@ export default function DocumentsPage() {
                       <button
                         type="button"
                         className="rf-btn rf-btn-sm"
-                        onClick={() => {
-                          closePreview();
-                          setSelectedDocument(item);
-                        }}
+                        onClick={() => selectDocument(item)}
                       >
                         Voir
-                      </button>
-                      <button
-                        type="button"
-                        className="rf-btn rf-btn-sm"
-                        onClick={() => handleOpenPdf(item)}
-                        disabled={pdfUnavailable || openingPdfId === item.id}
-                        title={
-                          pdfUnavailable
-                            ? 'Le modèle PDF de ce type n’est pas disponible côté backend.'
-                            : 'Ouvrir le PDF'
-                        }
-                      >
-                        {openingPdfId === item.id ? 'Ouverture...' : 'PDF'}
                       </button>
                     </span>
                   </div>
@@ -611,6 +614,7 @@ export default function DocumentsPage() {
             {previewError && (
               <p className="rf-error" role="alert">{previewError}</p>
             )}
+            {previewLoading && <p className="rf-note">Chargement de l’aperçu…</p>}
             {previewUrl && (
               <iframe
                 className="documents-pdf-preview"
@@ -619,34 +623,20 @@ export default function DocumentsPage() {
               />
             )}
 
-            <div className="documents-aside-actions">
-              <button
-                type="button"
-                className="rf-btn rf-btn-primary"
-                onClick={() => handleOpenPdf(selectedDocument)}
-                disabled={!canOpenPdf(selectedType) || openingPdfId === selectedDocument.id}
-              >
-                {openingPdfId === selectedDocument.id
-                  ? 'Ouverture...'
-                  : 'Ouvrir le PDF'}
-              </button>
-              <button
-                type="button"
-                className="rf-btn"
-                onClick={() =>
-                  previewUrl
-                    ? closePreview()
-                    : handlePreviewPdf(selectedDocument)
-                }
-                disabled={!canOpenPdf(selectedType) || previewLoading}
-              >
-                {previewLoading
-                  ? 'Chargement...'
-                  : previewUrl
-                    ? 'Masquer l’aperçu'
-                    : 'Aperçu PDF'}
-              </button>
-            </div>
+            {canOpenPdf(selectedType) && (
+              <div className="documents-aside-actions">
+                <button
+                  type="button"
+                  className="rf-btn rf-btn-primary"
+                  onClick={() => handleOpenPdf(selectedDocument)}
+                  disabled={openingPdfId === selectedDocument.id}
+                >
+                  {openingPdfId === selectedDocument.id
+                    ? 'Ouverture...'
+                    : 'Ouvrir dans un onglet'}
+                </button>
+              </div>
+            )}
           </aside>
         )}
       </div>
