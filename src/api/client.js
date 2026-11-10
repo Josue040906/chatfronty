@@ -81,6 +81,22 @@ export async function apiGetBlob(path) {
   return response.blob();
 }
 
+/** POST JSON dont la réponse est un fichier (par exemple un aperçu PDF). */
+export async function apiPostBlob(path, body) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: JSON.stringify(body),
+  });
+
+  await handleResponse(response);
+
+  return response.blob();
+}
+
 export async function apiPost(path, body) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',

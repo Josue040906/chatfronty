@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, FileText, Save } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
+import DocumentPdfPreview from './DocumentPdfPreview';
+import { canOpenPdf } from '../../utils/documentPdf';
 
 import { getAgents } from '../../api/agents';
 import { getDirections } from '../../api/directions';
@@ -35,6 +37,34 @@ function todayInputValue() {
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60000;
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+/**
+ * La demande telle qu'elle part au serveur : la même pour la création et
+ * pour l'aperçu PDF, qui montre donc exactement ce qui serait créé.
+ */
+function documentRequest(formData, type) {
+  const motif = formData.motif.trim();
+  const donnees = type?.code === 'CONGE'
+    ? { dateDebut: formData.dateDebut, dateFin: formData.dateFin, motif: motif || null }
+    : type?.code === 'AVANCEMENT'
+      ? { motif: motif || null }
+      : type?.code === 'MUTATION'
+        ? {
+            directionSouhaiteeId: formData.directionSouhaiteeId ? Number(formData.directionSouhaiteeId) : null,
+            serviceSouhaiteId: formData.serviceSouhaiteId ? Number(formData.serviceSouhaiteId) : null,
+            posteSouhaiteId: formData.posteSouhaiteId ? Number(formData.posteSouhaiteId) : null,
+            lieuTravailSouhaite: formData.lieuTravailSouhaite.trim() || null,
+            dateEffetSouhaitee: formData.dateEffetSouhaitee || null,
+            motif,
+          }
+        : {};
+  return {
+    typeDocumentId: Number(formData.typeDocumentId),
+    employeId: Number(formData.employeId),
+    destinataire: formData.destinataire.trim(),
+    donnees,
+  };
 }
 
 export default function NewDocumentPage({ user }) {
@@ -291,32 +321,6 @@ export default function NewDocumentPage({ user }) {
       }
     }
 
-    const donnees = isLeaveRequest
-      ? {
-          dateDebut: formData.dateDebut,
-          dateFin: formData.dateFin,
-          motif: formData.motif.trim() || null,
-        }
-      : isAdvancementRequest
-        ? { motif: formData.motif.trim() || null }
-        : isMutationRequest
-          ? {
-              directionSouhaiteeId: formData.directionSouhaiteeId
-                ? Number(formData.directionSouhaiteeId)
-                : null,
-              serviceSouhaiteId: formData.serviceSouhaiteId
-                ? Number(formData.serviceSouhaiteId)
-                : null,
-              posteSouhaiteId: formData.posteSouhaiteId
-                ? Number(formData.posteSouhaiteId)
-                : null,
-              lieuTravailSouhaite:
-                formData.lieuTravailSouhaite.trim() || null,
-              dateEffetSouhaitee: formData.dateEffetSouhaitee || null,
-              motif: formData.motif.trim(),
-            }
-        : {};
-
     try {
       setSaving(true);
       if (isDirectMutation) {
@@ -332,12 +336,7 @@ export default function NewDocumentPage({ user }) {
         return;
       }
 
-      const result = await createDocumentRequest({
-        typeDocumentId: Number(formData.typeDocumentId),
-        employeId: Number(formData.employeId),
-        destinataire: formData.destinataire.trim(),
-        donnees,
-      });
+      const result = await createDocumentRequest(documentRequest(formData, selectedType));
       setCreatedDocument(result);
     } catch (err) {
       console.error(err);
@@ -865,11 +864,22 @@ export default function NewDocumentPage({ user }) {
               </div>
             ))}
           </dl>
-          <p className="rf-note">
-            {isDirectMutation
-              ? 'La mutation est appliquée immédiatement par le serveur.'
-              : 'Le PDF est généré par le serveur après la création du document.'}
-          </p>
+          {isDirectMutation ? (
+            <p className="rf-note">La mutation est appliquée immédiatement par le serveur.</p>
+          ) : canOpenPdf(selectedType) ? (
+            <>
+              <p className="rf-note">
+                Aperçu du PDF, mis à jour à chaque modification ; rien n’est enregistré avant « Créer le document ».
+              </p>
+              <DocumentPdfPreview
+                request={formData.typeDocumentId && formData.employeId
+                  ? documentRequest(formData, selectedType)
+                  : null}
+              />
+            </>
+          ) : (
+            <p className="rf-note">Le PDF est généré par le serveur après la création du document.</p>
+          )}
         </aside>
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
   getDocumentTypes,
 } from '../../api/documents';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
+import { canOpenPdf } from '../../utils/documentPdf';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -166,14 +167,6 @@ function DocumentDonnees({ document, type }) {
         }
       )}
     </>
-  );
-}
-
-function canOpenPdf(type) {
-  return (
-    type?.code === 'CONGE' ||
-    type?.code === 'AVANCEMENT' ||
-    type?.code === 'MUTATION'
   );
 }
 

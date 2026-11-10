@@ -1,6 +1,7 @@
 import {
   apiGet,
   apiGetBlob,
+  apiPostBlob,
   apiPost,
   apiPut,
 } from './client';
@@ -37,6 +38,11 @@ export async function getDocumentRequests() {
 
 export async function createDocumentRequest(documentData) {
   return apiPost('/api/documents/demandes', documentData);
+}
+
+/** Aperçu PDF d'une demande en cours de saisie : validée, jamais enregistrée. */
+export async function previewDocumentRequestPdf(request) {
+  return apiPostBlob('/api/documents/demandes/apercu-pdf', request);
 }
 
 export async function getDocumentRequestPdf(id) {
