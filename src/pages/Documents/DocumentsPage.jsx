@@ -97,6 +97,13 @@ const documentFieldLabels = {
   constatsPiece: 'Constats sur la pièce scannée',
 };
 
+const FIELD_ORDER = Object.keys(documentFieldLabels);
+
+function fieldRank(key) {
+  const rank = FIELD_ORDER.indexOf(key);
+  return rank === -1 ? FIELD_ORDER.length : rank;
+}
+
 function formatDocumentValue(key, value) {
   if (value == null || value === '') return '—';
   if (
@@ -113,7 +120,10 @@ function formatDocumentValue(key, value) {
 function DocumentDonnees({ document, type }) {
   return (
     <>
-      {Object.entries(document.donnees || {}).flatMap(
+      {Object.entries(document.donnees || {})
+        // Ordre de lecture : celui des libellés connus (début avant fin), puis le reste.
+        .sort(([left], [right]) => fieldRank(left) - fieldRank(right))
+        .flatMap(
         ([key, value]) => {
           const selectedType = type;
           const label =

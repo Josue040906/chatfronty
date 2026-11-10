@@ -1674,3 +1674,7 @@ button.rf-row {
     grid-template-columns: 1fr;
   }
 }
+
+/* Dans une barre d'outils, les puces s'alignent avec la recherche et le compteur. */
+.rf-toolbar { align-items: center; }
+.rf-toolbar .rf-chips { margin: 0; }
