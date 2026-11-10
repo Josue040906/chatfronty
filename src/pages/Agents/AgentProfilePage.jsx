@@ -16,7 +16,6 @@ import {
   Check,
   X,
   ImagePlus,
-  BarChart3,
 } from 'lucide-react';
 
 import {
@@ -374,6 +373,17 @@ export default function AgentProfilePage({ user }) {
     [Camera, 'Photo', agent.photo ? 'Photo enregistrée' : 'Aucune photo'],
   ];
   const openCareer = () => navigate(`/carrieres/${agent.id}/analyse`);
+  // Ce que la carte de carrière annonce : la situation actuelle, en bref.
+  const yearsOfService = agent.date_embauche
+    ? Math.floor((Date.now() - new Date(agent.date_embauche).getTime()) / (365.25 * 24 * 3600 * 1000))
+    : null;
+  const careerFacts = [
+    agent.categorie && `Catégorie ${agent.categorie}`,
+    agent.corps_libelle || agent.corps,
+    agent.type_emploi,
+    Number.isFinite(yearsOfService) && yearsOfService >= 0
+      && `${yearsOfService} an${yearsOfService > 1 ? 's' : ''} de service`,
+  ].filter(Boolean);
   const formPercent = Math.round(
     ([form.nom, form.prenom, form.sexe, form.adresse, form.cin, form.telephone,
       form.dateNaissance, form.lieuNaissance, agent.date_embauche, agent.lieu_travail,
@@ -429,10 +439,6 @@ export default function AgentProfilePage({ user }) {
           </div>
 
           <div className="rf-profile-actions">
-            <button type="button" className="rf-btn rf-btn-primary" onClick={openCareer}>
-              <BarChart3 size={18} />
-              Analyser la carrière
-            </button>
             <button type="button" className="rf-btn" onClick={openEditModal}>
               <Pencil size={18} />
               Modifier
@@ -478,10 +484,16 @@ export default function AgentProfilePage({ user }) {
             <div className="rf-career-text">
               <p className="rf-career-kicker">Parcours professionnel</p>
               <h2>Analyse de carrière</h2>
-              <p>Analyse de la situation et évolution de carrière.</p>
+              {careerFacts.length > 0 ? (
+                <ul className="rf-career-facts">
+                  {careerFacts.map((fact) => <li key={fact}>{fact}</li>)}
+                </ul>
+              ) : (
+                <p>Situation, diplômes et évolution possible de l’agent.</p>
+              )}
             </div>
-            <span className="rf-btn">
-              Analyse de carrière
+            <span className="rf-btn rf-btn-primary">
+              Voir l’analyse
               <ArrowRight size={18} />
             </span>
           </a>
