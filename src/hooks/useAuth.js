@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../api/client';
-import { apiPost } from '../api/client';
 import { getProfil } from '../api/profil';
 
 const getStoredUser = () => {
@@ -169,16 +168,8 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    try {
-      if (user?.accessToken) {
-        await apiPost('/api/utilisateurs/logout', {});
-      }
-    } catch (error) {
-      console.error('Impossible d’enregistrer la déconnexion.', error);
-    } finally {
-      localStorage.removeItem('user');
-      setUser(null);
-    }
+    localStorage.removeItem('user');
+    setUser(null);
   };
 
   return {

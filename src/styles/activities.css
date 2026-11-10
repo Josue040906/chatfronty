@@ -192,13 +192,11 @@
   box-shadow: 0 0 0 1px var(--color-border);
 }
 
-.activity-timeline-connexion .activity-timeline-icon,
 .activity-timeline-televersement .activity-timeline-icon { background: var(--color-info-soft); color: var(--color-info); }
 .activity-timeline-creation .activity-timeline-icon,
 .activity-timeline-validation .activity-timeline-icon { background: var(--color-success-soft); color: var(--color-success); }
 .activity-timeline-refus .activity-timeline-icon,
 .activity-timeline-suppression .activity-timeline-icon { background: var(--color-danger-soft); color: var(--color-danger); }
-.activity-timeline-deconnexion .activity-timeline-icon { background: var(--color-surface-sunken); color: var(--color-text-muted); }
 
 .activity-main {
   padding: 14px 18px;
@@ -239,13 +237,11 @@
   font-size: 11px;
   font-weight: 700;
 }
-.activity-type-connexion,
 .activity-type-televersement { background: var(--color-info-soft); color: var(--color-info); }
 .activity-type-creation,
 .activity-type-validation { background: var(--color-success-soft); color: var(--color-success); }
 .activity-type-refus,
 .activity-type-suppression { background: var(--color-danger-soft); color: var(--color-danger); }
-.activity-type-deconnexion { background: var(--color-surface-sunken); color: var(--color-text-muted); }
 
 .activity-time {
   flex: none;

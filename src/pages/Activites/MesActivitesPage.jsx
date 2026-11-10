@@ -6,8 +6,6 @@ import {
   Clock3,
   FileOutput,
   History,
-  LogIn,
-  LogOut,
   Pencil,
   Plus,
   Trash2,
@@ -17,8 +15,6 @@ import {
 import { getActivites } from '../../api/activite';
 
 const TYPE_ACTIONS = {
-  CONNEXION: 'Connexion',
-  DECONNEXION: 'Déconnexion',
   CREATION: 'Création',
   MODIFICATION: 'Modification',
   SUPPRESSION: 'Suppression',
@@ -29,8 +25,6 @@ const TYPE_ACTIONS = {
 };
 
 const TYPE_ICONS = {
-  CONNEXION: LogIn,
-  DECONNEXION: LogOut,
   CREATION: Plus,
   MODIFICATION: Pencil,
   SUPPRESSION: Trash2,
