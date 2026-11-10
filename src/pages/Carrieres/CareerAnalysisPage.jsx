@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
+import DemandesCarriere from '../../components/carriere/DemandesCarriere';
 import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
@@ -886,6 +887,13 @@ export default function CareerAnalysisPage({ user }) {
           <div className="career-current-card"><div className="career-current-icon"><CalendarDays size={19} /></div><span>Depuis</span><strong>{formatDate(situation.dateDebut)}</strong></div>
         </div>
       </section>
+
+      <DemandesCarriere
+        employeId={id}
+        analysis={analysis}
+        canManageHr={canManageHr}
+        onChanged={() => { void refreshCareerData(); }}
+      />
 
       <div className="career-duo">
       <section className="career-panel">

@@ -74,8 +74,9 @@ export async function getDocumentsByAgent(agentId) {
 }
 
 // Cycle de vie : l'API vérifie chaque étape et qui a le droit de la faire.
-export async function validerDocument(id) {
-  return apiPost(`/api/documents/${encodeURIComponent(id)}/valider`, {});
+/** Applique la demande : son effet (avancement, mutation, retraite) est produit par l'API. */
+export async function appliquerDocument(id) {
+  return apiPost(`/api/documents/${encodeURIComponent(id)}/appliquer`, {});
 }
 
 export async function annulerDocument(id) {

@@ -14,14 +14,23 @@ import { getEmployeeInitials } from '../../utils/employee';
 import {
   getDocumentRequestPdf,
   getDocumentRequests,
-  validerDocument,
+  appliquerDocument,
   annulerDocument,
   archiverDocument,
   getDocumentTypes,
 } from '../../api/documents';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import { canOpenPdf } from '../../utils/documentPdf';
-import { DOCUMENT_STATUSES, documentActions } from '../../utils/documentCycle';
+import {
+  APPLICABLE,
+  DOCUMENT_STATUSES,
+  delaiLabel,
+  documentActions,
+  documentEffect,
+  documentPhase,
+  formatJour,
+} from '../../utils/documentCycle';
+import { DemandeEffet, DemandeFrise } from '../../components/documents/DemandeSuivi';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -60,18 +69,11 @@ function formatDateShort(value) {
   });
 }
 
-const statusLabels = Object.fromEntries(DOCUMENT_STATUSES.map(({ code, label }) => [code, label]));
-
-function formatStatus(status) {
-  if (!status) return '—';
-  if (statusLabels[status]) return statusLabels[status];
-  return status
-    .toLowerCase()
-    .replaceAll('_', ' ')
-    .replace(/^\p{L}/u, (letter) => letter.toUpperCase());
-}
-
-const statusFilters = [{ code: 'TOUS', label: 'Tous' }, ...DOCUMENT_STATUSES];
+const statusFilters = [
+  { code: 'TOUS', label: 'Tous' },
+  { code: APPLICABLE, label: 'À appliquer' },
+  ...DOCUMENT_STATUSES,
+];
 const statusCodes = statusFilters.map((chip) => chip.code);
 
 const documentFieldLabels = {
@@ -83,12 +85,13 @@ const documentFieldLabels = {
   dureeMinAnnees: 'Durée minimale (années)',
   situationActuelle: 'Situation actuelle',
   situationDemandee: 'Situation demandée',
-  dateEffetSouhaitee: 'Date d’effet souhaitée',
+  dateDepartSouhaitee: 'Départ souhaité',
   // Constaté par Bandy sur la pièce scannée d'où vient la demande, à vérifier.
   constatsPiece: 'Constats sur la pièce scannée',
 };
 
 const FIELD_ORDER = Object.keys(documentFieldLabels);
+const SITUATIONS = ['situationActuelle', 'situationDemandee'];
 
 function fieldRank(key) {
   const rank = FIELD_ORDER.indexOf(key);
@@ -100,7 +103,8 @@ function formatDocumentValue(key, value) {
   if (
     (key === 'dateDebut' ||
       key === 'dateFin' ||
-      key === 'dateEffetSouhaitee') &&
+      key === 'dateEffetSouhaitee' ||
+      key === 'dateDepartSouhaitee') &&
     typeof value === 'string'
   ) {
     return formatDate(value);
@@ -112,6 +116,9 @@ function DocumentDonnees({ document, type }) {
   return (
     <>
       {Object.entries(document.donnees || {})
+        // La date d'effet a sa propre ligne ; avant → après est montré par la carte d'effet.
+        .filter(([key]) => key !== 'dateEffetSouhaitee'
+          && !(documentEffect(document, type?.code)?.apres && SITUATIONS.includes(key)))
         // Ordre de lecture : celui des libellés connus (début avant fin), puis le reste.
         .sort(([left], [right]) => fieldRank(left) - fieldRank(right))
         .flatMap(
@@ -255,7 +262,9 @@ export default function DocumentsPage({ user }) {
       const typeMatches =
         typeFilter === 'TOUS' || String(item.typeDocumentId) === typeFilter;
       if (!typeMatches) return false;
-      if (statusFilter !== 'TOUS' && item.statut !== statusFilter) {
+      if (statusFilter === APPLICABLE) {
+        if (documentPhase(item).code !== APPLICABLE) return false;
+      } else if (statusFilter !== 'TOUS' && item.statut !== statusFilter) {
         return false;
       }
       if (!query) return true;
@@ -283,6 +292,9 @@ export default function DocumentsPage({ user }) {
     const counts = { TOUS: documents.length };
     documents.forEach((item) => {
       counts[item.statut] = (counts[item.statut] || 0) + 1;
+      if (documentPhase(item).code === APPLICABLE) {
+        counts[APPLICABLE] = (counts[APPLICABLE] || 0) + 1;
+      }
     });
     return counts;
   }, [documents]);
@@ -324,7 +336,7 @@ export default function DocumentsPage({ user }) {
 
   /** Une étape du cycle de vie ; le statut affiché suit la réponse de l'API. */
   async function runCycle(documentData, etape, appel, statut, message) {
-    setCycle({ running: etape, message: '', error: '' });
+    setCycle((current) => ({ ...current, running: etape, message: '', error: '' }));
     try {
       await appel(documentData.id);
       const update = (item) => (item.id === documentData.id ? { ...item, statut } : item);
@@ -504,7 +516,7 @@ export default function DocumentsPage({ user }) {
             <div className="rf-list">
               {filteredDocuments.map((item, index) => {
                 const type = typeById.get(String(item.typeDocumentId));
-                const status = String(item.statut || '').toLowerCase();
+                const phase = documentPhase(item);
 
                 return (
                   <div
@@ -533,8 +545,12 @@ export default function DocumentsPage({ user }) {
                     <span className="documents-row-date">
                       {formatDateShort(item.dateCreation || item.dateDocument)}
                     </span>
-                    <span className={`rf-pill rf-pill-${status}`}>
-                      {formatStatus(item.statut)}
+                    <span
+                      className={`rf-pill rf-pill-${phase.code.toLowerCase()}`}
+                      title={item.dateEffet ? `Date d’effet : ${formatJour(item.dateEffet)}` : undefined}
+                    >
+                      {phase.label}
+                      {phase.code === 'EN_ATTENTE' && <small> · J-{phase.jours}</small>}
                     </span>
                     <span className="documents-row-actions">
                       <button
@@ -574,6 +590,8 @@ export default function DocumentsPage({ user }) {
             <p className="rf-mono documents-aside-ref">
               {selectedDocument.referenceDocument || 'Sans référence'}
             </p>
+            <DemandeFrise document={selectedDocument} />
+            <DemandeEffet document={selectedDocument} typeCode={selectedType?.code} />
             <dl className="rf-dl">
               <div>
                 <dt>Type</dt>
@@ -597,16 +615,8 @@ export default function DocumentsPage({ user }) {
                 </dd>
               </div>
               <div>
-                <dt>Statut</dt>
-                <dd>
-                  <span
-                    className={`rf-pill rf-pill-${String(
-                      selectedDocument.statut || ''
-                    ).toLowerCase()}`}
-                  >
-                    {formatStatus(selectedDocument.statut)}
-                  </span>
-                </dd>
+                <dt>Date d’effet</dt>
+                <dd>{selectedDocument.dateEffet ? formatJour(selectedDocument.dateEffet) : '—'}</dd>
               </div>
               <DocumentDonnees
                 document={selectedDocument}
@@ -635,39 +645,72 @@ export default function DocumentsPage({ user }) {
 
             {(() => {
               const actions = documentActions(selectedDocument, user);
-              if (!actions.valider && !actions.annuler && !actions.archiver) return null;
+              const phase = documentPhase(selectedDocument);
+              if (!actions.appliquer && !actions.appliquerPlusTard && !actions.annuler && !actions.archiver) {
+                return null;
+              }
               return (
-                <div className="documents-aside-actions">
-                  {actions.valider && (
-                    <button
-                      type="button"
-                      className="rf-btn rf-btn-primary"
-                      disabled={Boolean(cycle.running)}
-                      onClick={() => runCycle(selectedDocument, 'valider', validerDocument, 'VALIDE',
-                        'Document validé : le chef du Service du Personnel en est notifié.')}
-                    >
-                      {cycle.running === 'valider' ? 'Validation…' : 'Valider'}
-                    </button>
-                  )}
-                  {actions.annuler && (
-                    <button
-                      type="button"
-                      className="rf-btn"
-                      disabled={Boolean(cycle.running)}
-                      onClick={() => runCycle(selectedDocument, 'annuler', annulerDocument, 'ANNULE', 'Document annulé.')}
-                    >
-                      {cycle.running === 'annuler' ? 'Annulation…' : 'Annuler'}
-                    </button>
-                  )}
-                  {actions.archiver && (
-                    <button
-                      type="button"
-                      className="rf-btn"
-                      disabled={Boolean(cycle.running)}
-                      onClick={() => runCycle(selectedDocument, 'archiver', archiverDocument, 'ARCHIVE', 'Document archivé.')}
-                    >
-                      {cycle.running === 'archiver' ? 'Archivage…' : 'Archiver'}
-                    </button>
+                <div className="documents-aside-cycle">
+                  {cycle.confirmer ? (
+                    <div className="demande-confirmation" role="group" aria-label="Confirmer l’application">
+                      <p>
+                        <strong>Appliquer {selectedDocument.referenceDocument} ?</strong>
+                        L’effet présenté ci-dessus sera produit maintenant ; la demande ne pourra plus servir.
+                      </p>
+                      <div className="documents-aside-actions">
+                        <button
+                          type="button"
+                          className="rf-btn rf-btn-primary"
+                          disabled={Boolean(cycle.running)}
+                          onClick={() => runCycle(selectedDocument, 'appliquer', appliquerDocument, 'APPLIQUE',
+                            'Demande appliquée : son effet est produit et le chef du Service du Personnel en est notifié.')}
+                        >
+                          {cycle.running === 'appliquer' ? 'Application…' : 'Confirmer'}
+                        </button>
+                        <button
+                          type="button"
+                          className="rf-btn"
+                          disabled={Boolean(cycle.running)}
+                          onClick={() => setCycle((current) => ({ ...current, confirmer: false }))}
+                        >
+                          Revenir
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="documents-aside-actions">
+                      {(actions.appliquer || actions.appliquerPlusTard) && (
+                        <button
+                          type="button"
+                          className={`rf-btn rf-btn-primary${actions.appliquer ? ' demande-appliquer-pret' : ''}`}
+                          disabled={!actions.appliquer || Boolean(cycle.running)}
+                          title={actions.appliquerPlusTard ? `Applicable ${delaiLabel(phase.jours)}` : undefined}
+                          onClick={() => setCycle({ running: '', message: '', error: '', confirmer: true })}
+                        >
+                          {actions.appliquer ? 'Appliquer' : `Applicable ${delaiLabel(phase.jours)}`}
+                        </button>
+                      )}
+                      {actions.annuler && (
+                        <button
+                          type="button"
+                          className="rf-btn"
+                          disabled={Boolean(cycle.running)}
+                          onClick={() => runCycle(selectedDocument, 'annuler', annulerDocument, 'ANNULE', 'Demande annulée.')}
+                        >
+                          {cycle.running === 'annuler' ? 'Annulation…' : 'Annuler la demande'}
+                        </button>
+                      )}
+                      {actions.archiver && (
+                        <button
+                          type="button"
+                          className="rf-btn"
+                          disabled={Boolean(cycle.running)}
+                          onClick={() => runCycle(selectedDocument, 'archiver', archiverDocument, 'ARCHIVE', 'Document archivé.')}
+                        >
+                          {cycle.running === 'archiver' ? 'Archivage…' : 'Archiver'}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -679,7 +722,7 @@ export default function DocumentsPage({ user }) {
               <div className="documents-aside-actions">
                 <button
                   type="button"
-                  className="rf-btn rf-btn-primary"
+                  className="rf-btn"
                   onClick={() => handleOpenPdf(selectedDocument)}
                   disabled={openingPdfId === selectedDocument.id}
                 >

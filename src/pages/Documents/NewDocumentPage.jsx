@@ -12,9 +12,10 @@ import {
   getDocumentRequestPdf,
   getDocumentTypes,
 } from '../../api/documents';
-import { updateAgentAssignment } from '../../api/agents';
 import { getPostesByService } from '../../api/postes';
 import { getServices } from '../../api/services';
+import { getRetraiteAnalyse } from '../../api/carrieres';
+import { formatJour } from '../../utils/documentCycle';
 
 function downloadPdfInNewTab(pdfWindow, blob) {
   const url = URL.createObjectURL(blob);
@@ -48,7 +49,9 @@ function documentRequest(formData, type) {
   const donnees = type?.code === 'CONGE'
     ? { dateDebut: formData.dateDebut, dateFin: formData.dateFin, motif: motif || null }
     : type?.code === 'AVANCEMENT'
-      ? { motif: motif || null }
+      ? { motif: motif || null, dateEffetSouhaitee: formData.dateEffetSouhaitee || null }
+      : type?.code === 'RETRAITE'
+        ? { dateDepartSouhaitee: formData.dateDepartSouhaitee || null, motif: motif || null }
       : type?.code === 'MUTATION'
         ? {
             directionSouhaiteeId: formData.directionSouhaiteeId ? Number(formData.directionSouhaiteeId) : null,
@@ -67,7 +70,13 @@ function documentRequest(formData, type) {
   };
 }
 
-export default function NewDocumentPage({ user }) {
+/** Une demande ouverte depuis l'analyse de carrière d'un agent : type et agent fixés. */
+function readDemandeCarriere(locationState) {
+  const demande = locationState?.demandeCarriere;
+  return demande && demande.typeCode && demande.employeId ? demande : null;
+}
+
+export default function NewDocumentPage() {
   const navigate = useNavigate();
   const [types, setTypes] = useState([]);
   const [agents, setAgents] = useState([]);
@@ -82,8 +91,9 @@ export default function NewDocumentPage({ user }) {
   const [error, setError] = useState('');
   const [pdfError, setPdfError] = useState('');
   const [createdDocument, setCreatedDocument] = useState(null);
-  const [completedMutation, setCompletedMutation] = useState(null);
+  const [retraite, setRetraite] = useState(null);
   const location = useLocation();
+  const [demandeCarriere] = useState(() => readDemandeCarriere(location.state));
   // Tâche préparée par Bandy : les champs proposés remplissent le formulaire
   // vide dès son ouverture et restent surlignés ; rien n'est créé avant
   // « Enregistrer ».
@@ -99,6 +109,7 @@ export default function NewDocumentPage({ user }) {
     posteSouhaiteId: '',
     lieuTravailSouhaite: '',
     dateEffetSouhaitee: '',
+    dateDepartSouhaitee: '',
   }, readPrefill(location.state)));
   const prefilled = proposition.changed;
   const [formData, setFormData] = useState(proposition.form);
@@ -117,10 +128,15 @@ export default function NewDocumentPage({ user }) {
 
         setTypes(documentTypes);
         setAgents(employees);
+        const typeCarriere = demandeCarriere
+          ? documentTypes.find((type) => type.code === demandeCarriere.typeCode)
+          : null;
         setFormData((current) => ({
           ...current,
-          typeDocumentId:
-            current.typeDocumentId || String(documentTypes[0]?.id || ''),
+          typeDocumentId: typeCarriere
+            ? String(typeCarriere.id)
+            : current.typeDocumentId || String(documentTypes[0]?.id || ''),
+          employeId: demandeCarriere ? String(demandeCarriere.employeId) : current.employeId,
         }));
       } catch (err) {
         console.error(err);
@@ -139,7 +155,7 @@ export default function NewDocumentPage({ user }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [demandeCarriere]);
 
   const selectedType = useMemo(
     () => types.find((type) => String(type.id) === formData.typeDocumentId),
@@ -148,14 +164,12 @@ export default function NewDocumentPage({ user }) {
   const isLeaveRequest = selectedType?.code === 'CONGE';
   const isAdvancementRequest = selectedType?.code === 'AVANCEMENT';
   const isMutationRequest = selectedType?.code === 'MUTATION';
-  const isMutationOperator = ['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role);
-  const isDirectMutation = isMutationRequest && isMutationOperator;
-  const hasPdfTemplate =
-    isLeaveRequest || isAdvancementRequest || isMutationRequest;
+  const isRetirementRequest = selectedType?.code === 'RETRAITE';
+  const hasPdfTemplate = canOpenPdf(selectedType);
   const selectedAgent = agents.find(
     (agent) => String(agent.id) === formData.employeId
   );
-  const filteredServices = !isDirectMutation && formData.directionSouhaiteeId
+  const filteredServices = formData.directionSouhaiteeId
     ? services.filter(
         (service) =>
           String(service.direction_id) === formData.directionSouhaiteeId
@@ -216,6 +230,15 @@ export default function NewDocumentPage({ user }) {
     };
   }, [formData.serviceSouhaiteId, isMutationRequest]);
 
+  useEffect(() => {
+    if (!isRetirementRequest || !formData.employeId) return undefined;
+    let cancelled = false;
+    getRetraiteAnalyse(formData.employeId)
+      .then((result) => { if (!cancelled) setRetraite(result); })
+      .catch(() => { if (!cancelled) setRetraite(null); });
+    return () => { cancelled = true; };
+  }, [formData.employeId, isRetirementRequest]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
@@ -270,7 +293,7 @@ export default function NewDocumentPage({ user }) {
       return;
     }
 
-    if (!isDirectMutation && !formData.destinataire.trim()) {
+    if (!formData.destinataire.trim()) {
       setError('Le destinataire du document est obligatoire.');
       return;
     }
@@ -291,20 +314,20 @@ export default function NewDocumentPage({ user }) {
       return;
     }
 
-    if (isDirectMutation) {
-      if (!formData.serviceSouhaiteId || !formData.posteSouhaiteId) {
-        setError('Le service et le poste de destination sont obligatoires.');
-        return;
-      }
-      if (!formData.dateEffetSouhaitee) {
-        setError('La date d’effet de la mutation est obligatoire.');
-        return;
-      }
-      if (formData.dateEffetSouhaitee > todayInputValue()) {
-        setError('La date d’effet ne peut pas être dans le futur.');
-        return;
-      }
-    } else if (isMutationRequest) {
+    if ((isAdvancementRequest || isMutationRequest) && !formData.dateEffetSouhaitee) {
+      setError('La date d’effet est obligatoire : la demande prendra effet ce jour-là.');
+      return;
+    }
+    if ((isAdvancementRequest || isMutationRequest) && formData.dateEffetSouhaitee < todayInputValue()) {
+      setError('La date d’effet ne peut pas être passée : une demande vise l’avenir.');
+      return;
+    }
+    if (isRetirementRequest && (!formData.dateDepartSouhaitee || formData.dateDepartSouhaitee < todayInputValue())) {
+      setError('Indiquez une date de départ à venir.');
+      return;
+    }
+
+    if (isMutationRequest) {
       if (
         !formData.directionSouhaiteeId &&
         !formData.serviceSouhaiteId &&
@@ -323,19 +346,6 @@ export default function NewDocumentPage({ user }) {
 
     try {
       setSaving(true);
-      if (isDirectMutation) {
-        const result = await updateAgentAssignment(formData.employeId, {
-          acteurId: user?.userId,
-          posteId: formData.posteSouhaiteId,
-          serviceId: formData.serviceSouhaiteId,
-          lieuTravail: formData.lieuTravailSouhaite,
-          dateEffet: formData.dateEffetSouhaitee,
-          observation: formData.motif,
-        });
-        setCompletedMutation(result || {});
-        return;
-      }
-
       const result = await createDocumentRequest(documentRequest(formData, selectedType));
       setCreatedDocument(result);
     } catch (err) {
@@ -372,7 +382,6 @@ export default function NewDocumentPage({ user }) {
 
   function startAnotherDocument() {
     setCreatedDocument(null);
-    setCompletedMutation(null);
     setFormData((current) => ({
       ...current,
       employeId: '',
@@ -385,6 +394,7 @@ export default function NewDocumentPage({ user }) {
       posteSouhaiteId: '',
       lieuTravailSouhaite: '',
       dateEffetSouhaitee: '',
+      dateDepartSouhaitee: '',
     }));
     setPostes([]);
     setLoadingPostes(false);
@@ -392,21 +402,19 @@ export default function NewDocumentPage({ user }) {
     setPdfError('');
   }
 
-  if (createdDocument || completedMutation) {
-    const mutationCompleted = Boolean(completedMutation);
+  if (createdDocument) {
+    const dateEffet = createdDocument.dateEffet;
 
     return (
       <div className="rf-page">
         <header className="rf-head">
           <div>
             <p className="rf-eyebrow">Documents RH</p>
-            <h1 className="rf-title">
-              {mutationCompleted ? 'Mutation effectuée' : 'Document créé'}
-            </h1>
+            <h1 className="rf-title">Demande créée</h1>
             <p className="rf-lead">
-              {mutationCompleted
-                ? 'L’affectation de l’agent a été modifiée par le backend.'
-                : 'Le backend a enregistré votre document.'}
+              {dateEffet && dateEffet > todayInputValue()
+                ? `Elle deviendra applicable le ${formatJour(dateEffet)} ; vous serez prévenu ce jour-là.`
+                : 'Elle est déjà applicable : vous pouvez l’appliquer depuis la liste des documents.'}
             </p>
           </div>
         </header>
@@ -414,27 +422,21 @@ export default function NewDocumentPage({ user }) {
         <div className="rf-card new-document-done">
           <span className="rf-ico"><FileText size={22} /></span>
           <div>
-            <strong>
-              {mutationCompleted
-                ? completedMutation.message || 'Affectation modifiée avec succès.'
-                : 'Document créé avec succès.'}
-            </strong>
-            {!mutationCompleted && (
-              <p>
-                Référence :{' '}
-                <strong className="rf-mono">
-                  {createdDocument.referenceDocument || 'attribuée par le serveur'}
-                </strong>
-              </p>
-            )}
+            <strong>Document créé avec succès.</strong>
+            <p>
+              Référence :{' '}
+              <strong className="rf-mono">
+                {createdDocument.referenceDocument || 'attribuée par le serveur'}
+              </strong>
+            </p>
           </div>
         </div>
 
-        {!mutationCompleted && pdfError && (
+        {pdfError && (
           <p className="rf-error" role="alert">{pdfError}</p>
         )}
 
-        {!mutationCompleted && !hasPdfTemplate && (
+        {!hasPdfTemplate && (
           <p className="rf-note">
             Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
           </p>
@@ -451,7 +453,7 @@ export default function NewDocumentPage({ user }) {
           <button type="button" className="rf-btn" onClick={startAnotherDocument}>
             Nouveau document
           </button>
-          {!mutationCompleted && hasPdfTemplate && (
+          {hasPdfTemplate && (
             <button
               type="button"
               className="rf-btn rf-btn-primary"
@@ -467,8 +469,11 @@ export default function NewDocumentPage({ user }) {
     );
   }
 
-  const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest;
-  const hasDetails = isLeaveRequest || isMutationRequest;
+  const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest || isRetirementRequest;
+  const hasDetails = isLeaveRequest || isMutationRequest || isAdvancementRequest || isRetirementRequest;
+  const retraiteApplicable = retraite?.datePossible && formData.dateDepartSouhaitee
+    ? (formData.dateDepartSouhaitee < retraite.datePossible ? retraite.datePossible : formData.dateDepartSouhaitee)
+    : null;
   const selectedAgentName = selectedAgent
     ? [selectedAgent.prenom, selectedAgent.nom].filter(Boolean).join(' ')
     : '';
@@ -484,9 +489,7 @@ export default function NewDocumentPage({ user }) {
   const notFilled = <span className="new-document-empty">Non renseigné</span>;
   const summaryRows = [
     ['Agent', selectedAgentName || notFilled],
-    ...(!isDirectMutation
-      ? [['Destinataire', formData.destinataire || notFilled]]
-      : []),
+    ['Destinataire', formData.destinataire || notFilled],
     ...(isLeaveRequest
       ? [
           ['Date de début', formData.dateDebut || notFilled],
@@ -498,7 +501,16 @@ export default function NewDocumentPage({ user }) {
           ['Direction souhaitée', selectedDirection?.nom || notFilled],
           ['Service souhaité', selectedService?.nom || notFilled],
           ['Poste souhaité', selectedPoste?.intitule || notFilled],
-          ['Date d’effet', formData.dateEffetSouhaitee || notFilled],
+          ['Date d’effet', formData.dateEffetSouhaitee ? formatJour(formData.dateEffetSouhaitee) : notFilled],
+        ]
+      : []),
+    ...(isAdvancementRequest
+      ? [['Date d’effet', formData.dateEffetSouhaitee ? formatJour(formData.dateEffetSouhaitee) : notFilled]]
+      : []),
+    ...(isRetirementRequest
+      ? [
+          ['Départ souhaité', formData.dateDepartSouhaitee ? formatJour(formData.dateDepartSouhaitee) : notFilled],
+          ['Applicable le', retraiteApplicable ? formatJour(retraiteApplicable) : notFilled],
         ]
       : []),
   ];
@@ -511,7 +523,7 @@ export default function NewDocumentPage({ user }) {
         name="typeDocumentId"
         value={formData.typeDocumentId}
         onChange={handleChange}
-        disabled={loadingOptions || saving || types.length === 0}
+        disabled={loadingOptions || saving || types.length === 0 || Boolean(demandeCarriere)}
         required
       >
         <option value="">
@@ -527,9 +539,7 @@ export default function NewDocumentPage({ user }) {
   const motifField = (
     <div className={prefillClass('rf-field new-document-motif', 'motif', prefilled)}>
       <label htmlFor="motif">
-        {isMutationRequest
-          ? isDirectMutation ? 'Observation (facultative)' : 'Motif *'
-          : isLeaveRequest ? 'Motif' : 'Motif (facultatif)'}
+        {isMutationRequest ? 'Motif *' : isLeaveRequest ? 'Motif' : 'Motif (facultatif)'}
       </label>
       <textarea
         id="motif"
@@ -539,7 +549,7 @@ export default function NewDocumentPage({ user }) {
         rows={4}
         maxLength={isLeaveRequest ? undefined : 2000}
         disabled={saving}
-        required={isMutationRequest && !isDirectMutation}
+        required={isMutationRequest}
         placeholder={
           isAdvancementRequest
             ? 'Vous pouvez préciser le motif de la demande.'
@@ -560,9 +570,13 @@ export default function NewDocumentPage({ user }) {
       <header className="rf-head">
         <div>
           <h1 className="rf-title">
-            {isDirectMutation ? 'Muter un agent' : 'Nouveau document'}
+            {demandeCarriere ? 'Nouvelle demande' : 'Nouveau document'}
           </h1>
-          <p className="rf-lead">Choisissez un type, un agent et complétez les informations.</p>
+          <p className="rf-lead">
+            {demandeCarriere
+              ? 'Préparée depuis l’analyse de carrière : le type et l’agent sont déjà choisis.'
+              : 'Choisissez un type, un agent et complétez les informations.'}
+          </p>
         </div>
       </header>
 
@@ -595,7 +609,7 @@ export default function NewDocumentPage({ user }) {
                 name="employeId"
                 value={formData.employeId}
                 onChange={handleChange}
-                disabled={loadingOptions || saving}
+                disabled={loadingOptions || saving || Boolean(demandeCarriere)}
                 required
               >
                 <option value="">
@@ -609,22 +623,20 @@ export default function NewDocumentPage({ user }) {
                 ))}
               </select>
             </div>
-            {!isDirectMutation && (
-              <div className={prefillClass('rf-field rf-field-full', 'destinataire', prefilled)}>
-                <label htmlFor="destinataire">Destinataire <b>*</b></label>
-                <input
-                  id="destinataire"
-                  name="destinataire"
-                  type="text"
-                  value={formData.destinataire}
-                  onChange={handleChange}
-                  maxLength={255}
-                  placeholder="Ex. Chef du Service du Personnel"
-                  disabled={saving}
-                  required
-                />
-              </div>
-            )}
+            <div className={prefillClass('rf-field rf-field-full', 'destinataire', prefilled)}>
+              <label htmlFor="destinataire">Destinataire <b>*</b></label>
+              <input
+                id="destinataire"
+                name="destinataire"
+                type="text"
+                value={formData.destinataire}
+                onChange={handleChange}
+                maxLength={255}
+                placeholder="Ex. Chef du Service du Personnel"
+                disabled={saving}
+                required
+              />
+            </div>
           </div>
 
           {hasDetails && (
@@ -632,22 +644,26 @@ export default function NewDocumentPage({ user }) {
               <div className="rf-sec">
                 <span className="rf-num">2</span>
                 <div>
-                  <h2>{isMutationRequest ? 'Affectation souhaitée' : 'Période'}</h2>
+                  <h2>
+                    {isMutationRequest ? 'Affectation souhaitée'
+                      : isAdvancementRequest ? 'Prise d’effet'
+                        : isRetirementRequest ? 'Départ' : 'Période'}
+                  </h2>
                   <p>
                     {isMutationRequest
-                      ? isDirectMutation
-                        ? 'Le poste doit appartenir au service choisi.'
-                        : 'Chaque champ est facultatif.'
-                      : 'Indiquez les dates du congé.'}
+                      ? 'Choisissez au moins un élément et la date d’effet.'
+                      : isAdvancementRequest
+                        ? 'L’éligibilité est vérifiée à cette date.'
+                        : isRetirementRequest
+                          ? 'La demande devient applicable une fois la durée de service atteinte.'
+                          : 'Indiquez les dates du congé.'}
                   </p>
                 </div>
               </div>
 
               {isMutationRequest && (
                 <p className="rf-note new-document-note">
-                  {isDirectMutation
-                    ? 'Cette action modifie immédiatement l’affectation de l’agent. Le poste doit appartenir au service choisi.'
-                    : 'La situation actuelle est enregistrée par le backend comme instantané. La demande ne modifie pas l’affectation de l’agent. Choisissez au moins un élément de destination.'}
+                  {'Appliquée à sa date d’effet, la demande modifie l’affectation. Pour changer de service, précisez aussi le poste.'}
                   {selectedAgent && (
                     <>
                       <br />
@@ -691,30 +707,76 @@ export default function NewDocumentPage({ user }) {
                   </>
                 )}
 
-                {isMutationRequest && (
+                {(isAdvancementRequest || isMutationRequest) && (
+                  <div className={prefillClass('rf-field', 'dateEffetSouhaitee', prefilled)}>
+                    <label htmlFor="dateEffetSouhaitee">Date d’effet <b>*</b></label>
+                    <input
+                      id="dateEffetSouhaitee"
+                      name="dateEffetSouhaitee"
+                      type="date"
+                      value={formData.dateEffetSouhaitee}
+                      onChange={handleChange}
+                      min={todayInputValue()}
+                      disabled={saving}
+                      required
+                    />
+                  </div>
+                )}
+
+                {isRetirementRequest && (
                   <>
-                    {!isDirectMutation && (
-                      <div className={prefillClass('rf-field', 'directionSouhaiteeId', prefilled)}>
-                        <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
-                        <select
-                          id="directionSouhaiteeId"
-                          name="directionSouhaiteeId"
-                          value={formData.directionSouhaiteeId}
-                          onChange={handleDirectionChange}
-                          disabled={saving}
-                        >
-                          <option value="">Ne pas préciser</option>
-                          {directions.map((direction) => (
-                            <option key={direction.id} value={direction.id}>
-                              {direction.nom}
-                            </option>
-                          ))}
-                        </select>
+                    <div className={prefillClass('rf-field', 'dateDepartSouhaitee', prefilled)}>
+                      <label htmlFor="dateDepartSouhaitee">Départ souhaité <b>*</b></label>
+                      <input
+                        id="dateDepartSouhaitee"
+                        name="dateDepartSouhaitee"
+                        type="date"
+                        value={formData.dateDepartSouhaitee}
+                        onChange={handleChange}
+                        min={todayInputValue()}
+                        disabled={saving}
+                        required
+                      />
+                    </div>
+                    {retraite && (
+                      <div className="new-document-retraite" role="status">
+                        <strong>{retraite.anneesRequises ?? '—'} ans de service exigés</strong>
+                        <span>
+                          {retraite.dateRetraite
+                            ? `Déjà parti à la retraite le ${formatJour(retraite.dateRetraite)}.`
+                            : retraite.datePossible
+                              ? retraite.possible
+                                ? `Atteints depuis le ${formatJour(retraite.datePossible)}.`
+                                : `Atteints le ${formatJour(retraite.datePossible)}, dans ${retraite.joursRestants} jours.`
+                              : 'Date d’embauche inconnue : la durée de service ne peut pas être calculée.'}
+                        </span>
                       </div>
                     )}
+                  </>
+                )}
+
+                {isMutationRequest && (
+                  <>
+                    <div className={prefillClass('rf-field', 'directionSouhaiteeId', prefilled)}>
+                      <label htmlFor="directionSouhaiteeId">Direction souhaitée</label>
+                      <select
+                        id="directionSouhaiteeId"
+                        name="directionSouhaiteeId"
+                        value={formData.directionSouhaiteeId}
+                        onChange={handleDirectionChange}
+                        disabled={saving}
+                      >
+                        <option value="">Ne pas préciser</option>
+                        {directions.map((direction) => (
+                          <option key={direction.id} value={direction.id}>
+                            {direction.nom}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div className={prefillClass('rf-field', 'serviceSouhaiteId', prefilled)}>
                       <label htmlFor="serviceSouhaiteId">
-                        Service souhaité {isDirectMutation && <b>*</b>}
+                        Service souhaité
                       </label>
                       <select
                         id="serviceSouhaiteId"
@@ -722,11 +784,8 @@ export default function NewDocumentPage({ user }) {
                         value={formData.serviceSouhaiteId}
                         onChange={handleServiceChange}
                         disabled={saving}
-                        required={isDirectMutation}
                       >
-                        <option value="">
-                          {isDirectMutation ? 'Sélectionner un service' : 'Ne pas préciser'}
-                        </option>
+                        <option value="">Ne pas préciser</option>
                         {filteredServices.map((service) => (
                           <option key={service.id} value={service.id}>{service.nom}</option>
                         ))}
@@ -734,7 +793,7 @@ export default function NewDocumentPage({ user }) {
                     </div>
                     <div className={prefillClass('rf-field', 'posteSouhaiteId', prefilled)}>
                       <label htmlFor="posteSouhaiteId">
-                        Poste souhaité {isDirectMutation && <b>*</b>}
+                        Poste souhaité
                       </label>
                       <select
                         id="posteSouhaiteId"
@@ -742,15 +801,12 @@ export default function NewDocumentPage({ user }) {
                         value={formData.posteSouhaiteId}
                         onChange={handleChange}
                         disabled={saving || loadingPostes || !formData.serviceSouhaiteId}
-                        required={isDirectMutation}
                       >
                         <option value="">
                           {formData.serviceSouhaiteId
                             ? loadingPostes
                               ? 'Chargement des postes...'
-                              : isDirectMutation
-                                ? 'Sélectionner un poste'
-                                : 'Ne pas préciser'
+                              : 'Ne pas préciser'
                             : 'Choisissez d’abord un service'}
                         </option>
                         {postes.map((poste) => (
@@ -769,21 +825,6 @@ export default function NewDocumentPage({ user }) {
                         maxLength={255}
                         placeholder="Ne pas préciser"
                         disabled={saving}
-                      />
-                    </div>
-                    <div className={prefillClass('rf-field', 'dateEffetSouhaitee', prefilled)}>
-                      <label htmlFor="dateEffetSouhaitee">
-                        Date d’effet {isDirectMutation && <b>*</b>}
-                      </label>
-                      <input
-                        id="dateEffetSouhaitee"
-                        name="dateEffetSouhaitee"
-                        type="date"
-                        value={formData.dateEffetSouhaitee}
-                        onChange={handleChange}
-                        max={isDirectMutation ? todayInputValue() : undefined}
-                        disabled={saving}
-                        required={isDirectMutation}
                       />
                     </div>
                   </>
@@ -842,8 +883,8 @@ export default function NewDocumentPage({ user }) {
             >
               <Save size={18} />
               {saving
-                ? isDirectMutation ? 'Mutation...' : 'Création...'
-                : isDirectMutation ? 'Muter l’agent' : 'Créer le document'}
+                ? 'Création...'
+                : 'Créer la demande'}
             </button>
           </div>
         </form>
@@ -864,9 +905,7 @@ export default function NewDocumentPage({ user }) {
               </div>
             ))}
           </dl>
-          {isDirectMutation ? (
-            <p className="rf-note">La mutation est appliquée immédiatement par le serveur.</p>
-          ) : canOpenPdf(selectedType) ? (
+          {canOpenPdf(selectedType) ? (
             <>
               <p className="rf-note">
                 Aperçu du PDF, mis à jour à chaque modification ; rien n’est enregistré avant « Créer le document ».

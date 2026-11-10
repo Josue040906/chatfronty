@@ -91,3 +91,13 @@ export async function confirmAvancement(employeId, dateEffet) {
     dateEffet,
   });
 }
+
+/** Années de service exigées pour la retraite, jour où l'agent les atteint, départ déjà pris. */
+export async function getRetraiteAnalyse(employeId) {
+  return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/retraite`);
+}
+
+/** Départ à la retraite immédiat (même effet qu'une demande de retraite appliquée). */
+export async function prendreRetraite(employeId, dateEffet) {
+  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/retraite`, { dateEffet });
+}

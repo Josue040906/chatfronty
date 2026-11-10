@@ -297,8 +297,13 @@
   white-space: nowrap;
 }
 
-.rf-pill-brouillon { background: var(--color-surface-sunken); color: var(--color-text-muted); }
-.rf-pill-valide { background: var(--color-success-soft); color: var(--color-success); }
+.rf-pill-cree, .rf-pill-en_attente { background: var(--color-surface-sunken); color: var(--color-text-muted); }
+.rf-pill-en_attente small { font-weight: 600; opacity: 0.8; }
+.rf-pill-applicable {
+  background: var(--color-accent-soft); color: var(--color-accent-strong);
+  box-shadow: 0 0 0 0 rgb(184 134 63 / 0.45); animation: demande-halo 2.4s ease-out infinite;
+}
+.rf-pill-applique { background: var(--color-success-soft); color: var(--color-success); }
 .rf-pill-annule { background: var(--color-danger-soft); color: var(--color-danger); }
 .rf-pill-archive { background: #EFE6DA; color: var(--color-brand-strong); }
 
@@ -634,9 +639,9 @@ button.rf-row {
 .rf-hero-ref { margin: 0; font: 500 var(--text-sm) var(--font-mono); color: #E3C27F; }
 .rf-hero h2 { margin: 6px 0 12px; font: 600 clamp(24px, 2.4vw, 30px) / 1.15 var(--font-display); overflow-wrap: anywhere; }
 .rf-hero .rf-pill { background: rgb(255 253 249 / 0.14); color: var(--color-on-brand); }
-.rf-hero .rf-pill-valide { background: var(--color-success-soft); color: var(--color-success); }
+.rf-hero .rf-pill-applique { background: var(--color-success-soft); color: var(--color-success); }
 .rf-hero .rf-pill-annule { background: var(--color-danger-soft); color: var(--color-danger); }
-.rf-hero .rf-pill-brouillon { background: var(--color-surface-sunken); color: var(--color-text-muted); }
+.rf-hero .rf-pill-cree { background: var(--color-surface-sunken); color: var(--color-text-muted); }
 .rf-hero .rf-pill-archive { background: #EFE6DA; color: var(--color-brand-strong); }
 
 .rf-doc-grid {
@@ -1690,3 +1695,96 @@ button.rf-row {
 .parcours-grille th:first-child, .parcours-grille td:first-child { text-align: left; }
 .parcours-grille td:first-child { font-family: inherit; }
 @media (max-width: 640px) { .parcours-grille th:last-child, .parcours-grille td:last-child { display: table-cell; } }
+
+/* ---------- Suivi d'une demande : frise, effet, confirmation ---------- */
+@keyframes demande-halo {
+  0% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0.45); }
+  70% { box-shadow: 0 0 0 8px rgb(184 134 63 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rf-pill-applicable, .demande-appliquer-pret, .demande-frise-etape.is-actif .demande-frise-point { animation: none; }
+}
+
+.demande-frise { list-style: none; margin: 14px 0 6px; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.demande-frise-etape { position: relative; display: grid; justify-items: center; align-content: start; text-align: center; gap: 6px; padding: 0 4px; }
+.demande-frise-etape + .demande-frise-etape::before {
+  content: ''; position: absolute; top: 13px; right: 50%; width: 100%; height: 2px;
+  background: var(--color-border); z-index: 0;
+}
+.demande-frise-etape.is-fait + .demande-frise-etape::before { background: var(--color-success); }
+.demande-frise-point {
+  position: relative; z-index: 1; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--color-surface-sunken); color: var(--color-text-muted);
+  border: 2px solid var(--color-surface);
+}
+.demande-frise-etape.is-fait .demande-frise-point { background: var(--color-success); color: #fff; }
+.demande-frise-etape.is-actif .demande-frise-point { background: var(--color-accent); color: #fff; animation: demande-halo 2.4s ease-out infinite; }
+.demande-frise-etape.is-stop .demande-frise-point { background: var(--color-danger); color: #fff; }
+.demande-frise-texte { display: grid; gap: 1px; }
+.demande-frise-texte strong { font-size: 13px; }
+.demande-frise-texte small { font-size: 12px; color: var(--color-text-muted); }
+.demande-frise-etape.is-attente .demande-frise-texte strong { color: var(--color-text-muted); }
+.demande-frise-compteur {
+  justify-self: center; margin-top: 2px; padding: 1px 8px; border-radius: var(--radius-pill);
+  background: var(--color-accent-soft); color: var(--color-accent-strong); font-style: normal; font-size: 11px; font-weight: 700;
+}
+
+.demande-effet { margin: 14px 0; padding: 14px; border-radius: var(--radius-md); background: var(--color-surface-sunken); }
+.demande-effet .rf-eyebrow { margin: 0 0 10px; }
+.demande-effet.is-note p:last-child { margin: 0; color: var(--color-text-muted); font-size: 14px; }
+.demande-effet-grille { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; }
+.demande-effet-bloc { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: var(--color-surface); min-width: 0; }
+.demande-effet-bloc span { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-muted); }
+.demande-effet-bloc strong { font-size: 14px; overflow-wrap: anywhere; }
+.demande-effet-bloc.is-avant strong { color: var(--color-text-muted); font-weight: 600; }
+.demande-effet-bloc.is-apres { box-shadow: inset 0 0 0 2px var(--color-success-soft); }
+.demande-effet-bloc.is-apres strong { color: var(--color-success); }
+.demande-effet-fleche { color: var(--color-accent); }
+@media (max-width: 520px) {
+  .demande-effet-grille { grid-template-columns: 1fr; }
+  .demande-effet-fleche { transform: rotate(90deg); justify-self: center; }
+}
+
+.documents-aside-cycle { margin-top: 12px; }
+.demande-appliquer-pret { animation: demande-halo 2.4s ease-out infinite; }
+.demande-confirmation { padding: 14px; border-radius: var(--radius-md); background: var(--color-accent-soft); }
+.demande-confirmation p { margin: 0 0 10px; font-size: 14px; color: var(--color-accent-strong); }
+.demande-confirmation p strong { display: block; margin-bottom: 2px; color: var(--color-text); }
+
+/* ---------- Faire une demande (analyse de carrière) ---------- */
+.demandes-carriere-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.demande-carte {
+  position: relative; display: grid; align-content: start; gap: 8px; padding: 18px;
+  border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border); transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.demande-carte:hover { transform: translateY(-2px); }
+.demande-carte h3 { margin: 0; font: 600 18px var(--font-display); }
+.demande-carte p { margin: 0; font-size: 14px; color: var(--color-text-muted); }
+.demande-carte-icone {
+  width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--color-surface-sunken); color: var(--color-brand);
+}
+.demande-carte.is-pret .demande-carte-icone { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.demande-carte.is-pret::after {
+  content: 'Possible'; position: absolute; top: 16px; right: 16px; padding: 2px 9px; border-radius: var(--radius-pill);
+  background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 11px; font-weight: 700;
+}
+.demande-carte.is-fini { opacity: 0.75; }
+.demande-carte.is-fini::after {
+  content: 'Fait'; position: absolute; top: 16px; right: 16px; padding: 2px 9px; border-radius: var(--radius-pill);
+  background: var(--color-success-soft); color: var(--color-success); font-size: 11px; font-weight: 700;
+}
+.demande-carte-jauge { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--color-surface-sunken); overflow: hidden; }
+.demande-carte-jauge span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-accent), var(--color-brand)); }
+.demande-carte-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.demande-carte-date { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.demande-carte-date input { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; }
+@media (prefers-reduced-motion: reduce) { .demande-carte { transition: none; } .demande-carte:hover { transform: none; } }
+
+.new-document-retraite {
+  grid-column: 1 / -1; display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 14px;
+}
+.new-document-retraite strong { color: var(--color-text); }
