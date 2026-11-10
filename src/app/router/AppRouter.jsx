@@ -15,7 +15,6 @@ import OrganisationPage from '../../pages/Organisation/OrganisationPage';
 import CarrieresPage from '../../pages/Carrieres/CarrieresPage';
 import DocumentsPage from '../../pages/Documents/DocumentsPage';
 import NewDocumentPage from '../../pages/Documents/NewDocumentPage';
-import DocumentDetailsPage from '../../pages/Documents/DocumentDetailsPage';
 import MesActivitesPage from '../../pages/Activites/MesActivitesPage';
 import AdministrationPage from '../../pages/Administration/AdministrationPage';
 import DirectionsPage from '../../pages/Administration/DirectionsPage';
@@ -160,19 +159,13 @@ export default function AppRouter({
 
       <Route
         path="/documents"
-        element={<DocumentsPage />}
+        element={<DocumentsPage user={user} />}
       />
 
       <Route
         path="/documents/nouveau"
         element={<NewDocumentPage user={user} />}
       />
-      <Route
-        path="/documents/:id"
-        element={ <DocumentDetailsPage />}
-      />
-
-
 
       <Route
         path="/activites"

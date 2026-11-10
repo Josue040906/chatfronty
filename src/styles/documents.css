@@ -286,17 +286,6 @@ select[aria-label] option {
   }
 
 /* =========================================================
-   ACTIONS DU DOCUMENT
-   ========================================================= */
-
-.document-details-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-/* =========================================================
    DOCUMENT ADMINISTRATIF DESTINÃ‰ Ã€ L'IMPRESSION
    ========================================================= */
 
@@ -475,14 +464,6 @@ select[aria-label] option {
 /* =========================================================
    RESPONSIVE
    ========================================================= */
-
-@media (max-width: 900px) {
-  .document-details-actions {
-    width: 100%;
-    margin-left: 0;
-    justify-content: flex-start;
-  }
-}
 
 @media (max-width: 640px) {
   }

@@ -1072,8 +1072,6 @@ button.rf-row {
 }
 
 /* ---------- Écran détail d'un document ---------- */
-.document-details-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.document-details-pills { display: flex; flex-wrap: wrap; gap: 10px; }
 .rf-mono-plain { font-family: var(--font-mono); font-weight: 500; }
 .document-edit-form { max-width: 860px; padding: 36px; }
 .document-edit-form .rf-note { margin-top: 20px; }

@@ -51,10 +51,6 @@ export async function getDocumentRequestPdf(id) {
   );
 }
 
-export async function getDocumentById(id) {
-  return apiGet(`/api/documents/${id}`);
-}
-
 export async function searchDocuments(query) {
   const value = query?.trim();
 
@@ -77,26 +73,15 @@ export async function getDocumentsByAgent(agentId) {
   return normalizeResponse(response);
 }
 
-export async function createDocument(documentData) {
-  return apiPost(
-    '/api/documents',
-    documentData
-  );
+// Cycle de vie : l'API vérifie chaque étape et qui a le droit de la faire.
+export async function validerDocument(id) {
+  return apiPost(`/api/documents/${encodeURIComponent(id)}/valider`, {});
 }
 
-export async function updateDocument(
-  id,
-  documentData
-) {
-  return apiPut(
-    `/api/documents/${id}`,
-    documentData
-  );
+export async function annulerDocument(id) {
+  return apiPost(`/api/documents/${encodeURIComponent(id)}/annuler`, {});
 }
 
-export async function archiveDocument(id) {
-  return apiPut(
-    `/api/documents/${id}/archiver`,
-    {}
-  );
+export async function archiverDocument(id) {
+  return apiPut(`/api/documents/${encodeURIComponent(id)}/archiver`, {});
 }

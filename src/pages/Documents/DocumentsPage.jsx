@@ -14,10 +14,14 @@ import { getEmployeeInitials } from '../../utils/employee';
 import {
   getDocumentRequestPdf,
   getDocumentRequests,
+  validerDocument,
+  annulerDocument,
+  archiverDocument,
   getDocumentTypes,
 } from '../../api/documents';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import { canOpenPdf } from '../../utils/documentPdf';
+import { DOCUMENT_STATUSES, documentActions } from '../../utils/documentCycle';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -56,13 +60,7 @@ function formatDateShort(value) {
   });
 }
 
-const statusLabels = {
-  BROUILLON: 'Brouillon',
-  A_VERIFIER: 'À vérifier',
-  VALIDE: 'Validé',
-  SIGNE: 'Signé',
-  ARCHIVE: 'Archivé',
-};
+const statusLabels = Object.fromEntries(DOCUMENT_STATUSES.map(({ code, label }) => [code, label]));
 
 function formatStatus(status) {
   if (!status) return '—';
@@ -73,14 +71,7 @@ function formatStatus(status) {
     .replace(/^\p{L}/u, (letter) => letter.toUpperCase());
 }
 
-const statusFilters = [
-  { code: 'TOUS', label: 'Tous' },
-  { code: 'BROUILLON', label: 'Brouillon' },
-  { code: 'A_VERIFIER', label: 'À vérifier' },
-  { code: 'VALIDE', label: 'Validé' },
-  { code: 'SIGNE', label: 'Signé' },
-  { code: 'ARCHIVE', label: 'Archivé' },
-];
+const statusFilters = [{ code: 'TOUS', label: 'Tous' }, ...DOCUMENT_STATUSES];
 const statusCodes = statusFilters.map((chip) => chip.code);
 
 const documentFieldLabels = {
@@ -197,7 +188,7 @@ function openPdfTab(popup, blob) {
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-export default function DocumentsPage() {
+export default function DocumentsPage({ user }) {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
   const [types, setTypes] = useState([]);
@@ -213,6 +204,7 @@ export default function DocumentsPage() {
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState('');
+  const [cycle, setCycle] = useState({ running: '', message: '', error: '' });
 
   useEffect(() => {
     let cancelled = false;
@@ -330,6 +322,20 @@ export default function DocumentsPage() {
     setPreviewError('');
   }, []);
 
+  /** Une étape du cycle de vie ; le statut affiché suit la réponse de l'API. */
+  async function runCycle(documentData, etape, appel, statut, message) {
+    setCycle({ running: etape, message: '', error: '' });
+    try {
+      await appel(documentData.id);
+      const update = (item) => (item.id === documentData.id ? { ...item, statut } : item);
+      setDocuments((current) => current.map(update));
+      setSelectedDocument((current) => (current ? update(current) : current));
+      setCycle({ running: '', message, error: '' });
+    } catch (err) {
+      setCycle({ running: '', message: '', error: err?.message || 'Action impossible.' });
+    }
+  }
+
   function closeDetail() {
     previewRequestRef.current += 1;
     setPreviewLoading(false);
@@ -366,6 +372,7 @@ export default function DocumentsPage() {
   /** Ouvre le détail d'un document ; son PDF s'affiche aussitôt en aperçu. */
   function selectDocument(documentData) {
     closePreview();
+    setCycle({ running: '', message: '', error: '' });
     setSelectedDocument(documentData);
     if (canOpenPdf(typeById.get(String(documentData.typeDocumentId)))) {
       void loadPreview(documentData);
@@ -625,6 +632,48 @@ export default function DocumentsPage() {
                 title="Aperçu du document PDF"
               />
             )}
+
+            {(() => {
+              const actions = documentActions(selectedDocument, user);
+              if (!actions.valider && !actions.annuler && !actions.archiver) return null;
+              return (
+                <div className="documents-aside-actions">
+                  {actions.valider && (
+                    <button
+                      type="button"
+                      className="rf-btn rf-btn-primary"
+                      disabled={Boolean(cycle.running)}
+                      onClick={() => runCycle(selectedDocument, 'valider', validerDocument, 'VALIDE',
+                        'Document validé : le chef du Service du Personnel en est notifié.')}
+                    >
+                      {cycle.running === 'valider' ? 'Validation…' : 'Valider'}
+                    </button>
+                  )}
+                  {actions.annuler && (
+                    <button
+                      type="button"
+                      className="rf-btn"
+                      disabled={Boolean(cycle.running)}
+                      onClick={() => runCycle(selectedDocument, 'annuler', annulerDocument, 'ANNULE', 'Document annulé.')}
+                    >
+                      {cycle.running === 'annuler' ? 'Annulation…' : 'Annuler'}
+                    </button>
+                  )}
+                  {actions.archiver && (
+                    <button
+                      type="button"
+                      className="rf-btn"
+                      disabled={Boolean(cycle.running)}
+                      onClick={() => runCycle(selectedDocument, 'archiver', archiverDocument, 'ARCHIVE', 'Document archivé.')}
+                    >
+                      {cycle.running === 'archiver' ? 'Archivage…' : 'Archiver'}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+            {cycle.message && <p className="rf-success" role="status">{cycle.message}</p>}
+            {cycle.error && <p className="rf-error" role="alert">{cycle.error}</p>}
 
             {canOpenPdf(selectedType) && (
               <div className="documents-aside-actions">
