@@ -32,7 +32,7 @@ async function request(
   const authHeaders = getAuthHeaders();
   if (!authHeaders.Authorization) {
     throw new BandyApiError(
-      'Connectez-vous à votre compte RH pour utiliser Bandy.',
+      'Connectez-vous à votre compte RH pour utiliser Band’IAkam.',
       401
     );
   }
@@ -81,7 +81,7 @@ async function request(
         data = await response.json();
       } catch (error) {
         throw new BandyApiError(
-          'Bandy a renvoyé une réponse JSON invalide.',
+          'Band’IAkam a renvoyé une réponse JSON invalide.',
           response.status,
           error
         );
@@ -96,11 +96,11 @@ async function request(
       const message = response.status === 401
         ? 'Votre session a expiré. Reconnectez-vous pour continuer.'
         : response.status === 403
-          ? 'Bandy a refusé l’accès à cette ressource.'
+          ? 'Band’IAkam a refusé l’accès à cette ressource.'
           : data?.message
             || (response.status >= 500
-              ? `Le service Bandy est indisponible (HTTP ${response.status}).`
-              : `Erreur Bandy ${response.status}: ${response.statusText}`);
+              ? `Le service Band’IAkam est indisponible (HTTP ${response.status}).`
+              : `Erreur Band’IAkam ${response.status}: ${response.statusText}`);
       throw new BandyApiError(message, response.status);
     }
 
@@ -109,7 +109,7 @@ async function request(
   } catch (error) {
     if (timedOut) {
       requestOutcome = 'timeout';
-      throw new BandyApiError('Le délai de réponse de Bandy est dépassé.', null, error);
+      throw new BandyApiError('Le délai de réponse de Band’IAkam est dépassé.', null, error);
     }
     if (controller.signal.aborted || error instanceof BandyApiError) {
       if (controller.signal.aborted) {
@@ -120,7 +120,7 @@ async function request(
       throw error;
     }
     throw new BandyApiError(
-      'Impossible de joindre Bandy. Vérifiez le service et votre connexion réseau.',
+      'Impossible de joindre Band’IAkam. Vérifiez le service et votre connexion réseau.',
       null,
       error
     );
@@ -217,7 +217,7 @@ export { MESSAGE_PAGE_SIZE };
 
 async function readEventStream(body, onToken) {
   if (!body) {
-    throw new BandyApiError('Bandy n’a pas ouvert le flux de réponse.', null);
+    throw new BandyApiError('Band’IAkam n’a pas ouvert le flux de réponse.', null);
   }
 
   const reader = body.getReader();
@@ -244,7 +244,7 @@ async function readEventStream(body, onToken) {
       payload = JSON.parse(dataLines.join('\n'));
     } catch (error) {
       throw new BandyApiError(
-        'Bandy a envoyé un événement de flux invalide.',
+        'Band’IAkam a envoyé un événement de flux invalide.',
         null,
         error
       );
@@ -252,14 +252,14 @@ async function readEventStream(body, onToken) {
 
     if (event === 'token') {
       if (typeof payload.text !== 'string') {
-        throw new BandyApiError('Bandy a envoyé un fragment invalide.', null);
+        throw new BandyApiError('Band’IAkam a envoyé un fragment invalide.', null);
       }
       onToken?.(payload.text);
     } else if (event === 'done') {
       completedResponse = payload;
     } else if (event === 'error') {
       throw new BandyApiError(
-        payload.message || 'Bandy n’a pas pu terminer la réponse.',
+        payload.message || 'Band’IAkam n’a pas pu terminer la réponse.',
         null
       );
     }
@@ -290,7 +290,7 @@ async function readEventStream(body, onToken) {
 
   if (!completedResponse) {
     throw new BandyApiError(
-      'Le flux de Bandy s’est terminé sans réponse finale.',
+      'Le flux de Band’IAkam s’est terminé sans réponse finale.',
       null
     );
   }

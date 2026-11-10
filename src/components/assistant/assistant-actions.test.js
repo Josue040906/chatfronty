@@ -41,7 +41,7 @@ describe('getConfirmationActions', () => {
     ])).toEqual([]);
   });
 
-  it('explains the outcome returned by Bandy', () => {
+  it('explains the outcome returned by Band’IAkam', () => {
     expect(confirmationOutcomeMessage({ status: 'CONFIRMED', result: {} }))
       .toBe('Action confirmée et exécutée.');
     expect(confirmationOutcomeMessage({
@@ -162,7 +162,7 @@ describe('getNavigationActions', () => {
     ]);
   });
 
-  it('takes the name from the search of the same turn when Bandy sent none', () => {
+  it('takes the name from the search of the same turn when Band’IAkam sent none', () => {
     expect(getNavigationActions(
       [{ type: 'NAVIGATE', route: '/agents/13' }, { type: 'NAVIGATE', route: '/agents/99' }],
       [{ id: '13', name: 'Tiana ANDRIAMIHARISOA' }],
@@ -177,7 +177,7 @@ describe('getNavigationActions', () => {
       .toEqual([{ route: '/carrieres', label: 'Ouvrir la page' }]);
   });
 
-  it('returns nothing when Bandy sent no actions', () => {
+  it('returns nothing when Band’IAkam sent no actions', () => {
     expect(getNavigationActions(undefined)).toEqual([]);
     expect(isInternalRoute('/agents/1?onglet=carri%C3%A8re')).toBe(true);
   });
@@ -211,7 +211,7 @@ describe('buildBandyReply', () => {
     expect(reply.prepared[0].label).toBe('Ouvrir la modification préremplie');
   });
 
-  it('shows only the proposed buttons when Bandy opens records it found', () => {
+  it('shows only the proposed buttons when Band’IAkam opens records it found', () => {
     const reply = buildBandyReply({
       toolResults: searchCards,
       actions: [{ type: 'NAVIGATE', tool: 'open_agent_record', route: '/agents/3' }],
@@ -302,7 +302,7 @@ describe('getFilteredListAction', () => {
     expect(getFilteredListAction([{ ...search(9), arguments: { criteriaJson: '{oups' } }])).toBeNull();
   });
 
-  it('lets Bandy open the agents page on a search on request, without a duplicate button', () => {
+  it('lets Band’IAkam open the agents page on a search on request, without a duplicate button', () => {
     const route = `/agents?recherche=${encodeURIComponent(JSON.stringify({ must: criteria.must, limit: 20 }))}`;
     const reply = buildBandyReply({
       toolResults: [search(4, [1, 2, 3, 4].map((id) => agent(id)))],
@@ -317,7 +317,7 @@ describe('getFilteredListAction', () => {
     }).navigation).toHaveLength(1);
   });
 
-  it('replaces the cards in the Bandy reply', () => {
+  it('replaces the cards in the Band’IAkam reply', () => {
     const reply = buildBandyReply({ toolResults: [search(5, [1, 2, 3, 4, 5].map((id) => agent(id)))] });
 
     expect(reply.agents).toEqual([]);

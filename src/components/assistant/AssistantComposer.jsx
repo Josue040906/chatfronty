@@ -75,7 +75,7 @@ export default function AssistantComposer({
         placeholder={placeholder}
         rows={rows}
         disabled={disabled}
-        aria-label="Message à l'assistant SYGPERS"
+        aria-label="Message à Band’IAkam"
       />
       <button
         type="submit"

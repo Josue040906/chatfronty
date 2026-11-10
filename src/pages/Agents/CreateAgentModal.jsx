@@ -14,6 +14,8 @@ import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
+import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
+import { getGrilleIndiciaire, getParcoursGrades } from '../../api/parcours';
 
 const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
 
@@ -33,6 +35,7 @@ const EMPTY_FORM = {
   serviceId: '',
   typeEmploiId: '',
   categorieId: '',
+  echelonId: '',
   lieuTravail: '',
 };
 
@@ -42,6 +45,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   const [postes, setPostes] = useState([]);
   const [typesEmploi, setTypesEmploi] = useState([]);
   const [categories, setCategories] = useState([]);
+  // Grades de chaque parcours et grille indiciaire : le grade de départ et son indice.
+  const [grades, setGrades] = useState([]);
+  const [grille, setGrille] = useState([]);
   const [photoFile, setPhotoFile] = useState(null);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [loadingPostes, setLoadingPostes] = useState(false);
@@ -60,9 +66,11 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
       setOptionsError('');
 
       try {
-        const [serviceData, referenceData] = await Promise.all([
+        const [serviceData, referenceData, gradeData, grilleData] = await Promise.all([
           getServices(),
           getAgentReferenceData(),
+          getParcoursGrades(),
+          getGrilleIndiciaire(),
         ]);
 
         if (!cancelled) {
@@ -74,6 +82,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
           setServices(serviceData);
           setTypesEmploi(referenceData.typesEmploi);
           setCategories(referenceData.categories);
+          setGrades(gradeData);
+          setGrille(grilleData);
         }
       } catch (error) {
         console.error('Impossible de charger les options du formulaire agent.', error);
@@ -139,6 +149,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
       ...current,
       [name]: value,
       ...(name === 'serviceId' ? { posteId: '' } : {}),
+      // Un autre type d'emploi, c'est un autre parcours : le grade est à choisir de nouveau.
+      ...(name === 'typeEmploiId' ? { echelonId: '' } : {}),
     }));
 
     if (name === 'serviceId') {
@@ -207,6 +219,11 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
       return;
     }
 
+    if (form.typeEmploiId && (!form.echelonId || !form.categorieId)) {
+      setFormError('Choisissez la catégorie et le grade de départ : ensemble, ils donnent l’indice de l’agent.');
+      return;
+    }
+
     if (!isPhoneNumberValid(form.telephone)) {
       setFormError(
         'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
@@ -253,13 +270,21 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
     }
   }
 
+  const typeChoisi = typesEmploi.find((type) => String(type.id) === String(form.typeEmploiId));
+  const gradesDuType = typeChoisi ? grades.filter((grade) => grade.type_emploi === typeChoisi.nom) : [];
+  const gradeChoisi = gradesDuType.find((grade) => String(grade.grade_id) === String(form.echelonId));
+  const categorieChoisie = categories.find((categorie) => String(categorie.id) === String(form.categorieId));
+  const indiceDepart = gradeChoisi && categorieChoisie
+    ? grille.find((cellule) => cellule.grade_code === gradeChoisi.code
+      && cellule.categorie === categorieChoisie.code)?.indice ?? null
+    : null;
   const serviceName = services.find((service) => String(service.id) === String(form.serviceId))?.nom;
   const posteName = postes.find((poste) => String(poste.id) === String(form.posteId))?.intitule;
   const trackedFields = [
     form.matricule, form.nom, form.prenom, form.sexe, form.cin, form.telephone,
     form.dateNaissance, form.lieuNaissance, form.adresse, form.serviceId,
     form.posteId, form.dateEmbauche, form.lieuTravail, form.typeEmploiId,
-    form.categorieId, photoFile,
+    form.categorieId, form.echelonId, photoFile,
   ];
   const percent =
     (trackedFields.filter((value) => Boolean(value)).length / trackedFields.length) * 100;
@@ -544,6 +569,34 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
+                <label className="rf-field">
+                  <span className="rf-label">Grade de départ</span>
+                  <select
+                    name="echelonId"
+                    value={form.echelonId}
+                    onChange={handleChange}
+                    disabled={!typeChoisi}
+                    required={Boolean(typeChoisi)}
+                  >
+                    <option value="">{typeChoisi ? 'Sélectionner' : 'Choisissez d’abord le type d’emploi'}</option>
+                    {gradesDuType.map((grade) => (
+                      <option key={grade.grade_id} value={grade.grade_id}>
+                        {grade.code} — {grade.libelle}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {typeChoisi && (
+                  <div className="agent-create-parcours rf-field-full" role="status">
+                    <TypeEmploiBadge type={typeChoisi.nom} grand />
+                    <span>
+                      {gradeChoisi
+                        ? `Débute en ${gradeChoisi.code} (${gradeChoisi.libelle})`
+                        : `Parcours : ${gradesDuType[0]?.parcours || '—'}`}
+                    </span>
+                    {indiceDepart != null && <strong>Indice de départ {indiceDepart}</strong>}
+                  </div>
+                )}
                 <label className="rf-field rf-field-full">
           <span className="rf-label">Photo <span style={{ fontWeight: 400 }}>(facultatif)</span></span>
           <span className="rf-upload">

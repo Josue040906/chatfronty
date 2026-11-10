@@ -16,6 +16,7 @@ import {
   getEmployeeInitials,
 } from '../../utils/employee';
 import AgentPresence from '../../components/agents/AgentPresence';
+import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import CreateAgentModal from './CreateAgentModal';
 
@@ -40,6 +41,8 @@ function formatDateLong(value) {
 }
 
 const DOSSIER_FILTERS = ['incomplet'];
+// Filtre par type d'emploi, porté par l'adresse (/agents?type=Stagiaire).
+const TYPE_FILTERS = ['Fonctionnaire', 'Agent contractuel', 'Stagiaire'];
 
 export default function AgentsPage({ user }) {
   const navigate = useNavigate();
@@ -51,6 +54,7 @@ export default function AgentsPage({ user }) {
   const [dossierFilter, setDossierFilter] = useUrlFilter('dossier', DOSSIER_FILTERS, '');
   // « recherche » : les critères d'un filtrage de Bandy, relancés auprès de l'API.
   const [recherche, setRecherche] = useUrlFilter('recherche', null, '');
+  const [typeFilter, setTypeFilter] = useUrlFilter('type', TYPE_FILTERS, '');
   const [selection, setSelection] = useState({ recherche: '', ids: null, failed: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -118,7 +122,8 @@ export default function AgentsPage({ user }) {
     const normalizedSearch = search.trim().toLowerCase();
     const listedAgents = agents
       .filter((agent) => !selectedIds || selectedIds.has(String(agent.id)))
-      .filter((agent) => dossierFilter !== 'incomplet' || agent.dossier_complet === false);
+      .filter((agent) => dossierFilter !== 'incomplet' || agent.dossier_complet === false)
+      .filter((agent) => !typeFilter || agent.type_emploi === typeFilter);
 
     if (!normalizedSearch) {
       return listedAgents;
@@ -140,10 +145,10 @@ export default function AgentsPage({ user }) {
 
       return searchableText.includes(normalizedSearch);
     });
-  }, [agents, dossierFilter, search, selectedIds]);
+  }, [agents, dossierFilter, search, selectedIds, typeFilter]);
 
   // Recherche, dossier ou sélection de Bandy : un clic ramène à la liste complète.
-  const filtered = Boolean(search.trim() || dossierFilter || recherche);
+  const filtered = Boolean(search.trim() || dossierFilter || recherche || typeFilter);
   function resetFilters() {
     setSearch('');
     // Une seule navigation retire tous les filtres de l'adresse (dossier, recherche).
@@ -254,7 +259,7 @@ export default function AgentsPage({ user }) {
 
       {recherche && selection.failed && (
         <p className="rf-error" role="alert">
-          La sélection de Bandy n’a pas pu être relancée. Retirez-la pour revoir tous les agents.
+          La sélection de Band’IAkam n’a pas pu être relancée. Retirez-la pour revoir tous les agents.
         </p>
       )}
 
@@ -306,15 +311,29 @@ export default function AgentsPage({ user }) {
             <span>{incompleteCount}</span>
           </button>
         </div>
+        <div className="rf-chips agents-types" role="group" aria-label="Types d’emploi">
+          {TYPE_FILTERS.map((type) => (
+            <button
+              key={type}
+              type="button"
+              className="rf-chip"
+              aria-pressed={typeFilter === type}
+              onClick={() => setTypeFilter(typeFilter === type ? '' : type)}
+            >
+              <TypeEmploiBadge type={type} />
+              <span>{agents.filter((agent) => agent.type_emploi === type).length}</span>
+            </button>
+          ))}
+        </div>
         {recherche && (
           <button
             type="button"
             className="rf-chip"
             aria-pressed="true"
-            title="Retirer la sélection de Bandy"
+            title="Retirer la sélection de Band’IAkam"
             onClick={() => setRecherche('')}
           >
-            Sélection de Bandy
+            Sélection de Band’IAkam
             <span>{selectedIds?.size ?? 0}</span>
             <X size={14} aria-hidden="true" />
           </button>
@@ -384,6 +403,7 @@ export default function AgentsPage({ user }) {
                           />
                         </span>
                         <strong>{formatName(agent)}</strong>
+                        <TypeEmploiBadge type={agent.type_emploi} />
                         <AgentPresence agent={agent} />
                       </span>
                       <span className="rf-mono agents-row-matricule">

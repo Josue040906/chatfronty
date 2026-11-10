@@ -13,7 +13,7 @@ describe('readAttachment', () => {
     await expect(readAttachment(file('%PDF', 'application/pdf', 'cin.pdf'))).resolves.toMatchObject({ data: 'JVBERg==' });
   });
 
-  it('refuses what Bandy would refuse, with a message for the user', async () => {
+  it('refuses what Band’IAkam would refuse, with a message for the user', async () => {
     await expect(readAttachment(file('MZ', 'application/x-msdownload', 'a.exe')))
       .rejects.toThrow('Joignez une photo (JPEG, PNG, WebP) ou un PDF.');
     await expect(readAttachment(file('', 'image/png'))).rejects.toThrow('au plus 4 Mo');
@@ -23,7 +23,7 @@ describe('readAttachment', () => {
 });
 
 describe('attachment mention', () => {
-  it('shows the sent message as Bandy stores it: text, then name and size', () => {
+  it('shows the sent message as Band’IAkam stores it: text, then name and size', () => {
     const attachment = { name: 'diplome.jpg', size: 245 * 1024 };
     expect(attachmentMention(attachment)).toBe('[Pièce jointe : diplome.jpg, 245 Ko]');
     expect(messageWithAttachment('Ajoute ce diplôme', attachment))

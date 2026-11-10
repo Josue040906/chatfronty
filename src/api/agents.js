@@ -74,6 +74,9 @@ export async function createAgent(data) {
     categorieId: data.categorieId
       ? Number(data.categorieId)
       : null,
+    echelonId: data.echelonId
+      ? Number(data.echelonId)
+      : null,
     lieuTravail: data.lieuTravail || null,
     photo: '',
   });

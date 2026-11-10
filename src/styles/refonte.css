@@ -1837,3 +1837,22 @@ button.rf-row {
 .demande-carte .documents-aside-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .titularisation-carte .documents-aside-actions .rf-btn,
 .demande-carte .documents-aside-actions .rf-btn { width: auto; }
+
+/* ---------- Type d'emploi, mis en avant partout ---------- */
+.type-emploi-badge {
+  display: inline-flex; align-items: center; gap: 5px; width: fit-content; vertical-align: middle;
+  padding: 2px 9px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap;
+  border: 1px solid transparent; font-family: var(--font-body, inherit); letter-spacing: 0;
+}
+.type-emploi-badge.is-grand { padding: 4px 12px; font-size: 13px; }
+.type-emploi-badge.is-fonctionnaire { background: var(--color-success-soft); color: var(--color-success); border-color: rgb(47 107 79 / 0.25); }
+.type-emploi-badge.is-contractuel { background: var(--color-accent-soft); color: var(--color-accent-strong); border-color: rgb(184 134 63 / 0.35); }
+.type-emploi-badge.is-stagiaire { background: var(--color-info-soft); color: var(--color-info); border-color: rgb(60 100 140 / 0.25); }
+.agent-profile-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; }
+.agents-types .rf-chip { gap: 6px; }
+.agent-create-parcours {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 12px;
+  border-radius: var(--radius-md); background: var(--color-surface-sunken); font-size: 14px;
+}
+.agent-create-parcours strong { margin-left: auto; color: var(--color-success); }
+

@@ -4,6 +4,7 @@ import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import DemandesCarriere from '../../components/carriere/DemandesCarriere';
+import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
@@ -815,6 +816,7 @@ export default function CareerAnalysisPage({ user }) {
           <div>
             <p className="rf-eyebrow career-hero-eyebrow">Analyse de carrière</p>
             <h1>{agentName}</h1>
+            <TypeEmploiBadge type={agent.type_emploi} grand />
             <div className="career-analysis-meta">
               <span><BriefcaseBusiness size={15} />{agent.poste || 'Poste non renseigné'}</span>
               <span><FileText size={15} />{agent.matricule || '—'}</span>
@@ -1179,7 +1181,7 @@ export default function CareerAnalysisPage({ user }) {
               <form className="career-form" onSubmit={handleDiplomaSave}>
                 {diplomaPrefilled.length > 0 && (
                   <p className="bandy-prefill-notice" role="status">
-                    Champs préremplis par Bandy d’après la pièce : vérifiez-les avant d’enregistrer.
+                    Champs préremplis par Band’IAkam d’après la pièce : vérifiez-les avant d’enregistrer.
                     {diplomaScan && ` La pièce « ${diplomaScan.name} » sera jointe au diplôme.`}
                   </p>
                 )}

@@ -13,6 +13,7 @@ import {
   getEmployeePhotoUrl,
   getEmployeeInitials,
 } from '../../utils/employee';
+import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 
 const MONTHS = [
   'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
@@ -177,6 +178,7 @@ export default function CarrieresPage() {
                 <div className="career-agent-identity">
                   <h2>{agent.prenom} {agent.nom}</h2>
                   <span>{agent.matricule}</span>
+                  <TypeEmploiBadge type={agent.type_emploi} />
                 </div>
               </div>
 

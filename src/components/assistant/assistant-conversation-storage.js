@@ -29,7 +29,7 @@ export function readStoredConversation(storageKey) {
       lastActivityAt: conversation.lastActivityAt,
     };
   } catch (error) {
-    console.error('Impossible de restaurer la conversation Bandy enregistrée.', error);
+    console.error('Impossible de restaurer la conversation Band’IAkam enregistrée.', error);
     return null;
   }
 }
@@ -48,7 +48,7 @@ export function storeConversation(storageKey, conversation) {
       lastActivityAt: conversation.lastActivityAt,
     }));
   } catch (error) {
-    console.error('Impossible d’enregistrer la conversation Bandy active.', error);
+    console.error('Impossible d’enregistrer la conversation Band’IAkam active.', error);
   }
 }
 
@@ -60,6 +60,6 @@ export function clearStoredConversation(storageKey) {
   try {
     localStorage.removeItem(storageKey);
   } catch (error) {
-    console.error('Impossible d’effacer la conversation Bandy active.', error);
+    console.error('Impossible d’effacer la conversation Band’IAkam active.', error);
   }
 }

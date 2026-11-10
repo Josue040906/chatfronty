@@ -28,6 +28,7 @@ import {
   getEmployeeInitials,
 } from '../../utils/employee';
 import AgentPresence from '../../components/agents/AgentPresence';
+import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import LocaliteField from '../../components/forms/LocaliteField';
@@ -431,7 +432,10 @@ export default function AgentProfilePage({ user }) {
             </div>
             <p className="rf-eyebrow" style={{ marginTop: 16 }}>Profil agent</p>
             <h1>{formatName(agent)}</h1>
-            <AgentPresence agent={agent} />
+            <div className="agent-profile-badges">
+              <TypeEmploiBadge type={agent.type_emploi} grand />
+              <AgentPresence agent={agent} />
+            </div>
             <p className="rf-lead" style={{ margin: 0 }}>
               {agent.poste || 'Poste non renseigné'}
             </p>
@@ -554,7 +558,7 @@ export default function AgentProfilePage({ user }) {
 
               {prefilled.length > 0 && (
                 <p className="bandy-prefill-notice" role="status">
-                  Bandy a prérempli les champs surlignés en vert. Vérifiez-les,
+                  Band’IAkam a prérempli les champs surlignés en vert. Vérifiez-les,
                   puis enregistrez : rien n’est modifié avant.
                   {scan && ` La pièce « ${scan.name} » sera jointe à la fiche.`}
                 </p>

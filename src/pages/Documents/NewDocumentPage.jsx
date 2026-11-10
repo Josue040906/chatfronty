@@ -642,7 +642,7 @@ export default function NewDocumentPage() {
 
       {prefilled.length > 0 && (
         <p className="bandy-prefill-notice" role="status">
-          Bandy a prérempli les champs surlignés en vert. Vérifiez-les, puis
+          Band’IAkam a prérempli les champs surlignés en vert. Vérifiez-les, puis
           enregistrez : aucun document n’est créé avant.
         </p>
       )}

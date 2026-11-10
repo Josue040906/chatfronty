@@ -12,6 +12,7 @@ describe('getNavigableAgents', () => {
           nom: 'RAKOTO',
           poste: 'Gestionnaire',
           service: 'Finances',
+          type_emploi: 'Agent contractuel',
           score_correspondance: 0.87,
         }],
       },
@@ -20,6 +21,7 @@ describe('getNavigableAgents', () => {
       name: 'Miora RAKOTO',
       meta: 'Gestionnaire · Finances',
       reason: '',
+      typeEmploi: 'Agent contractuel',
       similarityPercent: 87,
     }]);
   });

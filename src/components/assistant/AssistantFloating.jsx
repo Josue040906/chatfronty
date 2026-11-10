@@ -38,6 +38,7 @@ import AssistantTodo from './AssistantTodo';
 import AssistantComposer from './AssistantComposer';
 import { messageWithAttachment } from './assistant-attachment';
 import { deposerPieceScannee } from '../../api/piecesScannees';
+import TypeEmploiBadge from '../agents/TypeEmploiBadge';
 
 const CONVERSATION_PAGE_SIZE = 20;
 const EMPTY_MESSAGES = [];
@@ -141,7 +142,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                   {getInitials(agent.name)}
                 </span>
                 <span className="assistant-agent-card-info">
-                  <strong>{agent.name}</strong>
+                  <strong>{agent.name} <TypeEmploiBadge type={agent.typeEmploi} /></strong>
                   {agent.meta && <small>{agent.meta}</small>}
                   {agent.reason && <small className="assistant-agent-card-reason">{agent.reason}</small>}
                   {agent.similarityPercent !== null && (
@@ -327,7 +328,7 @@ export default function AssistantFloating({ user }) {
       const retryable = error?.status == null || error.status >= 500;
       update({
         status: retryable ? 'pending' : 'done',
-        outcome: error?.message || 'Bandy n’a pas pu traiter la confirmation.',
+        outcome: error?.message || 'Band’IAkam n’a pas pu traiter la confirmation.',
       });
     }
   }, [activeChatId]);
@@ -360,7 +361,7 @@ export default function AssistantFloating({ user }) {
           { signal: controller.signal }
         );
         if (!Array.isArray(firstPage?.items)) {
-          throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+          throw new Error('La réponse de Band’IAkam ne contient pas les messages de la conversation.');
         }
 
         const lastPageNumber = Math.max(
@@ -391,7 +392,7 @@ export default function AssistantFloating({ user }) {
           !controller.signal.aborted &&
           requestId === conversationRequestRef.current
         ) {
-          console.error('Impossible de restaurer la conversation Bandy :', error);
+          console.error('Impossible de restaurer la conversation Band’IAkam :', error);
           setConversationError(error.message || 'Impossible de restaurer la conversation.');
         }
       } finally {
@@ -454,7 +455,7 @@ export default function AssistantFloating({ user }) {
     try {
       const data = await listConversations(page, CONVERSATION_PAGE_SIZE);
       if (!Array.isArray(data?.items)) {
-        throw new Error('La réponse de Bandy ne contient pas la liste des conversations.');
+        throw new Error('La réponse de Band’IAkam ne contient pas la liste des conversations.');
       }
 
       const pageChats = data.items.map((conversation) => ({
@@ -479,7 +480,7 @@ export default function AssistantFloating({ user }) {
       setHistoryTotal(data.total);
     } catch (error) {
       if (error.status !== 401) {
-        console.error('Impossible de charger l’historique Bandy :', error);
+        console.error('Impossible de charger l’historique Band’IAkam :', error);
         setHistoryError(error.message || 'Impossible de charger les conversations.');
       }
     } finally {
@@ -515,7 +516,7 @@ export default function AssistantFloating({ user }) {
       setEditingConversationId(null);
       setEditingLabel('');
     } catch (error) {
-      console.error('Impossible de renommer cette conversation Bandy :', error);
+      console.error('Impossible de renommer cette conversation Band’IAkam :', error);
       setHistoryError(error.message || 'Impossible de renommer cette conversation.');
     } finally {
       setHistoryActionId(null);
@@ -552,7 +553,7 @@ export default function AssistantFloating({ user }) {
         setEditingLabel('');
       }
     } catch (error) {
-      console.error('Impossible de supprimer cette conversation Bandy :', error);
+      console.error('Impossible de supprimer cette conversation Band’IAkam :', error);
       setHistoryError(error.message || 'Impossible de supprimer cette conversation.');
     } finally {
       setHistoryActionId(null);
@@ -581,7 +582,7 @@ export default function AssistantFloating({ user }) {
         signal: controller.signal,
       });
       if (!Array.isArray(firstPage?.items)) {
-        throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+        throw new Error('La réponse de Band’IAkam ne contient pas les messages de la conversation.');
       }
 
       const lastPageNumber = Math.max(
@@ -615,7 +616,7 @@ export default function AssistantFloating({ user }) {
         !controller.signal.aborted &&
         requestId === conversationRequestRef.current
       ) {
-        console.error('Impossible de charger cette conversation Bandy :', error);
+        console.error('Impossible de charger cette conversation Band’IAkam :', error);
         setConversationError(error.message || 'Impossible de charger cette conversation.');
       }
     } finally {
@@ -639,7 +640,7 @@ export default function AssistantFloating({ user }) {
       const pageNumber = activeChat.messagesPage - 1;
       const data = await listConversationMessages(activeChat.id, pageNumber);
       if (!Array.isArray(data?.items)) {
-        throw new Error('La réponse de Bandy ne contient pas les messages de la conversation.');
+        throw new Error('La réponse de Band’IAkam ne contient pas les messages de la conversation.');
       }
 
       setChats((previous) => previous.map((chat) => (
@@ -689,7 +690,7 @@ export default function AssistantFloating({ user }) {
       if (!conversationId) {
         const conversation = await createConversation();
         if (!conversation?.id) {
-          throw new Error('Bandy n’a pas renvoyé l’identifiant de la conversation créée.');
+          throw new Error('Band’IAkam n’a pas renvoyé l’identifiant de la conversation créée.');
         }
 
         conversationId = String(conversation.id);
@@ -736,8 +737,8 @@ export default function AssistantFloating({ user }) {
       sendOutcome = error.status ? 'http_error' : 'client_or_network_error';
       sendStatus = error.status || null;
       if (error.status !== 401) {
-        console.error('Erreur assistant SYGPERS :', error);
-        setSendError(error.message || 'Impossible d’envoyer le message à Bandy.');
+        console.error('Erreur Band’IAkam :', error);
+        setSendError(error.message || 'Impossible d’envoyer le message à Band’IAkam.');
         setFailedSend({
           conversationId,
           idempotencyKey,
@@ -811,10 +812,10 @@ export default function AssistantFloating({ user }) {
         }
       );
       if (typeof response?.message !== 'string') {
-        throw new Error('Bandy n’a pas renvoyé de réponse exploitable.');
+        throw new Error('Band’IAkam n’a pas renvoyé de réponse exploitable.');
       }
       if (String(response.conversationId) !== conversationId) {
-        throw new Error('La réponse de Bandy ne correspond pas à la conversation active.');
+        throw new Error('La réponse de Band’IAkam ne correspond pas à la conversation active.');
       }
 
       setChats((previous) => previous.map((chat) => (
@@ -862,7 +863,7 @@ export default function AssistantFloating({ user }) {
       if (!conversationId) {
         const conversation = await createConversation();
         if (!conversation?.id) {
-          throw new Error('Bandy n’a pas renvoyé l’identifiant de la conversation créée.');
+          throw new Error('Band’IAkam n’a pas renvoyé l’identifiant de la conversation créée.');
         }
 
         conversationId = String(conversation.id);
@@ -912,7 +913,7 @@ export default function AssistantFloating({ user }) {
     } catch (error) {
       if (error.status !== 401) {
         console.error('Nouvelle tentative assistant échouée :', error);
-        setSendError(error.message || 'Impossible de renvoyer le message à Bandy.');
+        setSendError(error.message || 'Impossible de renvoyer le message à Band’IAkam.');
         setFailedSend({ ...failedSend, conversationId });
       }
     } finally {
@@ -1064,8 +1065,8 @@ export default function AssistantFloating({ user }) {
               </div>
 
               <div>
-                <strong>Assistant SYGPERS</strong>
-                <span>Historique synchronisé avec Bandy</span>
+                <strong>Band’IAkam</strong>
+                <span>Historique synchronisé avec Band’IAkam</span>
               </div>
             </div>
 
@@ -1270,11 +1271,11 @@ export default function AssistantFloating({ user }) {
           type="button"
           className={`assistant-floating-button ${open ? 'assistant-floating-button-open' : ''}`}
           onClick={() => setOpen((value) => !value)}
-          aria-label={open ? 'Fermer l’assistant SYGPERS' : 'Ouvrir l’assistant SYGPERS'}
-          title="Assistant SYGPERS"
+          aria-label={open ? 'Fermer Band’IAkam' : 'Ouvrir Band’IAkam'}
+          title="Band’IAkam"
         >
           {open ? <X size={22} /> : <Sparkles size={22} />}
-          {!open && <span className="assistant-floating-label">Assistant RH</span>}
+          {!open && <span className="assistant-floating-label">Band’IAkam</span>}
         </button>
       )}
     </>

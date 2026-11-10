@@ -62,6 +62,7 @@ export function getNavigableAgents(toolResults) {
         meta: [agent.poste, agent.service]
           .filter((part) => typeof part === 'string' && part.trim())
           .join(' · '),
+        typeEmploi: typeof agent.type_emploi === 'string' ? agent.type_emploi : null,
         reason: matchReason(agent),
         score: validScore(agent),
       });

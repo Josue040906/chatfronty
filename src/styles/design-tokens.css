@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #faf6ef;
+  --surface: #fffdf9;
+  --sunken: #f3ece0;
+  --line: #e8decf;
+  --line-2: #d6c7b0;
+  --ink: #2b1d14;
+  --ink-2: #5e4c3e;
+  --ink-3: #6f5d4f;
+  --brand: #6b4a32;
+  --brand-hover: #5a3d29;
+  --brand-deep: #33221a;
+  --brand-tint: #efe3d3;
+  --ochre: #b8863f;
+  --ochre-ink: #8a5f22;
+  --ochre-tint: #f4e8d0;
+  --ok: #3c6b4b;
+  --ok-bg: #e3ede5;
+  --warn: #80560b;
+  --warn-bg: #f6e8c8;
+  --bad: #a03f31;
+  --bad-bg: #f6e0da;
+  --info: #3b6680;
+  --info-bg: #e0ebf1;
+  --data: #8a6447;
+  --data-strong: #6b4a32;
+  --data-soft: #e7d9c6;
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 20px;
+  --shadow-1: 0 1px 2px rgb(51 34 26 / 6%), 0 1px 1px rgb(51 34 26 / 4%);
+  --shadow-2: 0 24px 48px -12px rgb(51 34 26 / 28%), 0 4px 12px rgb(51 34 26 / 10%);
+  --shadow-lift: 0 2px 2px rgb(51 34 26 / 5%), 0 14px 28px -10px rgb(107 74 50 / 30%), 0 32px 56px -24px rgb(107 74 50 / 35%);
+  --font-ui: 'Public Sans', system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sygpers-ink: var(--ink);
+  --sygpers-ink-strong: var(--ink);
+  --sygpers-muted: var(--ink-3);
+  --sygpers-muted-soft: #bfae98;
+  --sygpers-line: var(--line);
+  --sygpers-line-dark: rgb(255 255 255 / 8%);
+  --sygpers-paper: var(--surface);
+  --sygpers-canvas: var(--bg);
+  --sygpers-sidebar-top: var(--brand-deep);
+  --sygpers-sidebar-bottom: var(--brand-deep);
+  --sygpers-gold: var(--ochre);
+  --sygpers-gold-light: var(--ochre-tint);
+  --sygpers-gold-soft: var(--ochre);
+  --sygpers-font-body: var(--font-ui);
+  --sygpers-font-display: var(--font-display);
+  --sygpers-radius-sm: var(--r-s);
+  --sygpers-radius-md: var(--r-m);
+  --sygpers-radius-lg: var(--r-l);
+  --sygpers-shadow-sidebar: 8px 0 30px rgb(51 34 26 / 6%);
+  --sygpers-shadow-card: var(--shadow-1);
+  --sygpers-motion-fast: 180ms;
+  --sygpers-motion-normal: 240ms;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

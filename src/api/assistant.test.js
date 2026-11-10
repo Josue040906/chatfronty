@@ -31,7 +31,7 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
-describe('Bandy conversation API', () => {
+describe('Band’IAkam conversation API', () => {
   it('creates a conversation with the configured URL and session Bearer token', async () => {
     const conversation = { id: 'conversation-1' };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(conversation));
@@ -87,19 +87,19 @@ describe('Bandy conversation API', () => {
     });
   });
 
-  it('rejects calls without an RH session before contacting Bandy', async () => {
+  it('rejects calls without an RH session before contacting Band’IAkam', async () => {
     sessionStorage.delete('user');
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(api.createConversation()).rejects.toMatchObject({
-      message: 'Connectez-vous à votre compte RH pour utiliser Bandy.',
+      message: 'Connectez-vous à votre compte RH pour utiliser Band’IAkam.',
       status: 401,
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('uses Bandy pagination defaults and the maximum message page size', async () => {
+  it('uses Band’IAkam pagination defaults and the maximum message page size', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ items: [], page: 0, size: 20, total: 0 }))
       .mockResolvedValueOnce(jsonResponse({
@@ -122,7 +122,7 @@ describe('Bandy conversation API', () => {
     );
   });
 
-  it('renames and permanently deletes an owned conversation through Bandy', async () => {
+  it('renames and permanently deletes an owned conversation through Band’IAkam', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
@@ -151,7 +151,7 @@ describe('Bandy conversation API', () => {
   });
 
   it('sends the message body and UUID idempotency key without replacing the request', async () => {
-    const response = { conversationId: 'conversation-1', message: 'Réponse Bandy' };
+    const response = { conversationId: 'conversation-1', message: 'Réponse Band’IAkam' };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(response));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -223,7 +223,7 @@ describe('Bandy conversation API', () => {
 
   it.each([
     [401, 'Votre session a expiré. Reconnectez-vous pour continuer.'],
-    [403, 'Bandy a refusé l’accès à cette ressource.'],
+    [403, 'Band’IAkam a refusé l’accès à cette ressource.'],
   ])('reports HTTP %i authentication errors explicitly', async (status, message) => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({}, status)));
 
@@ -233,7 +233,7 @@ describe('Bandy conversation API', () => {
     });
   });
 
-  it('signals the auth provider when Bandy rejects an expired RH session', async () => {
+  it('signals the auth provider when Band’IAkam rejects an expired RH session', async () => {
     const dispatchEvent = vi.fn();
     vi.stubGlobal('window', { dispatchEvent });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({}, 401)));
@@ -287,16 +287,16 @@ describe('Bandy conversation API', () => {
       })));
 
     await expect(api.listConversations()).rejects.toMatchObject({
-      message: 'Le service Bandy est indisponible (HTTP 503).',
+      message: 'Le service Band’IAkam est indisponible (HTTP 503).',
       status: 503,
     });
     await expect(api.listConversations()).rejects.toMatchObject({
-      message: 'Bandy a renvoyé une réponse JSON invalide.',
+      message: 'Band’IAkam a renvoyé une réponse JSON invalide.',
       status: 200,
     });
   });
 
-  it('preserves the actionable quota message from Bandy', async () => {
+  it('preserves the actionable quota message from Band’IAkam', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({
       status: 429,
       message: 'Gemini a refusé la requête : quota ou limite de débit atteint.',
@@ -312,7 +312,7 @@ describe('Bandy conversation API', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
 
     await expect(api.listConversations()).rejects.toThrow(
-      'Impossible de joindre Bandy.'
+      'Impossible de joindre Band’IAkam.'
     );
   });
 
@@ -330,7 +330,7 @@ describe('Bandy conversation API', () => {
       '6f1f4c16-2c0d-4cd2-a702-5fd05011b707'
     );
     const assertion = expect(request).rejects.toThrow(
-      'Le délai de réponse de Bandy est dépassé.'
+      'Le délai de réponse de Band’IAkam est dépassé.'
     );
     await vi.advanceTimersByTimeAsync(35_000);
     await assertion;
