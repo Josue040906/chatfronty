@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { getOrganisationData } from '../../api/organisation';
 import EmployeePhoto from '../../components/EmployeePhoto';
+import PlanDesPostes from '../../components/organisation/PlanDesPostes';
 import {
   getEmployeeInitials,
   getEmployeePhotoUrl,
@@ -234,6 +235,7 @@ function OrgAgentsDialog({
   eyebrow,
   title,
   subtitle,
+  postes,
   agents,
   services,
   serviceNames,
@@ -243,6 +245,8 @@ function OrgAgentsDialog({
 }) {
   const [query, setQuery] = useState('');
   const [serviceFilter, setServiceFilter] = useState('');
+  // Les postes d'abord : qui occupe quoi, ce qui est libre, ce qui va se libérer.
+  const [onglet, setOnglet] = useState(postes ? 'postes' : 'agents');
   const closeButtonRef = useRef(null);
 
   useEffect(() => {
@@ -316,6 +320,29 @@ function OrgAgentsDialog({
           </button>
         </header>
 
+        {postes && (
+          <div className="org-dialog-onglets" role="tablist" aria-label="Affichage">
+            <button type="button" role="tab" aria-selected={onglet === 'postes'}
+              className="rf-chip" aria-pressed={onglet === 'postes'} onClick={() => setOnglet('postes')}>
+              Postes
+            </button>
+            <button type="button" role="tab" aria-selected={onglet === 'agents'}
+              className="rf-chip" aria-pressed={onglet === 'agents'} onClick={() => setOnglet('agents')}>
+              Agents <span>{agents.length}</span>
+            </button>
+          </div>
+        )}
+
+        {onglet === 'postes' && postes ? (
+          <div className="org-agent-list">
+            <PlanDesPostes
+              serviceId={postes.serviceId}
+              directionId={postes.directionId}
+              onAgentClick={onAgentClick}
+            />
+          </div>
+        ) : (
+        <>
         <p className="org-dialog-hint">Sélectionnez une carte pour ouvrir le profil</p>
 
         {services && services.length > 1 && (
@@ -399,6 +426,8 @@ function OrgAgentsDialog({
             </div>
           )}
         </div>
+        </>
+        )}
         <footer className="org-dialog-footer">Appuyez sur Échap pour fermer</footer>
       </section>
     </div>
@@ -926,6 +955,7 @@ export default function OrganisationPage() {
             `${serviceAgents.length} ${serviceAgents.length === 1 ? 'agent' : 'agents'}`,
           ].filter(Boolean).join(' · ')}
           agents={serviceAgents}
+          postes={{ serviceId: selectedService.id }}
           serviceNames={serviceNames}
           showManagerTag
           onClose={closeServiceDialog}
@@ -939,6 +969,9 @@ export default function OrganisationPage() {
           title={selectedDirection.name}
           subtitle={`${selectedDirection.allAgents.length} ${selectedDirection.allAgents.length === 1 ? 'agent' : 'agents'} · ${selectedDirection.services.length} ${selectedDirection.services.length === 1 ? 'service' : 'services'}. Choisissez un service pour restreindre la liste.`}
           agents={selectedDirection.allAgents}
+          postes={String(selectedDirection.id).startsWith('id:')
+            ? { directionId: Number(String(selectedDirection.id).slice(3)) }
+            : null}
           services={selectedDirection.services}
           serviceNames={serviceNames}
           onClose={closeDirectionDialog}

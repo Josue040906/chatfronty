@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { createAgent, uploadAgentPhoto, getAgentReferenceData } from '../../api/agents';
 import { getPostesByService } from '../../api/postes';
+import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
 import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
@@ -505,9 +506,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                         ? 'Chargement des postes...'
                         : 'Sélectionner un poste'}
                     </option>
-                    {postes.map((poste) => (
+                    {trierPostes(postes).map((poste) => (
                       <option key={poste.id} value={poste.id}>
-                        {poste.intitule}
+                        {libellePoste(poste)}
                       </option>
                     ))}
                   </select>

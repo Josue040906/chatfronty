@@ -1856,3 +1856,45 @@ button.rf-row {
 }
 .agent-create-parcours strong { margin-left: auto; color: var(--color-success); }
 
+/* ---------- Plan des postes (organigramme) ---------- */
+.org-dialog-onglets { display: flex; gap: 8px; margin: 4px 0 10px; }
+.plan-postes { display: grid; gap: 16px; }
+.plan-postes-jauge { display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-surface-sunken); }
+.plan-postes-chiffres { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--color-text-muted); }
+.plan-postes-chiffres strong { color: var(--color-text); font-size: 15px; }
+.plan-postes-chiffres .is-libre strong { color: var(--color-success); }
+.plan-postes-chiffres .is-depart strong { color: var(--color-accent-strong); }
+.plan-postes-barre { display: block; height: 8px; border-radius: var(--radius-pill); background: var(--color-surface); overflow: hidden; }
+.plan-postes-barre span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-brand), var(--color-accent)); }
+.plan-postes-service { display: grid; gap: 10px; }
+.plan-postes-service h3 { margin: 4px 0 0; font: 600 16px var(--font-display); }
+.plan-poste { display: grid; gap: 8px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); }
+.plan-poste.is-libre { border-color: rgb(47 107 79 / 0.35); }
+.plan-poste.is-se_libere { border-color: rgb(184 134 63 / 0.45); }
+.plan-poste-tete { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.plan-poste-tete span { font-variant-numeric: tabular-nums; color: var(--color-text-muted); font-weight: 600; }
+.plan-poste-sieges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.plan-siege {
+  display: grid; justify-items: center; align-content: start; gap: 4px; padding: 10px 8px; min-height: 104px;
+  border-radius: 14px; text-align: center; font: inherit; color: inherit;
+}
+.plan-siege.is-occupe { border: 1px solid var(--color-border); background: var(--color-surface-sunken); cursor: pointer; transition: transform 140ms ease; }
+.plan-siege.is-occupe:hover { transform: translateY(-2px); }
+.plan-siege.is-depart { background: var(--color-accent-soft); border-color: rgb(184 134 63 / 0.4); }
+.plan-siege.is-libre { border: 2px dashed rgb(47 107 79 / 0.45); color: var(--color-success); justify-content: center; align-content: center; }
+.plan-siege-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font-weight: 700; font-size: 13px; }
+.plan-siege-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.plan-siege-nom { font-size: 12px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.plan-siege-note { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--color-text-muted); }
+.plan-siege-note.is-depart { color: var(--color-accent-strong); font-weight: 700; }
+.plan-poste-releve { justify-self: start; }
+.plan-releve { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--color-accent-soft); }
+.plan-releve p { margin: 0; font-size: 12px; color: var(--color-accent-strong); }
+.plan-releve-tete { display: flex; justify-content: space-between; align-items: center; }
+.plan-releve-agent {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 8px 10px; border-radius: 10px;
+  border: 1px solid var(--color-border); background: var(--color-surface); text-align: left; font: inherit; color: inherit; cursor: pointer;
+}
+.plan-releve-agent small { flex-basis: 100%; color: var(--color-text-muted); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .plan-siege.is-occupe { transition: none; } .plan-siege.is-occupe:hover { transform: none; } }
+

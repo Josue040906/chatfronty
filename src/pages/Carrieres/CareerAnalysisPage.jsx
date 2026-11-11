@@ -46,6 +46,7 @@ import {
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import VilleField from '../../components/forms/VilleField';
 import { getPostesByService } from '../../api/postes';
+import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
 
 const EMPTY_DIPLOMA_FORM = {
@@ -1124,8 +1125,8 @@ export default function CareerAnalysisPage({ user }) {
                                 : 'Sélectionner un poste'
                               : 'Choisissez d’abord un service'}
                           </option>
-                          {assignmentPostes.map((poste) => (
-                            <option key={poste.id} value={poste.id}>{poste.intitule}</option>
+                          {trierPostes(assignmentPostes).map((poste) => (
+                            <option key={poste.id} value={poste.id}>{libellePoste(poste)}</option>
                           ))}
                         </select>
                       </label>

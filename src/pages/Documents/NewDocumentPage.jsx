@@ -13,6 +13,7 @@ import {
   getDocumentTypes,
 } from '../../api/documents';
 import { getPostesByService } from '../../api/postes';
+import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
 import { getConges, getRetraiteAnalyse, getTitularisation } from '../../api/carrieres';
 import { formatJour, formatJours, joursConge } from '../../utils/documentCycle';
@@ -913,8 +914,8 @@ export default function NewDocumentPage() {
                               : 'Ne pas préciser'
                             : 'Choisissez d’abord un service'}
                         </option>
-                        {postes.map((poste) => (
-                          <option key={poste.id} value={poste.id}>{poste.intitule}</option>
+                        {trierPostes(postes).map((poste) => (
+                          <option key={poste.id} value={poste.id}>{libellePoste(poste)}</option>
                         ))}
                       </select>
                     </div>

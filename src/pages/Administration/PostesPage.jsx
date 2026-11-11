@@ -25,6 +25,7 @@ const EMPTY_FORM = {
   intitule: '',
   description: '',
   serviceId: '',
+  nombrePlaces: '1',
 };
 
 export default function PostesPage({ user }) {
@@ -98,6 +99,7 @@ export default function PostesPage({ user }) {
     setForm({
       intitule: poste.intitule || '',
       description: poste.description || '',
+      nombrePlaces: String(poste.nombre_places ?? 1),
       serviceId: poste.service_id
         ? String(poste.service_id)
         : '',
@@ -160,6 +162,7 @@ export default function PostesPage({ user }) {
           intitule,
           description,
           serviceId,
+          nombrePlaces: Number(form.nombrePlaces) || 1,
         });
 
         setSuccess('Le poste a été modifié avec succès.');
@@ -168,6 +171,7 @@ export default function PostesPage({ user }) {
           intitule,
           description,
           serviceId,
+          nombrePlaces: Number(form.nombrePlaces) || 1,
         });
 
         setSuccess('Le poste a été créé avec succès.');
@@ -365,6 +369,10 @@ export default function PostesPage({ user }) {
                     {poste.description ||
                       'Aucune description disponible.'}
                   </p>
+
+                  <span className="administration-list-meta">
+                    {poste.nombre_places ?? 1} place{(poste.nombre_places ?? 1) > 1 ? 's' : ''}
+                  </span>
 
                   {poste.service && (
                     <span className="administration-list-meta">
@@ -676,6 +684,25 @@ export default function PostesPage({ user }) {
                       </option>
                     ))}
                   </select>
+                </label>
+
+                <label style={{ display: 'grid', gap: '7px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
+                    Nombre de places
+                  </span>
+                  <input
+                    type="number"
+                    name="nombrePlaces"
+                    min="1"
+                    max="500"
+                    value={form.nombrePlaces}
+                    onChange={handleChange}
+                    required
+                    style={{
+                      width: '100%', boxSizing: 'border-box', padding: '11px 13px',
+                      border: '1px solid #dfe3e8', borderRadius: '9px', fontSize: '14px', color: '#172033',
+                    }}
+                  />
                 </label>
 
                 <label
