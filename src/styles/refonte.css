@@ -1906,7 +1906,8 @@ button.rf-row {
 .simulation-resume strong { font: 600 30px var(--font-display); color: var(--color-success); line-height: 1; }
 .simulation-resume small { font-size: 12px; color: var(--color-accent-strong); font-weight: 700; }
 .simulation-cadre { overflow-x: auto; border-radius: var(--radius-lg); background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px 12px 6px; }
-.simulation-cadre svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.simulation-cadre > svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.simulation-retraite svg { flex: none; }
 .simulation-couloir { stroke: none; }
 .simulation-couloir.is-fonctionnaire { fill: var(--color-success-soft); }
 .simulation-couloir.is-contractuel { fill: var(--color-accent-soft); }
