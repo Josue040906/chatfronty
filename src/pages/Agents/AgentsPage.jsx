@@ -402,9 +402,13 @@ export default function AgentsPage({ user }) {
                             initials={getEmployeeInitials(agent)}
                           />
                         </span>
-                        <strong>{formatName(agent)}</strong>
-                        <TypeEmploiBadge type={agent.type_emploi} />
-                        <AgentPresence agent={agent} />
+                        <span className="agents-row-identite">
+                          <strong>{formatName(agent)}</strong>
+                          <span className="agents-row-badges">
+                            <TypeEmploiBadge type={agent.type_emploi} />
+                            <AgentPresence agent={agent} />
+                          </span>
+                        </span>
                       </span>
                       <span className="rf-mono agents-row-matricule">
                         {agent.matricule || '—'}

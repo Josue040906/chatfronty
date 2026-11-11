@@ -1796,7 +1796,9 @@ button.rf-row {
 }
 .agent-presence.is-conge { background: var(--color-accent-soft); color: var(--color-accent-strong); }
 .agent-presence.is-retraite { background: var(--color-surface-sunken); color: var(--color-text-muted); }
-.agents-row-person { flex-wrap: wrap; }
+.agents-row-identite { display: grid; gap: 4px; min-width: 0; }
+.agents-row-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.agents-row-badges .agent-presence { margin-top: 0; }
 .new-document-conge {
   grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 14px;
   border-radius: var(--radius-md); background: var(--color-success-soft); color: var(--color-success); font-size: 14px;
