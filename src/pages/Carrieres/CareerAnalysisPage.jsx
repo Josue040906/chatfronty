@@ -1126,7 +1126,7 @@ export default function CareerAnalysisPage({ user }) {
                               : 'Choisissez d’abord un service'}
                           </option>
                           {trierPostes(assignmentPostes).map((poste) => (
-                            <option key={poste.id} value={poste.id}>{libellePoste(poste)}</option>
+                            <option key={poste.id} value={poste.id} disabled={poste.libres === 0}>{libellePoste(poste)}</option>
                           ))}
                         </select>
                       </label>

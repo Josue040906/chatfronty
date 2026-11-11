@@ -507,7 +507,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                         : 'Sélectionner un poste'}
                     </option>
                     {trierPostes(postes).map((poste) => (
-                      <option key={poste.id} value={poste.id}>
+                      <option key={poste.id} value={poste.id} disabled={poste.libres === 0}>
                         {libellePoste(poste)}
                       </option>
                     ))}
