@@ -1900,3 +1900,37 @@ button.rf-row {
 .plan-releve-agent small { flex-basis: 100%; color: var(--color-text-muted); font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .plan-siege.is-occupe { transition: none; } .plan-siege.is-occupe:hover { transform: none; } }
 
+/* ---------- Simulation de carrière (frise à couloirs) ---------- */
+.simulation-resume { display: grid; justify-items: end; gap: 2px; text-align: right; }
+.simulation-resume span { font-size: 12px; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.simulation-resume strong { font: 600 30px var(--font-display); color: var(--color-success); line-height: 1; }
+.simulation-resume small { font-size: 12px; color: var(--color-accent-strong); font-weight: 700; }
+.simulation-cadre { overflow-x: auto; border-radius: var(--radius-lg); background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px 12px 6px; }
+.simulation-cadre svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.simulation-couloir { stroke: none; }
+.simulation-couloir.is-fonctionnaire { fill: var(--color-success-soft); }
+.simulation-couloir.is-contractuel { fill: var(--color-accent-soft); }
+.simulation-couloir.is-stagiaire { fill: var(--color-info-soft); }
+.simulation-couloir-nom { font: 700 14px var(--font-body, sans-serif); fill: var(--color-text); }
+.simulation-axe { stroke: var(--color-text-muted); stroke-width: 1.5; }
+.simulation-axe-nom { font: italic 600 14px var(--font-display); fill: var(--color-text-muted); }
+.simulation-annee { font-size: 11px; fill: var(--color-text-muted); }
+.simulation-aujourdhui { stroke: var(--color-accent); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.simulation-aujourdhui-nom { font-size: 11px; font-weight: 700; fill: var(--color-accent-strong); }
+.simulation-trait { fill: none; stroke: var(--color-brand); stroke-width: 3; stroke-linejoin: round; }
+.simulation-trait.is-projete { stroke: var(--color-accent); stroke-dasharray: 7 6; }
+.simulation-point { fill: var(--color-surface); stroke: var(--color-brand); stroke-width: 2.5; }
+.simulation-point.is-projete { stroke: var(--color-accent); }
+.simulation-point.is-actuel { fill: var(--color-brand); stroke: var(--color-surface); stroke-width: 3; }
+.simulation-point.is-titularisation { fill: var(--color-success); stroke: var(--color-surface); }
+.simulation-grade { font: 700 11px var(--font-mono, monospace); fill: var(--color-text); }
+.simulation-indice { font-size: 11px; font-weight: 700; fill: var(--color-success); }
+.simulation-retraite { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin: 4px 4px 0; font-size: 13px; color: var(--color-text-muted); }
+.simulation-titularisation {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 12px; padding: 12px 14px;
+  border-radius: var(--radius-md); background: var(--color-accent-soft);
+}
+.simulation-titularisation label { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-accent-strong); }
+.simulation-titularisation input[type=range] { flex: 1 1 220px; accent-color: var(--color-success); }
+.simulation-note { margin: 10px 2px 0; font-size: 12px; color: var(--color-text-muted); }
+

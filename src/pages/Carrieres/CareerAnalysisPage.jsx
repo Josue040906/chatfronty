@@ -4,6 +4,7 @@ import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import DemandesCarriere from '../../components/carriere/DemandesCarriere';
+import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
@@ -890,6 +891,8 @@ export default function CareerAnalysisPage({ user }) {
           <div className="career-current-card"><div className="career-current-icon"><CalendarDays size={19} /></div><span>Depuis</span><strong>{formatDate(situation.dateDebut)}</strong></div>
         </div>
       </section>
+
+      <SimulationCarriere employeId={id} />
 
       <DemandesCarriere
         employeId={id}

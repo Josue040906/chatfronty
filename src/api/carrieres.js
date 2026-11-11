@@ -117,3 +117,9 @@ export async function getTitularisation(employeId) {
 export async function titulariser(employeId, dateEffet, echelonId) {
   return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet, echelonId });
 }
+
+/** Simulation indicative de la carrière ; titularisation (AAAA-MM-JJ) facultative. */
+export async function getSimulation(employeId, titularisation) {
+  const suffixe = titularisation ? `?titularisation=${encodeURIComponent(titularisation)}` : '';
+  return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/simulation${suffixe}`);
+}
