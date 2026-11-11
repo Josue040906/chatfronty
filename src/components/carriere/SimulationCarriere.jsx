@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Flag, Sparkles } from 'lucide-react';
+import { ArrowUpRight, CalendarClock, Hourglass, Sparkles } from 'lucide-react';
 import { getSimulation } from '../../api/carrieres';
 import { formatJour, isoToday } from '../../utils/documentCycle';
 
-// Couloirs du haut vers le bas : on « monte » en devenant fonctionnaire.
-const ORDRE_COULOIRS = ['Fonctionnaire', 'Agent contractuel', 'Stagiaire'];
 const LARGEUR = 1000;
-const MARGE_GAUCHE = 150;
-const MARGE_DROITE = 40;
-const HAUT_COULOIR = 86;
-const HAUT_AXE = 40;
+const HAUTEUR = 330;
+const MARGE = { gauche: 56, droite: 110, haut: 30, bas: 34 };
+const JOUR_MS = 24 * 3600 * 1000;
 
 const jour = (date) => Date.parse(String(date).slice(0, 10));
 
@@ -19,10 +16,17 @@ function ajouterMois(date, mois) {
   return d.toISOString().slice(0, 10);
 }
 
+/** Couleur d'une marche selon le type d'emploi : la titularisation se voit au changement de couleur. */
+function ton(typeEmploi) {
+  if (typeEmploi === 'Fonctionnaire') return 'fonctionnaire';
+  if (typeEmploi === 'Stagiaire') return 'stagiaire';
+  return 'contractuel';
+}
+
 /**
- * Simulation de carrière en frise : un couloir par type d'emploi sur un axe
- * x'Ox du temps. Trait plein pour le passé réel, pointillé pour la projection
- * (indicative : avancement à chaque durée minimale, calculé par l'API).
+ * Simulation de carrière en escalier : chaque grade est une marche dont la
+ * hauteur est l'indice et la largeur la durée. Passé plein, projection hachurée
+ * (indicative : un avancement à chaque durée minimale, calculé par l'API).
  */
 export default function SimulationCarriere({ employeId }) {
   const today = isoToday();
@@ -39,7 +43,7 @@ export default function SimulationCarriere({ employeId }) {
     return () => { cancelled = true; };
   }, [employeId]);
 
-  // Une titularisation à la date choisie : la frise et l'indice final se recalculent.
+  // Une titularisation à la date choisie : l'escalier et l'indice final se recalculent.
   useEffect(() => {
     if (moisTitularisation == null || !base?.titularisable) return undefined;
     let cancelled = false;
@@ -53,42 +57,62 @@ export default function SimulationCarriere({ employeId }) {
 
   const simulation = moisTitularisation != null && variante ? variante : base;
 
-  const geometrie = useMemo(() => {
-    if (!simulation?.etapes?.length) return null;
-    const couloirs = ORDRE_COULOIRS
-      .filter((type) => simulation.couloirs.some((c) => c.typeEmploi === type))
-      .map((type, index) => ({ type, y: HAUT_AXE + index * HAUT_COULOIR + HAUT_COULOIR / 2 }));
-    const yDe = (type) => couloirs.find((c) => c.type === type)?.y ?? couloirs[0].y;
-    const debut = jour(simulation.etapes[0].date);
-    const fin = Math.max(jour(simulation.horizon), jour(simulation.etapes[simulation.etapes.length - 1].date));
-    const xDe = (date) => MARGE_GAUCHE + ((jour(date) - debut) / Math.max(1, fin - debut))
-      * (LARGEUR - MARGE_GAUCHE - MARGE_DROITE);
-    const points = simulation.etapes.map((etape) => ({ ...etape, x: xDe(etape.date), y: yDe(etape.typeEmploi) }));
-    const segments = points.slice(1).map((point, i) => {
-      const avant = points[i];
+  const dessin = useMemo(() => {
+    const etapes = (simulation?.etapes || []).filter((etape) => etape.indice != null);
+    const marchesSources = etapes.filter((etape) => etape.evenement !== 'RETRAITE');
+    if (marchesSources.length === 0) return null;
+    const retraite = etapes.find((etape) => etape.evenement === 'RETRAITE');
+    const debut = jour(marchesSources[0].date);
+    const fin = Math.max(jour(retraite?.date || simulation.horizon), jour(marchesSources[marchesSources.length - 1].date) + 120 * JOUR_MS);
+    const indices = etapes.map((etape) => etape.indice);
+    const bas = Math.floor((Math.min(...indices) - 30) / 50) * 50;
+    const haut = Math.ceil((Math.max(...indices) + 20) / 50) * 50;
+    const largeurUtile = LARGEUR - MARGE.gauche - MARGE.droite;
+    const hauteurUtile = HAUTEUR - MARGE.haut - MARGE.bas;
+    const x = (date) => MARGE.gauche + ((jour(date) - debut) / Math.max(1, fin - debut)) * largeurUtile;
+    const xMs = (ms) => MARGE.gauche + ((ms - debut) / Math.max(1, fin - debut)) * largeurUtile;
+    const y = (indice) => MARGE.haut + (1 - (indice - bas) / Math.max(1, haut - bas)) * hauteurUtile;
+    const sol = y(bas);
+    const aujourdhui = jour(today);
+
+    const marches = marchesSources.map((etape, i) => {
+      const x1 = x(etape.date);
+      const x2 = i + 1 < marchesSources.length ? x(marchesSources[i + 1].date) : xMs(fin);
       return {
-        d: `M ${avant.x} ${avant.y} H ${point.x} V ${point.y}`,
-        projete: jour(point.date) > jour(today),
+        ...etape,
+        x1,
+        x2,
+        yHaut: y(etape.indice),
+        projete: etape.nature === 'PROJETE',
+        actuel: etape.nature === 'ACTUEL',
       };
     });
+    const grilles = [];
+    for (let valeur = bas; valeur <= haut; valeur += 50) grilles.push({ valeur, y: y(valeur) });
     const anneeDebut = new Date(debut).getUTCFullYear();
     const anneeFin = new Date(fin).getUTCFullYear();
-    const pas = anneeFin - anneeDebut > 20 ? 5 : 2;
-    const reperes = [];
+    const pas = anneeFin - anneeDebut > 16 ? 5 : 2;
+    const annees = [];
     for (let annee = Math.ceil(anneeDebut / pas) * pas; annee <= anneeFin; annee += pas) {
-      reperes.push({ annee, x: xDe(`${annee}-01-01`) });
+      annees.push({ annee, x: x(`${annee}-01-01`) });
     }
-    const hauteur = HAUT_AXE + couloirs.length * HAUT_COULOIR + 34;
-    return { couloirs, points, segments, reperes, xAujourdhui: xDe(today), hauteur, yAxe: hauteur - 26 };
+    const derniere = marches[marches.length - 1];
+    return {
+      marches, grilles, annees, sol,
+      xAujourdhui: aujourdhui >= debut && aujourdhui <= fin ? xMs(aujourdhui) : null,
+      fin: { x: xMs(fin), y: derniere.yHaut, indice: retraite?.indice ?? derniere.indice, date: retraite?.date },
+    };
   }, [simulation, today]);
 
-  if (erreur) return null;
-  if (!base || !geometrie) return null;
+  if (erreur || !base || !dessin) return null;
 
+  const projetees = (simulation.etapes || []).filter((etape) => etape.nature === 'PROJETE');
+  const prochaine = projetees.find((etape) => etape.evenement !== 'RETRAITE');
+  const prochaineClasse = projetees.find((etape) => etape.evenement === 'CLASSE' || etape.evenement === 'TITULARISATION');
+  const retraite = projetees.find((etape) => etape.evenement === 'RETRAITE');
   const moisMax = base.retraite
-    ? Math.max(0, Math.min(180, Math.round((jour(base.retraite) - jour(today)) / (30.44 * 24 * 3600 * 1000)) - 1))
+    ? Math.max(0, Math.min(180, Math.round((jour(base.retraite) - jour(today)) / (30.44 * JOUR_MS)) - 1))
     : 120;
-  const evenements = geometrie.points.filter((p) => p.evenement !== 'AVANCEMENT' || p.nature === 'ACTUEL');
 
   return (
     <section className="career-section simulation-carriere" aria-labelledby="simulation-titre">
@@ -110,61 +134,111 @@ export default function SimulationCarriere({ employeId }) {
       </div>
 
       <div className="simulation-cadre">
-        <svg viewBox={`0 0 ${LARGEUR} ${geometrie.hauteur}`} role="img"
-          aria-label="Frise de carrière : grade et indice dans le temps, par type d'emploi">
-          {geometrie.couloirs.map((couloir) => (
-            <g key={couloir.type}>
-              <rect x="0" y={couloir.y - HAUT_COULOIR / 2 + 4} width={LARGEUR} height={HAUT_COULOIR - 8}
-                rx="14" className={`simulation-couloir is-${couloir.type === 'Fonctionnaire' ? 'fonctionnaire'
-                  : couloir.type === 'Stagiaire' ? 'stagiaire' : 'contractuel'}`} />
-              <text x="16" y={couloir.y + 5} className="simulation-couloir-nom">
-                {couloir.type === 'Agent contractuel' ? 'Contractuel' : couloir.type}
+        <svg className="simulation-escalier" viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`} role="img"
+          aria-label="Escalier de carrière : l'indice de l'agent dans le temps, grade par grade">
+          <defs>
+            <pattern id="simulation-hachures" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="8" className="simulation-hachure" />
+            </pattern>
+          </defs>
+
+          {dessin.grilles.map((grille) => (
+            <g key={grille.valeur}>
+              <line x1={MARGE.gauche} x2={LARGEUR - MARGE.droite} y1={grille.y} y2={grille.y} className="simulation-grille" />
+              <text x={MARGE.gauche - 8} y={grille.y + 4} textAnchor="end" className="simulation-graduation">{grille.valeur}</text>
+            </g>
+          ))}
+
+          {dessin.marches.map((marche, index) => (
+            <g key={index}>
+              <title>
+                {`${formatJour(marche.date)} — ${marche.gradeLibelle} (${marche.gradeCode}), indice ${marche.indice}`
+                  + `${marche.projete ? ' — projection' : ''}`}
+              </title>
+              <rect
+                x={marche.x1}
+                y={marche.yHaut}
+                width={Math.max(0, marche.x2 - marche.x1)}
+                height={Math.max(0, dessin.sol - marche.yHaut)}
+                className={`simulation-marche is-${ton(marche.typeEmploi)}${marche.projete ? ' is-projete' : ''}${marche.actuel ? ' is-actuel' : ''}`}
+              />
+              {marche.projete && (
+                <rect x={marche.x1} y={marche.yHaut} width={Math.max(0, marche.x2 - marche.x1)}
+                  height={Math.max(0, dessin.sol - marche.yHaut)} fill="url(#simulation-hachures)" />
+              )}
+              <line x1={marche.x1} x2={marche.x2} y1={marche.yHaut} y2={marche.yHaut}
+                className={`simulation-palier is-${ton(marche.typeEmploi)}${marche.projete ? ' is-projete' : ''}`} />
+              {marche.x2 - marche.x1 > 44 && (
+                <text x={(marche.x1 + marche.x2) / 2} y={marche.yHaut - 7} textAnchor="middle"
+                  className={`simulation-grade${marche.actuel ? ' is-actuel' : ''}`}>
+                  {marche.gradeCode}
+                </text>
+              )}
+            </g>
+          ))}
+
+          {dessin.xAujourdhui != null && (
+            <g>
+              <line x1={dessin.xAujourdhui} x2={dessin.xAujourdhui} y1={MARGE.haut - 14} y2={dessin.sol}
+                className="simulation-aujourdhui" />
+              <text x={dessin.xAujourdhui} y={MARGE.haut - 18} textAnchor="middle" className="simulation-aujourdhui-nom">
+                Aujourd’hui
               </text>
             </g>
+          )}
+
+          <line x1={MARGE.gauche} x2={LARGEUR - MARGE.droite} y1={dessin.sol} y2={dessin.sol} className="simulation-axe" />
+          {dessin.annees.map((annee) => (
+            <text key={annee.annee} x={annee.x} y={dessin.sol + 20} textAnchor="middle" className="simulation-graduation">
+              {annee.annee}
+            </text>
           ))}
 
-          {/* Axe x'Ox du temps */}
-          <line x1={MARGE_GAUCHE - 20} x2={LARGEUR - 10} y1={geometrie.yAxe} y2={geometrie.yAxe} className="simulation-axe" />
-          <text x={MARGE_GAUCHE - 34} y={geometrie.yAxe + 4} className="simulation-axe-nom">x′</text>
-          <text x={LARGEUR - 8} y={geometrie.yAxe + 4} className="simulation-axe-nom">x</text>
-          {geometrie.reperes.map((repere) => (
-            <g key={repere.annee}>
-              <line x1={repere.x} x2={repere.x} y1={geometrie.yAxe - 4} y2={geometrie.yAxe + 4} className="simulation-axe" />
-              <text x={repere.x} y={geometrie.yAxe + 18} textAnchor="middle" className="simulation-annee">{repere.annee}</text>
-            </g>
-          ))}
-
-          <line x1={geometrie.xAujourdhui} x2={geometrie.xAujourdhui} y1={HAUT_AXE - 18} y2={geometrie.yAxe}
-            className="simulation-aujourdhui" />
-          <text x={geometrie.xAujourdhui} y={HAUT_AXE - 22} textAnchor="middle" className="simulation-aujourdhui-nom">
-            Aujourd’hui
+          <circle cx={dessin.fin.x} cy={dessin.fin.y} r="6" className="simulation-fin" />
+          <text x={dessin.fin.x + 12} y={dessin.fin.y - 4} className="simulation-fin-indice">{dessin.fin.indice}</text>
+          <text x={dessin.fin.x + 12} y={dessin.fin.y + 13} className="simulation-fin-libelle">
+            {dessin.fin.date ? `retraite ${new Date(jour(dessin.fin.date)).getUTCFullYear()}` : 'horizon'}
           </text>
-
-          {geometrie.segments.map((segment, index) => (
-            <path key={index} d={segment.d} className={`simulation-trait${segment.projete ? ' is-projete' : ''}`} />
-          ))}
-
-          {geometrie.points.map((point, index) => (
-            <g key={index}>
-              <title>{`${formatJour(point.date)} — ${point.gradeLibelle} (${point.gradeCode}), indice ${point.indice ?? '—'}`}</title>
-              <circle cx={point.x} cy={point.y} r={point.nature === 'ACTUEL' ? 8 : point.evenement === 'RETRAITE' ? 0 : 5}
-                className={`simulation-point is-${point.nature.toLowerCase()} is-${point.evenement.toLowerCase()}`} />
-            </g>
-          ))}
-          {evenements.map((point, index) => (
-            point.evenement === 'RETRAITE' ? null : (
-              <g key={`e-${index}`}>
-                <text x={point.x} y={point.y - 13} textAnchor="middle" className="simulation-grade">{point.gradeCode}</text>
-                <text x={point.x} y={point.y + 20} textAnchor="middle" className="simulation-indice">{point.indice}</text>
-              </g>
-            )
-          ))}
         </svg>
-        {base.retraite && (
-          <p className="simulation-retraite">
-            <Flag size={15} aria-hidden="true" /> Droit à la retraite le {formatJour(base.retraite)}
-          </p>
-        )}
+      </div>
+
+      <div className="simulation-jalons">
+        <article className="simulation-jalon">
+          <span className="simulation-jalon-icone"><CalendarClock size={18} /></span>
+          <div>
+            <p>Prochaine étape</p>
+            {prochaine ? (
+              <>
+                <strong>{formatJour(prochaine.date)}</strong>
+                <small>{prochaine.gradeLibelle} ({prochaine.gradeCode}) · indice {prochaine.indice}</small>
+              </>
+            ) : <small>Plus d’avancement prévu dans ce parcours.</small>}
+          </div>
+        </article>
+        <article className="simulation-jalon">
+          <span className="simulation-jalon-icone"><ArrowUpRight size={18} /></span>
+          <div>
+            <p>{prochaineClasse?.evenement === 'TITULARISATION' ? 'Titularisation' : 'Changement de classe'}</p>
+            {prochaineClasse ? (
+              <>
+                <strong>{formatJour(prochaineClasse.date)}</strong>
+                <small>{prochaineClasse.gradeLibelle} · indice {prochaineClasse.indice}</small>
+              </>
+            ) : <small>Aucun avant la retraite.</small>}
+          </div>
+        </article>
+        <article className="simulation-jalon is-retraite">
+          <span className="simulation-jalon-icone"><Hourglass size={18} /></span>
+          <div>
+            <p>Retraite</p>
+            {retraite ? (
+              <>
+                <strong>{formatJour(retraite.date)}</strong>
+                <small>{retraite.gradeCode} · indice {retraite.indice}</small>
+              </>
+            ) : <small>Date de droit inconnue.</small>}
+          </div>
+        </article>
       </div>
 
       {base.titularisable && (
@@ -193,7 +267,7 @@ export default function SimulationCarriere({ employeId }) {
       )}
       <p className="simulation-note">
         Projection indicative : un avancement à chaque durée minimale, dans l’ordre du parcours, d’après les données de SYGPERS.
-        Survolez un point pour le détail.
+        Les marches hachurées sont projetées ; survolez une marche pour le détail.
       </p>
     </section>
   );
