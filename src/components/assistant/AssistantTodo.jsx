@@ -24,8 +24,11 @@ export default function AssistantTodo({ onOpen, disabled }) {
   }
 
   return (
-    <section className="assistant-todo" aria-label="À faire">
-      <p className="assistant-todo-title">À faire</p>
+    <section className="assistant-todo" aria-label="Le point du jour">
+      <p className="assistant-todo-title">
+        Le point du jour
+        <span>{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+      </p>
       <ul>
         {items.map((item) => (
           <li key={item.label}>

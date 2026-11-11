@@ -35,6 +35,9 @@ import {
 } from './assistant-conversation-storage';
 import { toUiMessages } from './assistant-history';
 import AssistantTodo from './AssistantTodo';
+import { getAFaire } from '../../api/aFaire';
+import { getTodoItems } from './assistant-actions';
+import { isoToday } from '../../utils/documentCycle';
 import AssistantComposer from './AssistantComposer';
 import { messageWithAttachment } from './assistant-attachment';
 import { deposerPieceScannee } from '../../api/piecesScannees';
@@ -243,10 +246,33 @@ export default function AssistantFloating({ user }) {
   const userId = user?.userId;
   const conversationStorageKey = getConversationStorageKey(userId);
   const [openState, setOpen] = useState(false);
+  // Le point du jour, montré à la première ouverture de la journée, même en pleine conversation.
+  const [pointDuJour, setPointDuJour] = useState(false);
   const [expandedState, setExpanded] = useState(false);
   // La page /assistant est la même conversation, ouverte en plein écran.
   const onAssistantPage = useLocation().pathname === '/assistant';
   const open = openState || onAssistantPage;
+
+  // Une fois par jour et par utilisateur, la bulle s'ouvre sur le point du jour s'il y a quelque chose à dire.
+  useEffect(() => {
+    if (!userId) return undefined;
+    const cle = `bandiakam-point-du-jour:${userId}`;
+    const jour = isoToday();
+    let dejaVu;
+    try { dejaVu = window.localStorage.getItem(cle); } catch { dejaVu = null; }
+    if (dejaVu === jour) return undefined;
+    const controller = new AbortController();
+    getAFaire(controller.signal)
+      .then((elements) => {
+        if (getTodoItems(elements).length > 0) {
+          setOpen(true);
+          setPointDuJour(true);
+        }
+        try { window.localStorage.setItem(cle, jour); } catch { /* préférence locale facultative */ }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [userId]);
   const expanded = expandedState || onAssistantPage;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -1066,7 +1092,7 @@ export default function AssistantFloating({ user }) {
 
               <div>
                 <strong>Band’IAkam</strong>
-                <span>Historique synchronisé avec Band’IAkam</span>
+                <span>Votre assistant RH</span>
               </div>
             </div>
 
@@ -1160,6 +1186,15 @@ export default function AssistantFloating({ user }) {
               </div>
             ) : messages.length || pendingInitialMessage ? (
               <div className="assistant-messages" ref={messagesRef}>
+                {pointDuJour && (
+                  <div className="assistant-point-du-jour">
+                    <button type="button" className="rf-icon-btn" aria-label="Fermer le point du jour"
+                      onClick={() => setPointDuJour(false)}>
+                      <X size={14} />
+                    </button>
+                    <AssistantTodo onOpen={openRoute} disabled={loading || Boolean(failedSend)} />
+                  </div>
+                )}
                 {hasEarlierMessages && (
                   <button
                     type="button"
