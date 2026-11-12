@@ -71,7 +71,9 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
       <div className="reponse-demande-dates">
         <label>
           <span>Date de la réponse <b>*</b></span>
-          <input type="date" name="dateDecision" value={form.dateDecision} max={today} onChange={changer} required />
+          <input type="date" name="dateDecision" value={form.dateDecision}
+            min={document.dateDocument ? String(document.dateDocument).slice(0, 10) : undefined}
+            max={today} onChange={changer} required />
         </label>
         {dateAccordee && (
           <label>

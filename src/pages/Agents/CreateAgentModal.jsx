@@ -272,6 +272,13 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   }
 
   const typeChoisi = typesEmploi.find((type) => String(type.id) === String(form.typeEmploiId));
+  // L'âge minimum à l'embauche (donnée du type d'emploi) borne les deux dates ; l'API reste juge.
+  const agesMinimum = typesEmploi.map((type) => Number(type.age_minimum_embauche)).filter((age) => age > 0);
+  const ageMinimum = Number(typeChoisi?.age_minimum_embauche) || (agesMinimum.length ? Math.min(...agesMinimum) : 0);
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const decalerAnnees = (iso, annees) => (iso ? `${Number(iso.slice(0, 4)) + annees}${iso.slice(4, 10)}` : undefined);
+  const embaucheMin = ageMinimum ? decalerAnnees(form.dateNaissance, ageMinimum) : undefined;
+  const naissanceMax = ageMinimum ? decalerAnnees(form.dateEmbauche || aujourdhui, -ageMinimum) : aujourdhui;
   const gradesDuType = typeChoisi ? grades.filter((grade) => grade.type_emploi === typeChoisi.nom) : [];
   const gradeChoisi = gradesDuType.find((grade) => String(grade.grade_id) === String(form.echelonId));
   const categorieChoisie = categories.find((categorie) => String(categorie.id) === String(form.categorieId));
@@ -438,6 +445,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     name="dateNaissance"
                     type="date"
                     value={form.dateNaissance}
+                    max={naissanceMax}
                     onChange={handleChange}
                   />
                 </label>
@@ -527,9 +535,14 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     name="dateEmbauche"
                     type="date"
                     value={form.dateEmbauche}
+                    min={embaucheMin}
+                    max={aujourdhui}
                     onChange={handleChange}
                     required
                   />
+                  {ageMinimum > 0 && (
+                    <small className="rf-hint">Au moins {ageMinimum} ans à l’embauche.</small>
+                  )}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Lieu de travail</span>

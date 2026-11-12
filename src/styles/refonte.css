@@ -1943,3 +1943,6 @@ button.rf-row {
 .assistant-point-du-jour { position: relative; margin-bottom: 12px; }
 .assistant-point-du-jour > .rf-icon-btn { position: absolute; top: 6px; right: 6px; z-index: 1; }
 
+
+/* Une aide courte sous un champ (borne de date, format attendu). */
+.rf-hint { display: block; margin-top: 4px; font-size: 12px; color: var(--color-text-muted); }

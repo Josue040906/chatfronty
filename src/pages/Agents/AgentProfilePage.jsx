@@ -603,7 +603,7 @@ export default function AgentProfilePage({ user }) {
 
                 <div className={prefillClass('rf-field', 'dateNaissance', prefilled)}>
                   <label htmlFor="dateNaissance">Date de naissance</label>
-                  <input id="dateNaissance" name="dateNaissance" type="date" value={form.dateNaissance} onChange={handleChange} disabled={saving} />
+                  <input id="dateNaissance" name="dateNaissance" type="date" value={form.dateNaissance} max={new Date().toISOString().slice(0, 10)} onChange={handleChange} disabled={saving} />
                 </div>
 
                 <div className={prefillClass('rf-field rf-field-full', 'lieuNaissance', prefilled)}>
