@@ -1152,7 +1152,7 @@ export default function CareerAnalysisPage({ user }) {
                       </select>
                     </label>
                     <label className={prefillClass('', 'dateObtention', diplomaPrefilled)}>Date d’obtention
-                      <input name="dateObtention" type="date" max={todayInputValue()} required value={diplomaForm.dateObtention} onChange={handleFieldChange(setDiplomaForm)} />
+                      <input name="dateObtention" type="date" min={dateInputValue(agent.date_naissance) || undefined} max={todayInputValue()} required value={diplomaForm.dateObtention} onChange={handleFieldChange(setDiplomaForm)} />
                     </label>
                     <label className={prefillClass('', 'mentionId', diplomaPrefilled)}>Mention
                       <select name="mentionId" value={diplomaForm.mentionId} onChange={handleFieldChange(setDiplomaForm)}>
