@@ -79,6 +79,22 @@ export async function appliquerDocument(id) {
   return apiPost(`/api/documents/${encodeURIComponent(id)}/appliquer`, {});
 }
 
+/**
+ * La réponse reçue sur papier : { decision: 'ACCEPTE' | 'REFUSE', signataire,
+ * reference, dateDecision, motif, dateEffet } (dateEffet : date accordée, facultative).
+ */
+export async function deciderDocument(id, reponse) {
+  return apiPost(`/api/documents/${encodeURIComponent(id)}/decision`, reponse);
+}
+
+/** Les demandes d'un agent, filtrées au besoin par statut (ACCEPTE…) et type (AVANCEMENT…). */
+export async function getDemandesAgent(employeId, statut, typeCode) {
+  const params = new URLSearchParams({ employeId: String(employeId) });
+  if (statut) params.set('statut', statut);
+  if (typeCode) params.set('type', typeCode);
+  return normalizeResponse(await apiGet(`/api/documents?${params}`));
+}
+
 export async function annulerDocument(id) {
   return apiPost(`/api/documents/${encodeURIComponent(id)}/annuler`, {});
 }

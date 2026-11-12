@@ -25,12 +25,14 @@ import {
   APPLICABLE,
   DOCUMENT_STATUSES,
   delaiLabel,
+  decisionLabel,
   documentActions,
   documentEffect,
   documentPhase,
   formatJour,
 } from '../../utils/documentCycle';
 import { DemandeEffet, DemandeFrise } from '../../components/documents/DemandeSuivi';
+import ReponseDemande from '../../components/documents/ReponseDemande';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -348,6 +350,24 @@ export default function DocumentsPage({ user }) {
     }
   }
 
+  /** Après une réponse saisie : la liste est relue, le détail suit. */
+  async function reponseEnregistree(documentData, decision) {
+    try {
+      const lignes = await getDocumentRequests();
+      setDocuments(lignes);
+      setSelectedDocument(lignes.find((item) => item.id === documentData.id) || null);
+    } catch {
+      const statut = decision;
+      setSelectedDocument((current) => (current ? { ...current, statut } : current));
+    }
+    setCycle({
+      running: '', error: '', repondre: false,
+      message: decision === 'ACCEPTE'
+        ? 'Accord enregistré : la demande s’appliquera à sa date d’effet.'
+        : 'Refus enregistré : la demande ne prendra pas effet.',
+    });
+  }
+
   function closeDetail() {
     previewRequestRef.current += 1;
     setPreviewLoading(false);
@@ -591,6 +611,12 @@ export default function DocumentsPage({ user }) {
               {selectedDocument.referenceDocument || 'Sans référence'}
             </p>
             <DemandeFrise document={selectedDocument} />
+            {selectedDocument.decision && (
+              <div className={`demande-decision is-${String(selectedDocument.statut).toLowerCase()}`}>
+                <p>{decisionLabel(selectedDocument.decision)}</p>
+                {selectedDocument.decision.motif && <p>Motif : {selectedDocument.decision.motif}</p>}
+              </div>
+            )}
             <DemandeEffet document={selectedDocument} typeCode={selectedType?.code} />
             <dl className="rf-dl">
               <div>
@@ -646,12 +672,20 @@ export default function DocumentsPage({ user }) {
             {(() => {
               const actions = documentActions(selectedDocument, user);
               const phase = documentPhase(selectedDocument);
-              if (!actions.appliquer && !actions.appliquerPlusTard && !actions.annuler && !actions.archiver) {
+              if (!actions.repondre && !actions.appliquer && !actions.appliquerPlusTard
+                && !actions.annuler && !actions.archiver) {
                 return null;
               }
               return (
                 <div className="documents-aside-cycle">
-                  {cycle.confirmer ? (
+                  {cycle.repondre ? (
+                    <ReponseDemande
+                      document={selectedDocument}
+                      typeCode={selectedType?.code}
+                      onDone={(decision) => reponseEnregistree(selectedDocument, decision)}
+                      onCancel={() => setCycle((current) => ({ ...current, repondre: false }))}
+                    />
+                  ) : cycle.confirmer ? (
                     <div className="demande-confirmation" role="group" aria-label="Confirmer l’application">
                       <p>
                         <strong>Appliquer {selectedDocument.referenceDocument} ?</strong>
@@ -663,7 +697,7 @@ export default function DocumentsPage({ user }) {
                           className="rf-btn rf-btn-primary"
                           disabled={Boolean(cycle.running)}
                           onClick={() => runCycle(selectedDocument, 'appliquer', appliquerDocument, 'APPLIQUE',
-                            'Demande appliquée : son effet est produit et le chef du Service du Personnel en est notifié.')}
+                            'Demande appliquée : son effet est produit ; le chef et l’auteur en sont notifiés.')}
                         >
                           {cycle.running === 'appliquer' ? 'Application…' : 'Confirmer'}
                         </button>
@@ -679,6 +713,16 @@ export default function DocumentsPage({ user }) {
                     </div>
                   ) : (
                     <div className="documents-aside-actions">
+                      {actions.repondre && (
+                        <button
+                          type="button"
+                          className="rf-btn rf-btn-primary"
+                          disabled={Boolean(cycle.running)}
+                          onClick={() => setCycle({ running: '', message: '', error: '', repondre: true })}
+                        >
+                          Saisir la réponse
+                        </button>
+                      )}
                       {(actions.appliquer || actions.appliquerPlusTard) && (
                         <button
                           type="button"

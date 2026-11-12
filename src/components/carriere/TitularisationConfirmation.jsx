@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { titulariser } from '../../api/carrieres';
 import { isoToday } from '../../utils/documentCycle';
+import ActeSigneChamps from './ActeSigneChamps';
 
 /**
  * Titularisation d'un contractuel ou d'un stagiaire : son indice actuel est
@@ -13,6 +14,7 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
   const today = isoToday();
   const grade = analyse.suggestion;
   const [dateEffet, setDateEffet] = useState(today);
+  const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
   const [envoi, setEnvoi] = useState({ running: false, error: '' });
 
   const actuelle = analyse.situationActuelle || {};
@@ -25,7 +27,7 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
   async function confirmer() {
     setEnvoi({ running: true, error: '' });
     try {
-      await titulariser(employeId, dateEffet);
+      await titulariser(employeId, dateEffet, acte);
       onDone?.();
     } catch (err) {
       setEnvoi({ running: false, error: err?.message || 'La titularisation n’a pas pu être enregistrée.' });
@@ -58,12 +60,13 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
           <input type="date" value={dateEffet} max={today} onChange={(event) => setDateEffet(event.target.value)} />
         </label>
       </div>
+      <ActeSigneChamps acte={acte} onChange={setActe} disabled={envoi.running} />
       <p className="titularisation-note">Il devient fonctionnaire à ce grade ; sa période actuelle se ferme la veille.</p>
       <div className="documents-aside-actions">
         <button
           type="button"
           className="rf-btn rf-btn-primary"
-          disabled={envoi.running || !dateEffet}
+          disabled={envoi.running || !dateEffet || !acte.referenceActe.trim() || !acte.signataire.trim()}
           onClick={confirmer}
         >
           {envoi.running ? 'Enregistrement…' : 'Confirmer la titularisation'}

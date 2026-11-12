@@ -78,17 +78,18 @@ export async function getReclassementProposal(employeId) {
   return apiGet(`/api/carrieres/employes/${employeId}/reclassement`);
 }
 
-export async function confirmReclassement(employeId) {
-  return apiPost(`/api/employes/${employeId}/reclassement`);
+export async function confirmReclassement(employeId, dateEffet, acte) {
+  return apiPost(`/api/employes/${employeId}/reclassement`, { dateEffet, ...acte });
 }
 
 export async function getAvancementProposal(employeId) {
   return apiGet(`/api/carrieres/employes/${employeId}/avancement`);
 }
 
-export async function confirmAvancement(employeId, dateEffet) {
+export async function confirmAvancement(employeId, dateEffet, acte) {
   return apiPost(`/api/carrieres/employes/${employeId}/avancement`, {
     dateEffet,
+    ...acte,
   });
 }
 
@@ -98,8 +99,8 @@ export async function getRetraiteAnalyse(employeId) {
 }
 
 /** Départ à la retraite immédiat (même effet qu'une demande de retraite appliquée). */
-export async function prendreRetraite(employeId, dateEffet) {
-  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/retraite`, { dateEffet });
+export async function prendreRetraite(employeId, dateEffet, acte) {
+  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/retraite`, { dateEffet, ...acte });
 }
 
 /** Congés : acquis, pris et solde au jour donné (aujourd'hui par défaut), congé en cours, congés de l'année. */
@@ -114,8 +115,8 @@ export async function getTitularisation(employeId) {
 }
 
 /** Titularisation immédiate (même effet qu'une demande de titularisation appliquée). */
-export async function titulariser(employeId, dateEffet) {
-  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet });
+export async function titulariser(employeId, dateEffet, acte) {
+  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet, ...acte });
 }
 
 /** Simulation indicative de la carrière ; titularisation (AAAA-MM-JJ) facultative. */

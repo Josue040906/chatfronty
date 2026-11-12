@@ -2,35 +2,52 @@ import { ArrowRight, Check, CircleSlash, Clock3, Sparkles } from 'lucide-react';
 import { delaiLabel, documentEffect, documentPhase, formatJour as formatDate, isoToday } from '../../utils/documentCycle';
 
 /**
- * Frise d'une demande : Créée → Applicable (sa date d'effet) → Appliquée.
- * L'étape en cours est mise en avant ; une demande annulée s'arrête en rouge.
+ * Frise d'une demande : Créée → Réponse (acceptée ou refusée, sur papier) →
+ * Applicable (date d'effet accordée) → Appliquée. L'étape en cours est mise en
+ * avant ; une demande refusée ou annulée s'arrête en rouge.
  */
 export function DemandeFrise({ document, today = isoToday() }) {
   const phase = documentPhase(document, today);
-  const annulee = document.statut === 'ANNULE';
-  const appliquee = document.statut === 'APPLIQUE' || (document.statut === 'ARCHIVE' && !annulee);
+  const statut = document.statut;
+  const annulee = statut === 'ANNULE';
+  const refusee = statut === 'REFUSE' || (statut === 'ARCHIVE' && document.decision?.acceptee === false);
+  const acceptee = ['ACCEPTE', 'APPLIQUE'].includes(statut) || (statut === 'ARCHIVE' && !annulee && !refusee);
+  const appliquee = statut === 'APPLIQUE' || (statut === 'ARCHIVE' && acceptee);
   const dateAtteinte = phase.code !== 'EN_ATTENTE';
+  const decision = document.decision;
 
   const etapes = [
     { cle: 'cree', titre: 'Créée', detail: formatDate(document.dateDocument || document.dateCreation), etat: 'fait' },
-    annulee
-      ? { cle: 'annulee', titre: 'Annulée', detail: 'Ne prendra pas effet', etat: 'stop' }
-      : {
-          cle: 'applicable',
-          titre: 'Applicable',
-          detail: document.dateEffet
-            ? `${dateAtteinte ? 'Depuis le' : 'Le'} ${formatDate(document.dateEffet)}`
-            : 'Dès sa création',
-          etat: appliquee || dateAtteinte ? (appliquee ? 'fait' : 'actif') : 'attente',
-          compteur: phase.code === 'EN_ATTENTE' ? delaiLabel(phase.jours) : null,
-        },
-    ...(annulee ? [] : [{
-      cle: 'appliquee',
-      titre: 'Appliquée',
-      detail: appliquee ? 'Effet produit' : 'Par son auteur',
-      etat: appliquee ? 'fait' : 'attente',
-    }]),
   ];
+  if (annulee) {
+    etapes.push({ cle: 'annulee', titre: 'Annulée', detail: 'Ne prendra pas effet', etat: 'stop' });
+  } else if (refusee) {
+    etapes.push({ cle: 'refusee', titre: 'Refusée', detail: decision ? `Le ${formatDate(decision.date)}` : 'Ne prendra pas effet', etat: 'stop' });
+  } else {
+    etapes.push(
+      {
+        cle: 'reponse',
+        titre: acceptee ? 'Acceptée' : 'Réponse',
+        detail: acceptee && decision ? `Le ${formatDate(decision.date)}` : 'Signée sur papier, à saisir',
+        etat: acceptee ? 'fait' : 'actif',
+      },
+      {
+        cle: 'applicable',
+        titre: 'Applicable',
+        detail: document.dateEffet
+          ? `${acceptee && dateAtteinte ? 'Depuis le' : 'Le'} ${formatDate(document.dateEffet)}`
+          : 'Dès l’accord',
+        etat: appliquee ? 'fait' : acceptee && dateAtteinte ? 'actif' : 'attente',
+        compteur: acceptee && phase.code === 'EN_ATTENTE' ? delaiLabel(phase.jours) : null,
+      },
+      {
+        cle: 'appliquee',
+        titre: 'Appliquée',
+        detail: appliquee ? 'Effet produit' : 'Par le Service du Personnel',
+        etat: appliquee ? 'fait' : 'attente',
+      },
+    );
+  }
 
   return (
     <ol className="demande-frise" aria-label="Avancement de la demande">

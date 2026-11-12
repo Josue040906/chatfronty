@@ -9,33 +9,36 @@ const autreAgent = { userId: 8, role: 'SPERS_AGENT' };
 const chef = { userId: 7, role: 'SPERS_CHEF' };
 
 describe('documentPhase', () => {
-  it('a created request waits for its effect date, then becomes applicable and stays so', () => {
-    expect(documentPhase({ statut: 'CREE', dateEffet: '2026-11-22' }, today))
-      .toEqual({ code: 'EN_ATTENTE', label: 'Créé', jours: 12 });
-    expect(documentPhase({ statut: 'CREE', dateEffet: '2026-11-10' }, today).code).toBe(APPLICABLE);
-    expect(documentPhase({ statut: 'CREE', dateEffet: '2025-01-01' }, today).code).toBe(APPLICABLE);
+  it('an accepted request waits for its granted date, then becomes applicable and stays so', () => {
+    expect(documentPhase({ statut: 'ACCEPTE', dateEffet: '2026-11-22' }, today))
+      .toEqual({ code: 'EN_ATTENTE', label: 'Accepté', jours: 12 });
+    expect(documentPhase({ statut: 'ACCEPTE', dateEffet: '2026-11-10' }, today).code).toBe(APPLICABLE);
+    expect(documentPhase({ statut: 'ACCEPTE', dateEffet: '2025-01-01' }, today).code).toBe(APPLICABLE);
+    expect(documentPhase({ statut: 'CREE', dateEffet: '2025-01-01' }, today).label).toBe('Sans réponse');
     expect(documentPhase({ statut: 'APPLIQUE' }, today).label).toBe('Appliqué');
   });
 });
 
 describe('documentActions', () => {
-  it('lets only the author apply, once the effect date is reached', () => {
-    const attente = { statut: 'CREE', auteurId: 5, dateEffet: '2026-12-01' };
-    expect(documentActions(attente, auteur, today))
-      .toEqual({ appliquer: false, appliquerPlusTard: true, annuler: true, archiver: false });
-    const prete = { ...attente, dateEffet: '2026-11-01' };
-    expect(documentActions(prete, auteur, today).appliquer).toBe(true);
-    expect(documentActions(prete, chef, today)).toEqual(
-      { appliquer: false, appliquerPlusTard: false, annuler: true, archiver: false });
-    expect(documentActions(prete, autreAgent, today).annuler).toBe(false);
+  it('lets any staff member record the paper answer of a created request', () => {
+    const creee = { statut: 'CREE', auteurId: 5, dateEffet: '2026-12-01' };
+    expect(documentActions(creee, autreAgent, today))
+      .toEqual({ repondre: true, appliquer: false, appliquerPlusTard: false, annuler: false, archiver: false });
+    expect(documentActions(creee, auteur, today).annuler).toBe(true);
+    expect(documentActions(creee, chef, today).annuler).toBe(true);
+    expect(documentActions(creee, { userId: 9, role: 'AGENT' }, today).repondre).toBe(false);
   });
 
-  it('lets a chief apply a request whose author is unknown', () => {
-    expect(documentActions({ statut: 'CREE', auteurId: null, dateEffet: today }, chef, today).appliquer).toBe(true);
+  it('lets any staff member apply an accepted request once its granted date is reached', () => {
+    const attente = { statut: 'ACCEPTE', auteurId: 5, dateEffet: '2026-12-01' };
+    expect(documentActions(attente, autreAgent, today))
+      .toEqual({ repondre: false, appliquer: false, appliquerPlusTard: true, annuler: false, archiver: false });
+    expect(documentActions({ ...attente, dateEffet: '2026-11-01' }, autreAgent, today).appliquer).toBe(true);
   });
 
-  it('archives only an applied or cancelled request', () => {
+  it('archives only an applied, refused or cancelled request', () => {
     expect(documentActions({ statut: 'APPLIQUE', auteurId: 5 }, autreAgent, today).archiver).toBe(true);
+    expect(documentActions({ statut: 'REFUSE', auteurId: 5 }, autreAgent, today).archiver).toBe(true);
     expect(documentActions({ statut: 'ANNULE', auteurId: 5 }, autreAgent, today).archiver).toBe(true);
     expect(documentActions({ statut: 'ARCHIVE', auteurId: 5 }, auteur, today).archiver).toBe(false);
   });

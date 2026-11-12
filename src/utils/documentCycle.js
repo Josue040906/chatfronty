@@ -1,17 +1,21 @@
-// Cycle de vie d'une demande : Créée, elle devient applicable dès que sa date
-// d'effet est atteinte (ce n'est pas un statut enregistré, c'est une date),
-// puis Appliquée par son auteur : son effet est alors produit par l'API.
-// Une demande créée peut être Annulée ; appliquée ou annulée, elle s'Archive.
+// Cycle de vie d'une demande. Créée, elle produit la lettre signée et tamponnée
+// hors de l'application ; la réponse reçue sur papier s'y saisit ensuite :
+// Acceptée ou Refusée (signataire, acte, date). Une demande acceptée devient
+// applicable à la date d'effet accordée (c'est une date, pas un statut), puis
+// Appliquée par un agent du Personnel : son effet est produit par l'API.
+// Créée, elle peut être Annulée ; appliquée, refusée ou annulée, elle s'Archive.
 // Le front ne fait que montrer les actions permises ; l'API reste seule juge.
 
 export const DOCUMENT_STATUSES = [
-  { code: 'CREE', label: 'Créé' },
+  { code: 'CREE', label: 'Sans réponse' },
+  { code: 'ACCEPTE', label: 'Accepté' },
+  { code: 'REFUSE', label: 'Refusé' },
   { code: 'APPLIQUE', label: 'Appliqué' },
   { code: 'ANNULE', label: 'Annulé' },
   { code: 'ARCHIVE', label: 'Archivé' },
 ];
 
-/** Filtre « à appliquer » : des demandes créées dont la date d'effet est atteinte. */
+/** Filtre « à appliquer » : des demandes acceptées dont la date d'effet est atteinte. */
 export const APPLICABLE = 'APPLICABLE';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
@@ -57,14 +61,14 @@ export function delaiLabel(jours) {
 }
 
 /**
- * Où en est la demande : EN_ATTENTE (créée, date à venir), APPLICABLE (créée,
- * date atteinte), ou son statut enregistré (APPLIQUE, ANNULE, ARCHIVE).
+ * Où en est la demande : EN_ATTENTE (acceptée, date à venir), APPLICABLE
+ * (acceptée, date atteinte), ou son statut enregistré (CREE, REFUSE…).
  */
 export function documentPhase(document, today = isoToday()) {
-  if (document?.statut === 'CREE') {
+  if (document?.statut === 'ACCEPTE') {
     const jours = joursJusqua(document.dateEffet, today);
     if (jours != null && jours > 0) {
-      return { code: 'EN_ATTENTE', label: 'Créé', jours };
+      return { code: 'EN_ATTENTE', label: 'Accepté', jours };
     }
     return { code: APPLICABLE, label: 'À appliquer', jours: 0 };
   }
@@ -75,19 +79,28 @@ export function documentPhase(document, today = isoToday()) {
 /** Les actions possibles sur cette demande pour l'utilisateur connecté. */
 export function documentActions(document, user, today = isoToday()) {
   const creee = document?.statut === 'CREE';
+  const acceptee = document?.statut === 'ACCEPTE';
   const chef = user?.role === 'SPERS_CHEF';
-  const auteurConnu = document?.auteurId != null;
-  const estAuteur = auteurConnu && String(document.auteurId) === String(user?.userId);
-  // Seul l'auteur applique ; une demande d'auteur inconnu s'applique par un chef.
-  const peutAppliquer = creee && (estAuteur || (!auteurConnu && chef));
+  // Saisir la réponse et appliquer : tout agent du Service du Personnel.
+  const personnel = chef || user?.role === 'SPERS_AGENT';
+  const estAuteur = document?.auteurId != null && String(document.auteurId) === String(user?.userId);
   const phase = documentPhase(document, today);
   return {
-    appliquer: peutAppliquer && phase.code === APPLICABLE,
-    // L'auteur voit le bouton, désactivé, avec le temps qui reste.
-    appliquerPlusTard: peutAppliquer && phase.code === 'EN_ATTENTE',
+    repondre: creee && personnel,
+    appliquer: acceptee && personnel && phase.code === APPLICABLE,
+    // Le bouton reste visible, désactivé, avec le temps qui reste.
+    appliquerPlusTard: acceptee && personnel && phase.code === 'EN_ATTENTE',
     annuler: creee && (estAuteur || chef),
-    archiver: document?.statut === 'APPLIQUE' || document?.statut === 'ANNULE',
+    archiver: ['APPLIQUE', 'REFUSE', 'ANNULE'].includes(document?.statut),
   };
+}
+
+/** « Accepté le 12/11/2026 par le Directeur des RH (Arrêté n° 12) — saisi par Lova ». */
+export function decisionLabel(decision) {
+  if (!decision) return '';
+  const acte = decision.reference ? ` (${decision.reference})` : '';
+  const saisie = decision.saisieParNom ? ` — saisie par ${decision.saisieParNom}` : '';
+  return `Signée le ${formatJour(decision.date)} par ${decision.signataire}${acte}${saisie}`;
 }
 
 function situationGrade(situation) {

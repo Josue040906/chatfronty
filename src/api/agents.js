@@ -117,6 +117,7 @@ export async function updateAgentAssignment(id, data) {
       lieuTravail: data.lieuTravail?.trim() || null,
       dateEffet: data.dateEffet,
       referenceActe: data.referenceActe?.trim() || null,
+      signataire: data.signataire?.trim() || null,
       observation: data.observation?.trim() || null,
     }
   );

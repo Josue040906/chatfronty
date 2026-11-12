@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   BriefcaseBusiness,
   CalendarDays,
+  FileCheck2,
   FilePlus2,
   GraduationCap,
   Hourglass,
@@ -12,7 +13,9 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { getConges, getRetraiteAnalyse, getTitularisation, prendreRetraite } from '../../api/carrieres';
+import { appliquerDocument, getDemandesAgent } from '../../api/documents';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
+import ActeSigneChamps from './ActeSigneChamps';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -30,9 +33,12 @@ function quand(date, today) {
 }
 
 /**
- * Tout ce qu'on peut faire pour cet agent, au même endroit : les actions
- * immédiates (réservées au Service du Personnel) et les demandes à préparer,
- * qui s'appliqueront à leur date d'effet. Chaque bouton dit où en est l'agent.
+ * Tout ce qu'on peut faire pour cet agent, au même endroit :
+ * - les demandes acceptées (réponse signée saisie), à appliquer à leur date d'effet ;
+ * - les décisions déjà signées sans demande : une action directe, avec la
+ *   référence de l'acte et son signataire (réservées au Service du Personnel) ;
+ * - les demandes à préparer : la lettre à faire signer.
+ * Chaque bouton dit où en est l'agent.
  */
 export default function ActionsCarriere({
   employeId, analysis, canManageHr, onChanged, onAvancement, onMutation, onReclassement,
@@ -45,6 +51,8 @@ export default function ActionsCarriere({
   const [version, setVersion] = useState(0);
   const [ouvert, setOuvert] = useState('');
   const [dateDepart, setDateDepart] = useState(today);
+  const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
+  const [acceptees, setAcceptees] = useState([]);
   const [envoi, setEnvoi] = useState({ running: false, error: '', message: '' });
 
   useEffect(() => {
@@ -54,6 +62,9 @@ export default function ActionsCarriere({
     getRetraiteAnalyse(employeId).then(garder(setRetraite)).catch(vider(setRetraite));
     getConges(employeId).then(garder(setConges)).catch(vider(setConges));
     getTitularisation(employeId).then(garder(setTitularisation)).catch(vider(setTitularisation));
+    getDemandesAgent(employeId, 'ACCEPTE')
+      .then(garder(setAcceptees))
+      .catch(() => { if (!cancelled) setAcceptees([]); });
     return () => { cancelled = true; };
   }, [employeId, version]);
 
@@ -63,7 +74,18 @@ export default function ActionsCarriere({
 
   function ouvrir(nom) {
     setOuvert((actuel) => (actuel === nom ? '' : nom));
+    setActe({ referenceActe: '', signataire: '' });
     setEnvoi({ running: false, error: '', message: '' });
+  }
+
+  async function appliquer(demande) {
+    setEnvoi({ running: true, error: '', message: '' });
+    try {
+      await appliquerDocument(demande.id);
+      termine(`Demande ${demande.reference_document} appliquée : son effet est produit.`);
+    } catch (err) {
+      setEnvoi({ running: false, error: err?.message || 'La demande n’a pas pu être appliquée.', message: '' });
+    }
   }
 
   function termine(message) {
@@ -76,7 +98,7 @@ export default function ActionsCarriere({
   async function confirmerRetraite() {
     setEnvoi({ running: true, error: '', message: '' });
     try {
-      await prendreRetraite(employeId, dateDepart);
+      await prendreRetraite(employeId, dateDepart, acte);
       termine('Départ à la retraite enregistré.');
     } catch (err) {
       setEnvoi({ running: false, error: err?.message || 'Le départ n’a pas pu être enregistré.', message: '' });
@@ -142,9 +164,45 @@ export default function ActionsCarriere({
     <section className="career-section actions-carriere" aria-labelledby="actions-carriere-titre">
       <h2 id="actions-carriere-titre" className="ui-visually-hidden">Actions sur la carrière</h2>
 
+      {canManageHr && acceptees.length > 0 && (
+        <div className="actions-carriere-groupe">
+          <p className="actions-carriere-libelle">
+            <FileCheck2 size={15} />Demandes acceptées <span>· la réponse signée est saisie</span>
+          </p>
+          <ul className="actions-carriere-acceptees">
+            {acceptees.map((demande) => {
+              const jours = joursJusqua(demande.date_effet, today);
+              const prete = jours == null || jours <= 0;
+              return (
+                <li key={demande.id}>
+                  <span>
+                    <strong>{demande.type_document || demande.objet}</strong>
+                    <small>
+                      {demande.reference_document}
+                      {demande.decision_reference ? ` · ${demande.decision_reference}` : ''}
+                      {demande.decision_signataire ? `, signé par ${demande.decision_signataire}` : ''}
+                    </small>
+                  </span>
+                  <button
+                    type="button"
+                    className="rf-btn rf-btn-primary"
+                    disabled={!prete || envoi.running}
+                    onClick={() => appliquer(demande)}
+                  >
+                    {prete ? 'Appliquer' : `Applicable le ${formatJour(demande.date_effet)}`}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       {canManageHr && (
         <div className="actions-carriere-groupe">
-          <p className="actions-carriere-libelle">Agir maintenant</p>
+          <p className="actions-carriere-libelle">
+            Décision déjà signée <span>· sans demande, avec la référence de l’acte</span>
+          </p>
           <div className="actions-carriere-directes">
             {actions.map((action) => {
               const Icone = action.icone;
@@ -195,8 +253,14 @@ export default function ActionsCarriere({
               onChange={(event) => setDateDepart(event.target.value)}
             />
           </label>
+          <ActeSigneChamps acte={acte} onChange={setActe} disabled={envoi.running} />
           <div className="documents-aside-actions">
-            <button type="button" className="rf-btn rf-btn-primary" disabled={envoi.running || !dateDepart} onClick={confirmerRetraite}>
+            <button
+              type="button"
+              className="rf-btn rf-btn-primary"
+              disabled={envoi.running || !dateDepart || !acte.referenceActe.trim() || !acte.signataire.trim()}
+              onClick={confirmerRetraite}
+            >
               {envoi.running ? 'Enregistrement…' : 'Confirmer le départ'}
             </button>
             <button type="button" className="rf-btn" disabled={envoi.running} onClick={() => setOuvert('')}>
@@ -211,7 +275,7 @@ export default function ActionsCarriere({
       {demandes.length > 0 && (
         <div className="actions-carriere-groupe">
           <p className="actions-carriere-libelle">
-            <FilePlus2 size={15} />Préparer une demande <span>· elle s’appliquera à sa date d’effet</span>
+            <FilePlus2 size={15} />Préparer une demande <span>· la lettre à faire signer</span>
           </p>
           <div className="actions-carriere-demandes">
             {demandes.map((demande) => {
