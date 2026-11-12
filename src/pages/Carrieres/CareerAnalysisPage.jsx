@@ -3,23 +3,19 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
-import DemandesCarriere from '../../components/carriere/DemandesCarriere';
+import ActionsCarriere from '../../components/carriere/ActionsCarriere';
+import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
+  ArrowUpRight,
   BriefcaseBusiness,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
-  FileText,
-  GraduationCap,
   History,
   Plus,
   Save,
-  TrendingUp,
-  UserRound,
   X,
   XCircle,
 } from 'lucide-react';
@@ -220,6 +216,7 @@ export default function CareerAnalysisPage({ user }) {
   const [proposal, setProposal] = useState(null);
   const [proposalLoading, setProposalLoading] = useState(false);
   const [effectDate, setEffectDate] = useState(todayInputValue);
+  const [onglet, setOnglet] = useState('carriere');
   const savingRef = useRef(false);
   const dialogRef = useRef(null);
   const diplomaOptionsRequestRef = useRef(0);
@@ -781,8 +778,6 @@ export default function CareerAnalysisPage({ user }) {
   const situation = analysis.situationActuelle || {};
   const seniority = analysis.ancienneteActuelle || {};
   const condition = analysis.ancienneteRequise || {};
-  const evolution = analysis.evolution || {};
-  const nextSituation = analysis.situationSuivante;
   const agentName = formatName(agent);
   const photoUrl = getEmployeePhotoUrl(agent.photo);
   const sortedDiplomas = [...diplomas].sort((left, right) => {
@@ -792,11 +787,15 @@ export default function CareerAnalysisPage({ user }) {
       || Number(right.id || 0) - Number(left.id || 0);
   });
   const latestDiploma = sortedDiplomas.find((item) => item.date_obtention);
-  const profileDetails = [
-    { label: 'Service', value: agent.service || '—' },
-    { label: 'Direction', value: agent.direction || '—' },
-    { label: 'Date d’embauche', value: formatDate(agent.date_embauche) },
+  // Les reclassements n'ont d'onglet que s'il y en a (ou si leur lecture a échoué).
+  const ongletsHistorique = [
+    { cle: 'carriere', titre: 'Historique de carrière', nombre: history.length },
+    { cle: 'diplomes', titre: 'Diplômes', nombre: canManageHr ? diplomas.length : null },
+    ...(canManageHr && (reclassementHistory.length > 0 || reclassementHistoryError)
+      ? [{ cle: 'reclassements', titre: 'Reclassements', nombre: reclassementHistory.length }]
+      : []),
   ];
+  const ongletActif = ongletsHistorique.some((item) => item.cle === onglet) ? onglet : 'carriere';
 
   return (
     <div className="career-analysis-page rf-page">
@@ -815,20 +814,43 @@ export default function CareerAnalysisPage({ user }) {
               initials={getEmployeeInitials(agent)}
             />
           </div>
-          <div>
+          <div className="career-hero-texte">
             <p className="rf-eyebrow career-hero-eyebrow">Analyse de carrière</p>
-            <h1>{agentName}</h1>
-            <TypeEmploiBadge type={agent.type_emploi} grand />
-            <div className="career-analysis-meta">
-              <span><BriefcaseBusiness size={15} />{agent.poste || 'Poste non renseigné'}</span>
-              <span><FileText size={15} />{agent.matricule || '—'}</span>
+            <div className="career-hero-nom">
+              <h1>{agentName}</h1>
+              <TypeEmploiBadge type={agent.type_emploi} grand />
             </div>
+            <p className="career-analysis-meta">
+              <span><BriefcaseBusiness size={15} />{agent.poste || 'Poste non renseigné'}</span>
+              <span>{[agent.service, agent.direction].filter(Boolean).join(' · ') || 'Service non renseigné'}</span>
+              <span>Embauché le {formatDate(agent.date_embauche)}</span>
+              <span className="career-hero-matricule">{agent.matricule || '—'}</span>
+              <button type="button" className="career-hero-lien" onClick={() => navigate(`/agents/${id}`)}>
+                Voir le profil <ArrowUpRight size={14} />
+              </button>
+            </p>
           </div>
         </div>
-        {analysis.situationActuelle ? (
-          <div className="career-availability available"><CheckCircle2 size={16} />Situation disponible</div>
-        ) : (
-          <div className="career-availability unavailable"><XCircle size={16} />Situation indisponible</div>
+
+        {analysis.situationActuelle && (
+          <div className="career-hero-situation">
+            <dl className="career-situation-ruban">
+              <div><dt>Catégorie</dt><dd>{situation.categorieCode || agent.categorie || '—'}</dd></div>
+              <div><dt>Corps</dt><dd>{agent.corps_libelle || agent.corps || '—'}</dd></div>
+              <div className="is-grade">
+                <dt>Grade</dt>
+                <dd>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</dd>
+              </div>
+              <div><dt>Indice</dt><dd>{situation.indice ?? '—'}</dd></div>
+              <div><dt>Parcours</dt><dd>{situation.parcours || '—'}</dd></div>
+              <div><dt>Depuis</dt><dd>{formatDate(situation.dateDebut)}</dd></div>
+            </dl>
+            <AncienneteAnneau
+              mois={seniority.moisTotal}
+              requis={condition.dureeMinMois}
+              eligible={analysis.eligible}
+            />
+          </div>
         )}
       </section>
 
@@ -842,224 +864,112 @@ export default function CareerAnalysisPage({ user }) {
         </section>
       )}
 
-      {/* Un simple aperçu : le profil complet (et sa modification) est sur la fiche agent. */}
-      <section className="career-panel career-profile-preview">
-        <div className="career-panel-header career-panel-header-actions">
-          <div className="career-panel-icon"><UserRound size={19} /></div>
-          <div>
-            <h2>Profil</h2>
-          </div>
-          <button
-            type="button"
-            className="career-action-button secondary"
-            onClick={() => navigate(`/agents/${id}`)}
-          >
-            <UserRound size={16} />Voir le profil
-          </button>
-        </div>
-        <div className="career-profile-grid">
-          {profileDetails.map((detail) => (
-            <div key={detail.label} className="career-profile-item">
-              <span>{detail.label}</span><strong>{detail.value}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="career-section">
-        <div className="career-section-heading">
-          <div><p className="rf-eyebrow">Situation actuelle</p><h2>Situation professionnelle</h2></div>
-          {canManageHr && (
-            <div className="career-actions">
-              <button type="button" className="career-action-button secondary" onClick={() => openProposal('reclassement')}>
-                <GraduationCap size={16} />Reclassement
-              </button>
-              <button type="button" className="career-action-button secondary" onClick={openAssignmentDialog}>
-                <BriefcaseBusiness size={16} />Mutation
-              </button>
-              <button type="button" className="career-action-button primary" onClick={() => openProposal('avancement')}>
-                <TrendingUp size={16} />Avancement d’échelon
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="career-current-grid">
-          <div className="career-current-card"><div className="career-current-icon"><UserRound size={19} /></div><span>Catégorie</span><strong>{situation.categorieCode || agent.categorie || '—'}</strong></div>
-          <div className="career-current-card"><div className="career-current-icon"><BriefcaseBusiness size={19} /></div><span>Corps</span><strong>{agent.corps_libelle || agent.corps || '—'}</strong></div>
-          <div className="career-current-card"><div className="career-current-icon"><TrendingUp size={19} /></div><span>Grade</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</strong><small>{indiceLabel(situation.indice)}</small></div>
-          <div className="career-current-card"><div className="career-current-icon"><GraduationCap size={19} /></div><span>Parcours</span><strong>{[agent.type_emploi, situation.parcours].filter(Boolean).join(' · ') || '—'}</strong></div>
-          <div className="career-current-card"><div className="career-current-icon"><CalendarDays size={19} /></div><span>Depuis</span><strong>{formatDate(situation.dateDebut)}</strong></div>
-        </div>
-      </section>
-
-      <SimulationCarriere employeId={id} />
-
-      <DemandesCarriere
+      <ActionsCarriere
         employeId={id}
         analysis={analysis}
         canManageHr={canManageHr}
         onChanged={() => { void refreshCareerData(); }}
+        onAvancement={() => openProposal('avancement')}
+        onMutation={openAssignmentDialog}
+        onReclassement={() => openProposal('reclassement')}
       />
 
-      <div className="career-duo">
-      <section className="career-panel">
-        <div className="career-panel-header">
-          <div className="career-panel-icon"><Clock3 size={19} /></div>
-          <div><h2>Ancienneté</h2><p>Calcul effectué par le backend.</p></div>
-        </div>
-        <div className="career-seniority-value">{formatMonths(seniority.moisTotal)}</div>
-        {Number.isFinite(Number(seniority.moisTotal)) && Number(condition.dureeMinMois) > 0 && (
-          <div className="career-progress">
-            <div className="career-progress-track" aria-hidden="true">
-              <span style={{ width: `${Math.min(100, Math.round((Number(seniority.moisTotal) / Number(condition.dureeMinMois)) * 100))}%` }} />
-            </div>
-            <div className="career-progress-labels">
-              <span>{seniority.moisTotal} mois</span>
-              <span>{condition.dureeMinMois} mois requis</span>
-            </div>
-          </div>
-        )}
-        <div className="career-seniority-details">
-          <div><span>Depuis</span><strong>{formatDate(seniority.dateDebut)}</strong></div>
-          <div><span>Calcul au</span><strong>{formatDate(seniority.dateCalcul)}</strong></div>
-          <div><span>Condition requise</span><strong>{condition.dureeMinMois == null ? 'Non renseignée' : `${condition.dureeMinMois} mois`}</strong></div>
-        </div>
-        <div className={`career-condition ${analysis.eligible === true ? 'satisfied' : analysis.eligible === false ? 'not-satisfied' : 'undetermined'}`}>
-          {analysis.eligible === true ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-          <strong>{analysis.eligible === true
-            ? 'Condition d’ancienneté satisfaite'
-            : analysis.eligible === false
-              ? 'Condition d’ancienneté non satisfaite'
-              : 'Éligibilité non déterminée'}</strong>
-        </div>
-      </section>
+      <SimulationCarriere employeId={id} />
 
-      <section className="career-panel career-next-step">
-        <div className="career-panel-header">
-          <div className="career-panel-icon"><TrendingUp size={19} /></div>
-          <div><h2>Évolution possible</h2><p>Projection indicative; un avancement doit être confirmé séparément.</p></div>
-        </div>
-        {evolution.type === 'ECHELON' && nextSituation ? (
-          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution d’échelon</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong><p>{indiceLabel(situation.indice)} → {indiceLabel(nextSituation.indice)}</p></div></div>
-        ) : evolution.type === 'CLASSE' && nextSituation ? (
-          <div className="career-next-result"><CheckCircle2 size={20} /><div><span>Évolution de classe indicative</span><strong>{gradeLabel(situation.gradeLibelle, situation.gradeCode)} → {gradeLabel(nextSituation.gradeLibelle, nextSituation.gradeCode)}</strong><p>{indiceLabel(situation.indice)} → {indiceLabel(nextSituation.indice)}</p><p>Cette projection ne permet pas de confirmer un avancement d’échelon.</p></div></div>
-        ) : (
-          <div className="career-next-result neutral"><XCircle size={20} /><div><span>Évolution identifiée</span><strong>Aucune évolution suivante identifiée.</strong></div></div>
-        )}
-        {evolution.type === 'ECHELON' && nextSituation && Number.isFinite(Number(situation.echelonOrdre)) && (
-          <div className="career-steps" aria-hidden="true">
-            {Number(situation.echelonOrdre) > 1 && (
-              <div className="career-step career-step-past"><span>Échelon {Number(situation.echelonOrdre) - 1}</span></div>
-            )}
-            <div className="career-step career-step-current"><span>Échelon {situation.echelonOrdre}<small>actuel</small></span></div>
-            <div className="career-step career-step-next"><span>Échelon {nextSituation.echelonOrdre}<small>suivant</small></span></div>
-          </div>
-        )}
-      </section>
-      </div>
-
-      {canManageHr && (
-        <section className="career-panel career-history-panel">
-          <div className="career-panel-header">
-            <div className="career-panel-icon"><History size={19} /></div>
-            <div>
-              <h2>Historique des reclassements</h2>
-              <p>Opérations réellement enregistrées par le backend.</p>
-            </div>
-          </div>
-          {reclassementHistoryError ? (
-            <div className="career-inline-error" role="alert">{reclassementHistoryError}</div>
-          ) : reclassementHistory.length === 0 ? (
-            <div className="career-history-empty">Aucun reclassement enregistré pour cet agent.</div>
-          ) : (
-            <div className="career-timeline">
-              {reclassementHistory.map((item) => (
-                <div className="career-timeline-item" key={item.id}>
-                  <div className="career-timeline-marker" />
-                  <div className="career-timeline-content">
-                    <div className="career-timeline-top">
-                      <strong>{item.categorie_avant || '—'} → {item.categorie_apres || '—'}</strong>
-                      <span>{formatDate(item.date_effet)}</span>
-                    </div>
-                    <p>{item.activite_description || 'Reclassement enregistré'}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      <div className="career-history-grid">
-        <section className="career-panel career-history-panel">
-          <div className="career-panel-header">
-            <div className="career-panel-icon"><History size={19} /></div>
-            <div><h2>Historique de carrière</h2><p>Situations enregistrées pour cet agent.</p></div>
-          </div>
-          {history.length === 0 ? (
-            <div className="career-history-empty">Aucun historique de carrière disponible.</div>
-          ) : (
-            <div className="career-timeline">
-              {[...history].reverse().map((item) => (
-                <div className="career-timeline-item" key={item.historiqueId}>
-                  <div className="career-timeline-marker" />
-                  <div className="career-timeline-content">
-                    <div className="career-timeline-top">
-                      <strong>{gradeLabel(item.gradeLibelle, item.gradeCode)}</strong>
-                      <span>{formatDate(item.dateDebut)}</span>
-                    </div>
-                    {item.categorieCode && <p>Catégorie {item.categorieCode} · {indiceLabel(item.indice)}</p>}
-                    {item.dateFin && <div className="career-timeline-details"><span>Fin : {formatDate(item.dateFin)}</span></div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="career-panel career-history-panel">
-          <div className="career-panel-header career-panel-header-actions">
-            <div className="career-panel-icon"><GraduationCap size={19} /></div>
-            <div><h2>Historique des diplômes</h2><p>Diplômes enregistrés indépendamment de la carrière.</p></div>
-            {canManageHr && (
-              <button type="button" className="career-action-button primary" onClick={() => openAddDiploma()}>
-                <Plus size={16} />Ajouter un diplôme
+      <section className="career-panel career-historiques">
+        <div className="career-historiques-tete">
+          <div className="org-dialog-onglets" role="tablist" aria-label="Historiques">
+            {ongletsHistorique.map((item) => (
+              <button
+                key={item.cle}
+                type="button"
+                role="tab"
+                className="rf-chip"
+                aria-selected={ongletActif === item.cle}
+                aria-pressed={ongletActif === item.cle}
+                onClick={() => setOnglet(item.cle)}
+              >
+                {item.titre}{item.nombre != null && <span>{item.nombre}</span>}
               </button>
-            )}
+            ))}
           </div>
-          {!canManageHr ? (
-            <div className="career-history-empty">Consultation réservée au Service du Personnel.</div>
-          ) : diplomasLoading ? (
-            <div className="career-history-empty">Chargement des diplômes…</div>
-          ) : diplomasError ? (
-            <div className="career-inline-error" role="alert">
-              <span>{diplomasError}</span>
-              <button type="button" onClick={refreshDiplomas}>Réessayer</button>
-            </div>
-          ) : diplomas.length === 0 ? (
-            <div className="career-history-empty">Aucun diplôme enregistré pour cet agent.</div>
-          ) : (
-            <div className="career-diploma-list">
-              {sortedDiplomas.map((item) => (
-                <article className="career-diploma-item" key={item.id}>
-                  <div className="career-diploma-heading">
-                    <strong>{item.intitule || 'Diplôme sans intitulé'}</strong>
-                    <span>{formatDate(item.date_obtention)}</span>
-                  </div>
-                  {latestDiploma?.id === item.id && (
-                    <small className="career-diploma-latest">Diplôme le plus récent par date d’obtention</small>
-                  )}
-                  <p>{item.niveau || 'Niveau non renseigné'} · {item.etablissement || 'Établissement non renseigné'}</p>
-                  {item.mention && <small>Mention : {item.mention}</small>}
-                  {item.domaine && <small>Spécialité : {item.domaine}</small>}
-                  {item.observation && <small>{item.observation}</small>}
-                  <PieceScanneeLinks cibleType="DIPLOME" cibleId={item.id} />
-                </article>
-              ))}
-            </div>
+          {ongletActif === 'diplomes' && canManageHr && (
+            <button type="button" className="career-action-button secondary" onClick={() => openAddDiploma()}>
+              <Plus size={16} />Ajouter un diplôme
+            </button>
           )}
-        </section>
-      </div>
+        </div>
+
+        {ongletActif === 'carriere' && (history.length === 0 ? (
+          <div className="career-history-empty">Aucun historique de carrière disponible.</div>
+        ) : (
+          <div className="career-timeline">
+            {[...history].reverse().map((item) => (
+              <div className="career-timeline-item" key={item.historiqueId}>
+                <div className="career-timeline-marker" />
+                <div className="career-timeline-content">
+                  <div className="career-timeline-top">
+                    <strong>{gradeLabel(item.gradeLibelle, item.gradeCode)}</strong>
+                    <span>{formatDate(item.dateDebut)}{item.dateFin ? ` → ${formatDate(item.dateFin)}` : ' → aujourd’hui'}</span>
+                  </div>
+                  {item.categorieCode && <p>Catégorie {item.categorieCode} · {indiceLabel(item.indice)}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {ongletActif === 'diplomes' && (!canManageHr ? (
+          <div className="career-history-empty">Consultation réservée au Service du Personnel.</div>
+        ) : diplomasLoading ? (
+          <div className="career-history-empty">Chargement des diplômes…</div>
+        ) : diplomasError ? (
+          <div className="career-inline-error" role="alert">
+            <span>{diplomasError}</span>
+            <button type="button" onClick={refreshDiplomas}>Réessayer</button>
+          </div>
+        ) : diplomas.length === 0 ? (
+          <div className="career-history-empty">Aucun diplôme enregistré pour cet agent.</div>
+        ) : (
+          <div className="career-diploma-list">
+            {sortedDiplomas.map((item) => (
+              <article className="career-diploma-item" key={item.id}>
+                <div className="career-diploma-heading">
+                  <strong>{item.intitule || 'Diplôme sans intitulé'}</strong>
+                  <span>{formatDate(item.date_obtention)}</span>
+                </div>
+                {latestDiploma?.id === item.id && (
+                  <small className="career-diploma-latest">Diplôme le plus récent par date d’obtention</small>
+                )}
+                <p>{item.niveau || 'Niveau non renseigné'} · {item.etablissement || 'Établissement non renseigné'}</p>
+                {item.mention && <small>Mention : {item.mention}</small>}
+                {item.domaine && <small>Spécialité : {item.domaine}</small>}
+                {item.observation && <small>{item.observation}</small>}
+                <PieceScanneeLinks cibleType="DIPLOME" cibleId={item.id} />
+              </article>
+            ))}
+          </div>
+        ))}
+
+        {ongletActif === 'reclassements' && (reclassementHistoryError ? (
+          <div className="career-inline-error" role="alert">{reclassementHistoryError}</div>
+        ) : (
+          <div className="career-timeline">
+            {reclassementHistory.map((item) => (
+              <div className="career-timeline-item" key={item.id}>
+                <div className="career-timeline-marker" />
+                <div className="career-timeline-content">
+                  <div className="career-timeline-top">
+                    <strong>{item.categorie_avant || '—'} → {item.categorie_apres || '—'}</strong>
+                    <span>{formatDate(item.date_effet)}</span>
+                  </div>
+                  <p>{item.activite_description || 'Reclassement enregistré'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </section>
 
       {dialog && (
         <div className="career-dialog-backdrop" onMouseDown={(event) => {

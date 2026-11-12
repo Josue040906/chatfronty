@@ -1561,7 +1561,6 @@ button.rf-row {
 .rf-field label,
 .rf-label,
 .career-form label,
-.career-form-field,
 .profil-password-field label { font-size: var(--text-sm); gap: 5px; }
 
 /* Boutons */
@@ -1580,8 +1579,7 @@ button.rf-row {
 .profil-photo-pending .profil-save-button { height: var(--control-height-sm); padding: 0 14px; font-size: var(--text-sm); }
 
 /* Cases où s'affiche une valeur */
-.profil-info-item,
-.career-profile-item {
+.profil-info-item {
   min-height: 54px;
   padding: 10px 14px;
   gap: 3px;
@@ -1590,21 +1588,18 @@ button.rf-row {
 }
 .profil-info-item:has(input),
 .profil-info-item:has(select) { padding: 0; }
-.profil-info-label,
-.career-profile-item span {
+.profil-info-label {
   font-size: var(--text-xs);
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
 }
-.profil-info-value,
-.career-profile-item strong {
+.profil-info-value {
   font-size: var(--text-md);
   font-weight: 600;
   line-height: 1.35;
 }
 .profil-grid { gap: 10px; }
-.career-profile-grid { gap: 10px; }
 
 /* Cartes et sections : espacements un peu plus serrés */
 .profil-section,
@@ -1657,23 +1652,6 @@ button.rf-row {
   color: var(--color-accent-strong);
   font-size: var(--text-sm);
   font-weight: 600;
-}
-
-/* Analyse de carrière : un aperçu du profil, étroit, pour laisser la place à la carrière. */
-.career-profile-preview {
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
-
-.career-profile-preview .career-profile-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-@media (max-width: 700px) {
-  .career-profile-preview .career-profile-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Dans une barre d'outils, les puces s'alignent avec la recherche et le compteur. */
@@ -1752,36 +1730,9 @@ button.rf-row {
 .demande-confirmation p { margin: 0 0 10px; font-size: 14px; color: var(--color-accent-strong); }
 .demande-confirmation p strong { display: block; margin-bottom: 2px; color: var(--color-text); }
 
-/* ---------- Faire une demande (analyse de carrière) ---------- */
-.demandes-carriere-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-.demande-carte {
-  position: relative; display: grid; align-content: start; gap: 8px; padding: 18px;
-  border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-card);
-  border: 1px solid var(--color-border); transition: transform 160ms ease, box-shadow 160ms ease;
-}
-.demande-carte:hover { transform: translateY(-2px); }
-.demande-carte h3 { margin: 0; font: 600 18px var(--font-display); }
-.demande-carte p { margin: 0; font-size: 14px; color: var(--color-text-muted); }
-.demande-carte-icone {
-  width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
-  background: var(--color-surface-sunken); color: var(--color-brand);
-}
-.demande-carte.is-pret .demande-carte-icone { background: var(--color-accent-soft); color: var(--color-accent-strong); }
-.demande-carte.is-pret::after {
-  content: 'Possible'; position: absolute; top: 16px; right: 16px; padding: 2px 9px; border-radius: var(--radius-pill);
-  background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 11px; font-weight: 700;
-}
-.demande-carte.is-fini { opacity: 0.75; }
-.demande-carte.is-fini::after {
-  content: 'Fait'; position: absolute; top: 16px; right: 16px; padding: 2px 9px; border-radius: var(--radius-pill);
-  background: var(--color-success-soft); color: var(--color-success); font-size: 11px; font-weight: 700;
-}
-.demande-carte-jauge { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--color-surface-sunken); overflow: hidden; }
-.demande-carte-jauge span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-accent), var(--color-brand)); }
-.demande-carte-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+/* ---------- Saisie d'une date (actions de carrière) ---------- */
 .demande-carte-date { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .demande-carte-date input { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; }
-@media (prefers-reduced-motion: reduce) { .demande-carte { transition: none; } .demande-carte:hover { transform: none; } }
 
 .new-document-retraite {
   grid-column: 1 / -1; display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius-md);
@@ -1812,9 +1763,6 @@ button.rf-row {
   background: linear-gradient(135deg, var(--color-accent-soft), var(--color-surface) 70%);
   border: 1px solid var(--color-border); box-shadow: var(--shadow-card);
 }
-.titularisation-tete { display: flex; gap: 12px; align-items: flex-start; }
-.titularisation-tete h3 { margin: 0; font: 600 20px var(--font-display); }
-.titularisation-tete p { margin: 2px 0 0; color: var(--color-text-muted); font-size: 14px; }
 .titularisation-echelle { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); gap: 8px; }
 .titularisation-echelle li {
   position: relative; display: grid; gap: 2px; justify-items: center; padding: 10px 6px;
@@ -1835,10 +1783,8 @@ button.rf-row {
 .titularisation-choix label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
 .titularisation-choix select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; max-width: 100%; }
 
-.titularisation-carte .documents-aside-actions,
-.demande-carte .documents-aside-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.titularisation-carte .documents-aside-actions .rf-btn,
-.demande-carte .documents-aside-actions .rf-btn { width: auto; }
+.titularisation-carte .documents-aside-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.titularisation-carte .documents-aside-actions .rf-btn { width: auto; }
 
 /* ---------- Type d'emploi, mis en avant partout ---------- */
 .type-emploi-badge {
