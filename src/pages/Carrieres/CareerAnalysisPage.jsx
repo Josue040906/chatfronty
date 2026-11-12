@@ -1219,8 +1219,11 @@ export default function CareerAnalysisPage({ user }) {
                           <p className="career-form-note">Le diplôme le plus récent n’est pas nécessairement celui retenu pour le reclassement.</p>
                         </div>
                         <div className="career-proposal-comparison">
-                          <div><h3>Situation actuelle</h3><p>Catégorie {proposal.situationActuelle?.categorieCode || '—'} · {proposal.situationActuelle?.corpsLibelle || agent.corps_libelle || agent.corps || 'Corps non renseigné'}</p></div>
+                          <div><h3>Situation actuelle</h3><p>Catégorie {proposal.situationActuelle?.categorieCode || '—'} · {proposal.situationActuelle?.corpsLibelle || agent.corps_libelle || agent.corps || 'Corps non renseigné'}</p>
+                            {proposal.situationActuelle?.gradeCode && <p>{gradeLabel(proposal.situationActuelle.gradeLibelle, proposal.situationActuelle.gradeCode)} · {indiceLabel(proposal.situationActuelle.indice)}</p>}
+                          </div>
                           <div><h3>Situation proposée</h3><p>Catégorie {proposal.situationProposee?.categorieCode || '—'} · {proposal.situationProposee?.corpsLibelle || 'Corps inconnu'}</p>
+                            {proposal.situationProposee?.gradeCode && <p>{gradeLabel(proposal.situationProposee.gradeLibelle, proposal.situationProposee.gradeCode)} · {indiceLabel(proposal.situationProposee.indice)}</p>}
                           </div>
                         </div>
                       </>

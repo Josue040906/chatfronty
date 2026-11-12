@@ -114,8 +114,8 @@ export async function getTitularisation(employeId) {
 }
 
 /** Titularisation immédiate (même effet qu'une demande de titularisation appliquée). */
-export async function titulariser(employeId, dateEffet, echelonId) {
-  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet, echelonId });
+export async function titulariser(employeId, dateEffet) {
+  return apiPost(`/api/carrieres/employes/${encodeURIComponent(employeId)}/titularisation`, { dateEffet });
 }
 
 /** Simulation indicative de la carrière ; titularisation (AAAA-MM-JJ) facultative. */

@@ -56,7 +56,6 @@ function documentRequest(formData, type) {
       : type?.code === 'TITULARISATION'
         ? {
             dateEffetSouhaitee: formData.dateEffetSouhaitee || null,
-            gradeSouhaiteId: formData.gradeSouhaiteId ? Number(formData.gradeSouhaiteId) : null,
             motif: motif || null,
           }
       : type?.code === 'MUTATION'
@@ -119,7 +118,6 @@ export default function NewDocumentPage() {
     lieuTravailSouhaite: '',
     dateEffetSouhaitee: '',
     dateDepartSouhaitee: '',
-    gradeSouhaiteId: '',
   }, readPrefill(location.state)));
   const prefilled = proposition.changed;
   const [formData, setFormData] = useState(proposition.form);
@@ -258,11 +256,6 @@ export default function NewDocumentPage() {
       .then((result) => {
         if (cancelled) return;
         setTitularisation(result);
-        setFormData((current) => ({
-          ...current,
-          gradeSouhaiteId: current.gradeSouhaiteId
-            || (result?.suggestion ? String(result.suggestion.echelon_id) : ''),
-        }));
       })
       .catch(() => { if (!cancelled) setTitularisation(null); });
     return () => { cancelled = true; };
@@ -435,7 +428,6 @@ export default function NewDocumentPage() {
       lieuTravailSouhaite: '',
       dateEffetSouhaitee: '',
       dateDepartSouhaitee: '',
-      gradeSouhaiteId: '',
     }));
     setPostes([]);
     setLoadingPostes(false);
@@ -514,9 +506,8 @@ export default function NewDocumentPage() {
     || isTitularisationRequest;
   const hasDetails = isLeaveRequest || isMutationRequest || isAdvancementRequest || isRetirementRequest
     || isTitularisationRequest;
-  const gradeTitularisation = titularisation?.options?.find(
-    (option) => String(option.echelon_id) === formData.gradeSouhaiteId
-  );
+  // Le grade de titularisation n'est pas au choix : indice égal, sinon le premier supérieur.
+  const gradeTitularisation = titularisation?.suggestion;
   const retraiteApplicable = retraite?.datePossible && formData.dateDepartSouhaitee
     ? (formData.dateDepartSouhaitee < retraite.datePossible ? retraite.datePossible : formData.dateDepartSouhaitee)
     : null;
@@ -791,24 +782,14 @@ export default function NewDocumentPage() {
                   titularisation && !titularisation.possible ? (
                     <p className="new-document-retraite" role="alert">{titularisation.raison}</p>
                   ) : (
-                    <div className={prefillClass('rf-field', 'gradeSouhaiteId', prefilled)}>
-                      <label htmlFor="gradeSouhaiteId">Grade visé <b>*</b></label>
-                      <select
-                        id="gradeSouhaiteId"
-                        name="gradeSouhaiteId"
-                        value={formData.gradeSouhaiteId}
-                        onChange={handleChange}
-                        disabled={saving || !titularisation}
-                        required
-                      >
-                        {(titularisation?.options || []).map((option) => (
-                          <option key={option.echelon_id} value={option.echelon_id}>
-                            {option.code} — {option.libelle} (indice {option.indice})
-                            {option.echelon_id === titularisation?.suggestion?.echelon_id ? ' · proposé' : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <p className="new-document-retraite" role="status">
+                      <strong>
+                        Grade de fonctionnaire : {gradeTitularisation
+                          ? `${gradeTitularisation.code} — ${gradeTitularisation.libelle}, indice ${gradeTitularisation.indice}`
+                          : '…'}
+                      </strong>
+                      <span>Indice égal à l’indice actuel, sinon le premier indice supérieur.</span>
+                    </p>
                   )
                 )}
 
