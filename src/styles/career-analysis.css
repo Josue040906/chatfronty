@@ -827,18 +827,20 @@
 
 .actions-carriere-demandes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
 .action-demande {
-  display: flex; align-items: center; gap: 10px; padding: 11px 14px; text-align: left; cursor: pointer;
-  border: 1.5px solid var(--color-border-strong); border-radius: 14px; background: var(--color-surface); color: var(--color-text);
-  transition: border-color 0.18s, background 0.18s, transform 0.18s var(--ease-out);
+  display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 10px 14px; text-align: left; cursor: pointer;
+  border: 0; border-radius: 16px; color: #FFF8F2;
+  background: linear-gradient(145deg, #B5643C, #7A3B22);
+  box-shadow: 0 12px 20px -14px rgb(122 59 34 / 0.8);
+  transition: transform 0.18s var(--ease-out), filter 0.18s, box-shadow 0.18s;
 }
-.action-demande > svg:first-child { flex: none; color: var(--color-accent-strong); }
+.action-demande > svg:first-child { flex: none; width: 34px; height: 34px; padding: 8px; border-radius: 11px; background: rgb(255 248 242 / 0.16); color: #FFE2C7; }
 .action-demande span { display: grid; gap: 1px; min-width: 0; flex: 1; }
-.action-demande strong { font: 600 14px var(--font-ui); }
-.action-demande small { font-size: 12px; color: var(--color-text-muted); overflow-wrap: anywhere; }
-.action-demande-fleche { flex: none; color: var(--color-text-muted); transition: transform 0.18s var(--ease-out), color 0.18s; }
-.action-demande:hover { border-color: var(--color-brand); background: var(--color-accent-soft); transform: translateY(-1px); }
-.action-demande:hover .action-demande-fleche { color: var(--color-brand); transform: translate(2px, -2px); }
-.action-demande:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.action-demande strong { font: 600 14px / 1.25 var(--font-ui); }
+.action-demande small { font-size: 12px; color: rgb(255 248 242 / 0.75); overflow-wrap: anywhere; }
+.action-demande-fleche { flex: none; color: rgb(255 248 242 / 0.7); transition: transform 0.18s var(--ease-out), color 0.18s; }
+.action-demande:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 16px 24px -14px rgb(122 59 34 / 0.85); }
+.action-demande:hover .action-demande-fleche { color: #FFF8F2; transform: translate(2px, -2px); }
+.action-demande:focus-visible { outline: 3px solid #E3A57C; outline-offset: 2px; }
 
 .actions-carriere-confirmation .documents-aside-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .actions-carriere-confirmation .documents-aside-actions .rf-btn { width: auto; }
@@ -848,10 +850,29 @@
 /* =========================================================
    Historiques en onglets
    ========================================================= */
+.career-historiques {
+  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-bottom: 24px;
+}
+.career-analysis-page .career-historiques > .career-panel { margin-bottom: 0; }
 .career-historiques-tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.career-historiques-tete h2 { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 21px var(--font-display); }
+.career-historiques-nombre {
+  padding: 1px 9px; border-radius: var(--radius-pill); background: var(--color-surface-sunken);
+  font: 600 12px var(--font-ui); color: var(--color-text-muted);
+}
 .career-historiques-tete .org-dialog-onglets { margin: 0; flex-wrap: wrap; }
 .career-historiques-tete .rf-chip span { margin-left: 6px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.career-historiques-tete .career-action-button { height: 36px; padding: 0 14px; }
 
+/* L'historique dit le type d'emploi de chaque période : pastille et filet de sa couleur. */
+.career-analysis-page .career-timeline-item[class*='type-'] .career-timeline-marker { background: var(--type); }
+.career-timeline-item[class*='type-'] .career-timeline-content { border-left: 3px solid var(--type-soft); padding-left: 12px; }
+.career-timeline-content p .type-emploi-badge { margin-right: 8px; }
+.career-analysis-page .career-timeline-item.is-reclassement .career-timeline-marker { background: #B5643C; }
+
+@media (max-width: 900px) {
+  .career-historiques { grid-template-columns: 1fr; }
+}
 @media (max-width: 700px) {
   .career-situation-ruban > .is-grade { grid-column: auto; }
   .anciennete-anneau { flex-basis: 100%; }
@@ -860,3 +881,7 @@
   .action-directe, .action-demande, .anciennete-anneau-plein { transition: none; }
   .action-directe-pastille { animation: none; }
 }
+
+/* Le bandeau prend la couleur du type d'emploi de l'agent. */
+.career-analysis-page .career-analysis-hero.type-contractuel { background: linear-gradient(145deg, #9A6B2A, #3E2A1D); }
+.career-analysis-page .career-analysis-hero.type-stagiaire { background: linear-gradient(145deg, #2F5B78, #1C2836); }

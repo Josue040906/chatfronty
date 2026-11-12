@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -423,7 +424,7 @@ export default function AgentProfilePage({ user }) {
           </svg>
 
           <div className="rf-profile-id">
-            <div className="rf-profile-photo">
+            <div className={`rf-profile-photo avatar-type ${classeTypeEmploi(agent.type_emploi)}`}>
               <PersonPhoto
                 src={photoUrl}
                 alt={`Photo de ${formatName(agent)}`}

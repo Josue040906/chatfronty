@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { classeTypeEmploi } from '../../utils/typeEmploi';
 import {
   ArrowRight,
   CalendarDays,
@@ -168,7 +169,7 @@ export default function CarrieresPage() {
           {filteredAgents.map((agent, index) => (
             <article className="rf-card career-agent-card" key={agent.id}>
               <div className="career-agent-card-top">
-                <span className={`career-agent-avatar tone-${AVATAR_TONES[index % AVATAR_TONES.length]}`}>
+                <span className={`career-agent-avatar tone-${AVATAR_TONES[index % AVATAR_TONES.length]} avatar-type ${classeTypeEmploi(agent.type_emploi)}`}>
                   <PersonPhoto
                     src={getEmployeePhotoUrl(agent.photo)}
                     alt={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}

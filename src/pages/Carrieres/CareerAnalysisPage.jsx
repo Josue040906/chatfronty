@@ -7,6 +7,7 @@ import ActionsCarriere from '../../components/carriere/ActionsCarriere';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
+import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
@@ -787,15 +788,12 @@ export default function CareerAnalysisPage({ user }) {
       || Number(right.id || 0) - Number(left.id || 0);
   });
   const latestDiploma = sortedDiplomas.find((item) => item.date_obtention);
-  // Les reclassements n'ont d'onglet que s'il y en a (ou si leur lecture a échoué).
+  // L'historique de carrière et celui des reclassements se partagent un panneau.
   const ongletsHistorique = [
-    { cle: 'carriere', titre: 'Historique de carrière', nombre: history.length },
-    { cle: 'diplomes', titre: 'Diplômes', nombre: canManageHr ? diplomas.length : null },
-    ...(canManageHr && (reclassementHistory.length > 0 || reclassementHistoryError)
-      ? [{ cle: 'reclassements', titre: 'Reclassements', nombre: reclassementHistory.length }]
-      : []),
+    { cle: 'carriere', titre: 'Carrière', nombre: history.length },
+    { cle: 'reclassements', titre: 'Reclassements', nombre: reclassementHistory.length },
   ];
-  const ongletActif = ongletsHistorique.some((item) => item.cle === onglet) ? onglet : 'carriere';
+  const ongletActif = canManageHr ? onglet : 'carriere';
 
   return (
     <div className="career-analysis-page rf-page">
@@ -804,7 +802,7 @@ export default function CareerAnalysisPage({ user }) {
         Retour au profil
       </button>
 
-      <section className="career-analysis-hero">
+      <section className={`career-analysis-hero ${classeTypeEmploi(agent.type_emploi)}`}>
         <svg className="career-hero-circles" viewBox="0 0 320 200" aria-hidden="true"><circle cx="250" cy="70" r="120" /><circle cx="250" cy="70" r="80" /></svg>
         <div className="career-analysis-identity">
           <div className="career-analysis-avatar">
@@ -876,100 +874,119 @@ export default function CareerAnalysisPage({ user }) {
 
       <SimulationCarriere employeId={id} />
 
-      <section className="career-panel career-historiques">
-        <div className="career-historiques-tete">
-          <div className="org-dialog-onglets" role="tablist" aria-label="Historiques">
-            {ongletsHistorique.map((item) => (
-              <button
-                key={item.cle}
-                type="button"
-                role="tab"
-                className="rf-chip"
-                aria-selected={ongletActif === item.cle}
-                aria-pressed={ongletActif === item.cle}
-                onClick={() => setOnglet(item.cle)}
-              >
-                {item.titre}{item.nombre != null && <span>{item.nombre}</span>}
+      <div className="career-historiques">
+        <section className="career-panel career-historique-carriere" aria-labelledby="historique-carriere-titre">
+          <div className="career-historiques-tete">
+            <h2 id="historique-carriere-titre">{ongletActif === 'reclassements' ? 'Reclassements' : 'Historique de carrière'}</h2>
+            {canManageHr && (
+              <div className="org-dialog-onglets" role="tablist" aria-label="Historique affiché">
+                {ongletsHistorique.map((item) => (
+                  <button
+                    key={item.cle}
+                    type="button"
+                    role="tab"
+                    className="rf-chip"
+                    aria-selected={ongletActif === item.cle}
+                    aria-pressed={ongletActif === item.cle}
+                    onClick={() => setOnglet(item.cle)}
+                  >
+                    {item.titre}<span>{item.nombre}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {ongletActif === 'carriere' && (history.length === 0 ? (
+            <div className="career-history-empty">Aucun historique de carrière disponible.</div>
+          ) : (
+            <div className="career-timeline">
+              {[...history].reverse().map((item, index, liste) => {
+                // Le type d'emploi s'affiche là où il change : entrée, contrat, titularisation.
+                const changement = item.typeEmploi && item.typeEmploi !== liste[index + 1]?.typeEmploi;
+                return (
+                  <div className={`career-timeline-item ${classeTypeEmploi(item.typeEmploi)}`} key={item.historiqueId}>
+                    <div className="career-timeline-marker" />
+                    <div className="career-timeline-content">
+                      <div className="career-timeline-top">
+                        <strong>{gradeLabel(item.gradeLibelle, item.gradeCode)}</strong>
+                        <span>{formatDate(item.dateDebut)}{item.dateFin ? ` → ${formatDate(item.dateFin)}` : ' → aujourd’hui'}</span>
+                      </div>
+                      <p>
+                        {changement && <TypeEmploiBadge type={item.typeEmploi} />}
+                        {item.categorieCode && <>Catégorie {item.categorieCode} · {indiceLabel(item.indice)}</>}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          {ongletActif === 'reclassements' && (reclassementHistoryError ? (
+            <div className="career-inline-error" role="alert">{reclassementHistoryError}</div>
+          ) : reclassementHistory.length === 0 ? (
+            <div className="career-history-empty">Aucun reclassement enregistré pour cet agent.</div>
+          ) : (
+            <div className="career-timeline">
+              {reclassementHistory.map((item) => (
+                <div className="career-timeline-item is-reclassement" key={item.id}>
+                  <div className="career-timeline-marker" />
+                  <div className="career-timeline-content">
+                    <div className="career-timeline-top">
+                      <strong>Catégorie {item.categorie_avant || '—'} → {item.categorie_apres || '—'}</strong>
+                      <span>{formatDate(item.date_effet)}</span>
+                    </div>
+                    <p>{item.activite_description || 'Reclassement enregistré'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+
+        <section className="career-panel career-historique-diplomes" aria-labelledby="historique-diplomes-titre">
+          <div className="career-historiques-tete">
+            <h2 id="historique-diplomes-titre">Diplômes{canManageHr && diplomas.length > 0 && <span className="career-historiques-nombre">{diplomas.length}</span>}</h2>
+            {canManageHr && (
+              <button type="button" className="career-action-button secondary" onClick={() => openAddDiploma()}>
+                <Plus size={16} />Ajouter
               </button>
-            ))}
+            )}
           </div>
-          {ongletActif === 'diplomes' && canManageHr && (
-            <button type="button" className="career-action-button secondary" onClick={() => openAddDiploma()}>
-              <Plus size={16} />Ajouter un diplôme
-            </button>
+          {!canManageHr ? (
+            <div className="career-history-empty">Consultation réservée au Service du Personnel.</div>
+          ) : diplomasLoading ? (
+            <div className="career-history-empty">Chargement des diplômes…</div>
+          ) : diplomasError ? (
+            <div className="career-inline-error" role="alert">
+              <span>{diplomasError}</span>
+              <button type="button" onClick={refreshDiplomas}>Réessayer</button>
+            </div>
+          ) : diplomas.length === 0 ? (
+            <div className="career-history-empty">Aucun diplôme enregistré pour cet agent.</div>
+          ) : (
+            <div className="career-diploma-list">
+              {sortedDiplomas.map((item) => (
+                <article className="career-diploma-item" key={item.id}>
+                  <div className="career-diploma-heading">
+                    <strong>{item.intitule || 'Diplôme sans intitulé'}</strong>
+                    <span>{formatDate(item.date_obtention)}</span>
+                  </div>
+                  {latestDiploma?.id === item.id && (
+                    <small className="career-diploma-latest">Diplôme le plus récent par date d’obtention</small>
+                  )}
+                  <p>{item.niveau || 'Niveau non renseigné'} · {item.etablissement || 'Établissement non renseigné'}</p>
+                  {item.mention && <small>Mention : {item.mention}</small>}
+                  {item.domaine && <small>Spécialité : {item.domaine}</small>}
+                  {item.observation && <small>{item.observation}</small>}
+                  <PieceScanneeLinks cibleType="DIPLOME" cibleId={item.id} />
+                </article>
+              ))}
+            </div>
           )}
-        </div>
-
-        {ongletActif === 'carriere' && (history.length === 0 ? (
-          <div className="career-history-empty">Aucun historique de carrière disponible.</div>
-        ) : (
-          <div className="career-timeline">
-            {[...history].reverse().map((item) => (
-              <div className="career-timeline-item" key={item.historiqueId}>
-                <div className="career-timeline-marker" />
-                <div className="career-timeline-content">
-                  <div className="career-timeline-top">
-                    <strong>{gradeLabel(item.gradeLibelle, item.gradeCode)}</strong>
-                    <span>{formatDate(item.dateDebut)}{item.dateFin ? ` → ${formatDate(item.dateFin)}` : ' → aujourd’hui'}</span>
-                  </div>
-                  {item.categorieCode && <p>Catégorie {item.categorieCode} · {indiceLabel(item.indice)}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-
-        {ongletActif === 'diplomes' && (!canManageHr ? (
-          <div className="career-history-empty">Consultation réservée au Service du Personnel.</div>
-        ) : diplomasLoading ? (
-          <div className="career-history-empty">Chargement des diplômes…</div>
-        ) : diplomasError ? (
-          <div className="career-inline-error" role="alert">
-            <span>{diplomasError}</span>
-            <button type="button" onClick={refreshDiplomas}>Réessayer</button>
-          </div>
-        ) : diplomas.length === 0 ? (
-          <div className="career-history-empty">Aucun diplôme enregistré pour cet agent.</div>
-        ) : (
-          <div className="career-diploma-list">
-            {sortedDiplomas.map((item) => (
-              <article className="career-diploma-item" key={item.id}>
-                <div className="career-diploma-heading">
-                  <strong>{item.intitule || 'Diplôme sans intitulé'}</strong>
-                  <span>{formatDate(item.date_obtention)}</span>
-                </div>
-                {latestDiploma?.id === item.id && (
-                  <small className="career-diploma-latest">Diplôme le plus récent par date d’obtention</small>
-                )}
-                <p>{item.niveau || 'Niveau non renseigné'} · {item.etablissement || 'Établissement non renseigné'}</p>
-                {item.mention && <small>Mention : {item.mention}</small>}
-                {item.domaine && <small>Spécialité : {item.domaine}</small>}
-                {item.observation && <small>{item.observation}</small>}
-                <PieceScanneeLinks cibleType="DIPLOME" cibleId={item.id} />
-              </article>
-            ))}
-          </div>
-        ))}
-
-        {ongletActif === 'reclassements' && (reclassementHistoryError ? (
-          <div className="career-inline-error" role="alert">{reclassementHistoryError}</div>
-        ) : (
-          <div className="career-timeline">
-            {reclassementHistory.map((item) => (
-              <div className="career-timeline-item" key={item.id}>
-                <div className="career-timeline-marker" />
-                <div className="career-timeline-content">
-                  <div className="career-timeline-top">
-                    <strong>{item.categorie_avant || '—'} → {item.categorie_apres || '—'}</strong>
-                    <span>{formatDate(item.date_effet)}</span>
-                  </div>
-                  <p>{item.activite_description || 'Reclassement enregistré'}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </section>
+        </section>
+      </div>
 
       {dialog && (
         <div className="career-dialog-backdrop" onMouseDown={(event) => {

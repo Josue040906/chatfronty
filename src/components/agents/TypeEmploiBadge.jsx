@@ -1,10 +1,11 @@
 import { BadgeCheck, FileSignature, GraduationCap } from 'lucide-react';
+import { tonTypeEmploi } from '../../utils/typeEmploi';
 
 /** Fonctionnaire, contractuel ou stagiaire : la couleur et l'icône disent le parcours. */
 const TYPES = {
-  Fonctionnaire: { classe: 'is-fonctionnaire', libelle: 'Fonctionnaire', Icone: BadgeCheck },
-  'Agent contractuel': { classe: 'is-contractuel', libelle: 'Contractuel', Icone: FileSignature },
-  Stagiaire: { classe: 'is-stagiaire', libelle: 'Stagiaire', Icone: GraduationCap },
+  Fonctionnaire: { libelle: 'Fonctionnaire', Icone: BadgeCheck },
+  'Agent contractuel': { libelle: 'Contractuel', Icone: FileSignature },
+  Stagiaire: { libelle: 'Stagiaire', Icone: GraduationCap },
 };
 
 export default function TypeEmploiBadge({ type, grand = false }) {
@@ -13,7 +14,7 @@ export default function TypeEmploiBadge({ type, grand = false }) {
   const Icone = connu?.Icone;
   return (
     <span
-      className={`type-emploi-badge ${connu?.classe || ''}${grand ? ' is-grand' : ''}`}
+      className={`type-emploi-badge is-${tonTypeEmploi(type) || 'autre'}${grand ? ' is-grand' : ''}`}
       title={`Type d’emploi : ${type}`}
     >
       {Icone && <Icone size={grand ? 15 : 13} aria-hidden="true" />}

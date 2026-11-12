@@ -131,11 +131,11 @@ export default function ActionsCarriere({
   ].filter((action) => action.visible);
 
   const demandes = [
-    { code: 'AVANCEMENT', titre: 'Avancement', icone: TrendingUp, detail: 'Au grade suivant', visible: !dejaRetraite },
-    { code: 'MUTATION', titre: 'Mutation', icone: BriefcaseBusiness, detail: 'À la date choisie', visible: !dejaRetraite },
-    { code: 'CONGE', titre: 'Congé', icone: Palmtree, detail: congeDetail, visible: !dejaRetraite },
-    { code: 'TITULARISATION', titre: 'Titularisation', icone: BadgeCheck, detail: 'Vers fonctionnaire', visible: titularisable },
-    { code: 'RETRAITE', titre: 'Retraite', icone: Hourglass, detail: 'À la date de départ choisie', visible: !dejaRetraite },
+    { code: 'AVANCEMENT', titre: 'Demander un avancement', icone: TrendingUp, detail: 'Au grade suivant', visible: !dejaRetraite },
+    { code: 'MUTATION', titre: 'Demander une mutation', icone: BriefcaseBusiness, detail: 'À la date d’effet choisie', visible: !dejaRetraite },
+    { code: 'CONGE', titre: 'Demander un congé', icone: Palmtree, detail: congeDetail, visible: !dejaRetraite },
+    { code: 'TITULARISATION', titre: 'Demander la titularisation', icone: BadgeCheck, detail: 'Vers fonctionnaire', visible: titularisable },
+    { code: 'RETRAITE', titre: 'Demander le départ à la retraite', icone: Hourglass, detail: 'À la date choisie', visible: !dejaRetraite },
   ].filter((demande) => demande.visible);
 
   return (

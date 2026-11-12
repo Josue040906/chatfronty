@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, CalendarClock, Hourglass, Sparkles } from 'lucide-react';
 import { getSimulation } from '../../api/carrieres';
 import { formatJour, isoToday } from '../../utils/documentCycle';
+import { tonTypeEmploi } from '../../utils/typeEmploi';
 
 const LARGEUR = 1000;
 const HAUTEUR = 330;
@@ -17,11 +18,7 @@ function ajouterMois(date, mois) {
 }
 
 /** Couleur d'une marche selon le type d'emploi : la titularisation se voit au changement de couleur. */
-function ton(typeEmploi) {
-  if (typeEmploi === 'Fonctionnaire') return 'fonctionnaire';
-  if (typeEmploi === 'Stagiaire') return 'stagiaire';
-  return 'contractuel';
-}
+const ton = (typeEmploi) => tonTypeEmploi(typeEmploi) || 'contractuel';
 
 /**
  * Simulation de carrière en escalier : chaque grade est une marche dont la

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { Armchair, Hourglass, Palmtree, UserRoundSearch, X } from 'lucide-react';
 import { getEtatPostes, getReleve } from '../../api/postes';
 import { formatJour } from '../../utils/documentCycle';
@@ -81,7 +82,7 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
                     onClick={() => onAgentClick?.(agent.id)}
                     title={`${agent.prenom || ''} ${agent.nom || ''}`.trim()}
                   >
-                    <span className={`plan-siege-avatar rf-avatar-tone-${index % 5}`}>
+                    <span className={`plan-siege-avatar rf-avatar-tone-${index % 5} avatar-type ${classeTypeEmploi(agent.type_emploi)}`}>
                       <PersonPhoto
                         src={getEmployeePhotoUrl(agent.photo)}
                         alt=""

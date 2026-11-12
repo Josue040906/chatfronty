@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { classeTypeEmploi } from '../../utils/typeEmploi';
 import {
   Search,
   UserPlus,
@@ -395,7 +396,7 @@ export default function AgentsPage({ user }) {
                       }}
                     >
                       <span className="agents-row-person">
-                        <span className={`rf-avatar rf-avatar-lg rf-avatar-tone-${index % 5}`}>
+                        <span className={`rf-avatar rf-avatar-lg rf-avatar-tone-${index % 5} avatar-type ${classeTypeEmploi(agent.type_emploi)}`}>
                           <PersonPhoto
                             src={photoUrl}
                             alt={`Photo de ${formatName(agent)}`}
@@ -432,7 +433,7 @@ export default function AgentsPage({ user }) {
           >
             {selectedAgent ? (
               <div key={selectedAgent.id} className="agents-aside-body">
-                <div className="agents-aside-avatar">
+                <div className={`agents-aside-avatar avatar-type ${classeTypeEmploi(selectedAgent.type_emploi)}`}>
                   <PersonPhoto
                     src={getEmployeePhotoUrl(selectedAgent.photo)}
                     alt={`Photo de ${formatName(selectedAgent)}`}

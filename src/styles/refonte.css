@@ -1787,6 +1787,12 @@ button.rf-row {
 .titularisation-carte .documents-aside-actions .rf-btn { width: auto; }
 
 /* ---------- Type d'emploi, mis en avant partout ---------- */
+/* La couleur de chaque type : --type (trait) et --type-soft (fond), via la classe type-<ton>. */
+.type-fonctionnaire { --type: var(--color-success); --type-soft: var(--color-success-soft); }
+.type-contractuel { --type: var(--color-accent); --type-soft: var(--color-accent-soft); }
+.type-stagiaire { --type: var(--color-info); --type-soft: var(--color-info-soft); }
+/* Un avatar porte un anneau de la couleur du type d'emploi de l'agent. */
+.avatar-type[class*='type-'] { box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--type); }
 .type-emploi-badge {
   display: inline-flex; align-items: center; gap: 5px; width: fit-content; vertical-align: middle;
   padding: 2px 9px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap;
