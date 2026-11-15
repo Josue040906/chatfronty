@@ -95,12 +95,11 @@ export function documentActions(document, user, today = isoToday()) {
   };
 }
 
-/** « Accepté le 12/11/2026 par le Directeur des RH (Arrêté n° 12) — saisi par Lova ». */
+/** « Signée le 12/11/2026 par Lova ANDRIANINAY — Chef de service — saisie par Faly ». */
 export function decisionLabel(decision) {
   if (!decision) return '';
-  const acte = decision.reference ? ` (${decision.reference})` : '';
   const saisie = decision.saisieParNom ? ` — saisie par ${decision.saisieParNom}` : '';
-  return `Signée le ${formatJour(decision.date)} par ${decision.signataire}${acte}${saisie}`;
+  return `Signée le ${formatJour(decision.date)} par ${decision.signataire}${saisie}`;
 }
 
 function situationGrade(situation) {

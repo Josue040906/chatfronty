@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, CalendarClock, Hourglass, Sparkles } from 'lucide-react';
+import { ArrowUpRight, CalendarClock, Hourglass } from 'lucide-react';
 import { getSimulation } from '../../api/carrieres';
 import { formatJour, isoToday } from '../../utils/documentCycle';
 import { tonTypeEmploi } from '../../utils/typeEmploi';
@@ -11,12 +11,6 @@ const JOUR_MS = 24 * 3600 * 1000;
 
 const jour = (date) => Date.parse(String(date).slice(0, 10));
 
-function ajouterMois(date, mois) {
-  const d = new Date(jour(date));
-  d.setUTCMonth(d.getUTCMonth() + mois);
-  return d.toISOString().slice(0, 10);
-}
-
 /** Couleur d'une marche selon le type d'emploi : la titularisation se voit au changement de couleur. */
 const ton = (typeEmploi) => tonTypeEmploi(typeEmploi) || 'contractuel';
 
@@ -27,32 +21,16 @@ const ton = (typeEmploi) => tonTypeEmploi(typeEmploi) || 'contractuel';
  */
 export default function SimulationCarriere({ employeId }) {
   const today = isoToday();
-  const [base, setBase] = useState(null);
+  const [simulation, setSimulation] = useState(null);
   const [erreur, setErreur] = useState('');
-  const [moisTitularisation, setMoisTitularisation] = useState(null);
-  const [variante, setVariante] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     getSimulation(employeId)
-      .then((resultat) => { if (!cancelled) setBase(resultat); })
+      .then((resultat) => { if (!cancelled) setSimulation(resultat); })
       .catch((err) => { if (!cancelled) setErreur(err?.message || 'Simulation indisponible.'); });
     return () => { cancelled = true; };
   }, [employeId]);
-
-  // Une titularisation à la date choisie : l'escalier et l'indice final se recalculent.
-  useEffect(() => {
-    if (moisTitularisation == null || !base?.titularisable) return undefined;
-    let cancelled = false;
-    const minuterie = window.setTimeout(() => {
-      getSimulation(employeId, ajouterMois(today, moisTitularisation))
-        .then((resultat) => { if (!cancelled) setVariante(resultat); })
-        .catch(() => { if (!cancelled) setVariante(null); });
-    }, 250);
-    return () => { cancelled = true; window.clearTimeout(minuterie); };
-  }, [base?.titularisable, employeId, moisTitularisation, today]);
-
-  const simulation = moisTitularisation != null && variante ? variante : base;
 
   const dessin = useMemo(() => {
     const etapes = (simulation?.etapes || []).filter((etape) => etape.indice != null);
@@ -101,15 +79,12 @@ export default function SimulationCarriere({ employeId }) {
     };
   }, [simulation, today]);
 
-  if (erreur || !base || !dessin) return null;
+  if (erreur || !simulation || !dessin) return null;
 
   const projetees = (simulation.etapes || []).filter((etape) => etape.nature === 'PROJETE');
   const prochaine = projetees.find((etape) => etape.evenement !== 'RETRAITE');
   const prochaineClasse = projetees.find((etape) => etape.evenement === 'CLASSE' || etape.evenement === 'TITULARISATION');
   const retraite = projetees.find((etape) => etape.evenement === 'RETRAITE');
-  const moisMax = base.retraite
-    ? Math.max(0, Math.min(180, Math.round((jour(base.retraite) - jour(today)) / (30.44 * JOUR_MS)) - 1))
-    : 120;
 
   return (
     <section className="career-section simulation-carriere" aria-labelledby="simulation-titre">
@@ -121,12 +96,6 @@ export default function SimulationCarriere({ employeId }) {
         <div className="simulation-resume">
           <span>Indice à la retraite</span>
           <strong>{simulation.indiceFinal ?? '—'}</strong>
-          {moisTitularisation != null && variante && base.indiceFinal != null && (
-            <small>
-              {variante.indiceFinal - base.indiceFinal >= 0 ? '+' : ''}
-              {variante.indiceFinal - base.indiceFinal} par rapport à sans titularisation ({base.indiceFinal})
-            </small>
-          )}
         </div>
       </div>
 
@@ -238,30 +207,6 @@ export default function SimulationCarriere({ employeId }) {
         </article>
       </div>
 
-      {base.titularisable && (
-        <div className="simulation-titularisation">
-          <label htmlFor="simulation-curseur">
-            <Sparkles size={16} aria-hidden="true" />
-            {moisTitularisation == null
-              ? 'Et s’il était titularisé ? Faites glisser pour choisir la date.'
-              : `Titularisé le ${formatJour(ajouterMois(today, moisTitularisation))}`}
-          </label>
-          <input
-            id="simulation-curseur"
-            type="range"
-            min="0"
-            max={moisMax}
-            step="1"
-            value={moisTitularisation ?? 0}
-            onChange={(event) => setMoisTitularisation(Number(event.target.value))}
-          />
-          {moisTitularisation != null && (
-            <button type="button" className="rf-btn rf-btn-sm" onClick={() => { setMoisTitularisation(null); setVariante(null); }}>
-              Sans titularisation
-            </button>
-          )}
-        </div>
-      )}
       <p className="simulation-note">
         Projection indicative : un avancement à chaque durée minimale, dans l’ordre du parcours, d’après les données de SYGPERS.
         Les marches hachurées sont projetées ; survolez une marche pour le détail.

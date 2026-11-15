@@ -81,7 +81,7 @@ export async function appliquerDocument(id) {
 
 /**
  * La réponse reçue sur papier : { decision: 'ACCEPTE' | 'REFUSE', signataire,
- * reference, dateDecision, motif, dateEffet } (dateEffet : date accordée, facultative).
+ * dateDecision, motif, dateEffet } (dateEffet : date accordée, facultative).
  */
 export async function deciderDocument(id, reponse) {
   return apiPost(`/api/documents/${encodeURIComponent(id)}/decision`, reponse);
@@ -93,6 +93,11 @@ export async function getDemandesAgent(employeId, statut, typeCode) {
   if (statut) params.set('statut', statut);
   if (typeCode) params.set('type', typeCode);
   return normalizeResponse(await apiGet(`/api/documents?${params}`));
+}
+
+/** Les signataires possibles : directeurs et chefs de service en poste ({ nom, poste, service, direction, libelle }). */
+export async function getSignataires() {
+  return normalizeResponse(await apiGet('/api/documents/signataires'));
 }
 
 export async function annulerDocument(id) {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { titulariser } from '../../api/carrieres';
 import { isoToday } from '../../utils/documentCycle';
-import DecisionSigneeChamps from './DecisionSigneeChamps';
+import SignataireChamp from '../documents/SignataireChamp';
 
 /**
  * Titularisation d'un contractuel ou d'un stagiaire : son indice actuel est
@@ -14,7 +14,7 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
   const today = isoToday();
   const grade = analyse.suggestion;
   const [dateEffet, setDateEffet] = useState(today);
-  const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
+  const [acte, setActe] = useState({ signataire: '' });
   const [envoi, setEnvoi] = useState({ running: false, error: '' });
 
   const actuelle = analyse.situationActuelle || {};
@@ -60,7 +60,7 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
           <input type="date" value={dateEffet} max={today} onChange={(event) => setDateEffet(event.target.value)} />
         </label>
       </div>
-      <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={envoi.running} />
+      <SignataireChamp value={acte.signataire} onChange={(signataire) => setActe({ signataire })} disabled={envoi.running} />
       <p className="titularisation-note">Il devient fonctionnaire à ce grade ; sa période actuelle se ferme la veille.</p>
       <div className="documents-aside-actions">
         <button

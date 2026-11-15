@@ -1733,17 +1733,18 @@ button.rf-row {
 /* ---------- Saisie d'une date (actions de carrière) ---------- */
 
 /* ---------- Réponse signée et acte signé ---------- */
-.acte-signe, .reponse-demande {
+.reponse-demande {
   display: grid; gap: 10px; margin: 0; padding: 14px; border: 1px solid var(--color-border);
   border-radius: var(--radius-md); background: var(--color-surface-sunken);
 }
-.acte-signe { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-.acte-signe legend { padding: 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-text-muted); }
-.acte-signe label, .reponse-demande label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
-.acte-signe input, .reponse-demande input, .reponse-demande textarea {
+.reponse-demande label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.signataire-champ { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.signataire-champ input { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; font: inherit; }
+.signataire-champ b { color: var(--color-danger); }
+.reponse-demande input, .reponse-demande textarea {
   padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; font: inherit;
 }
-.acte-signe b, .reponse-demande b { color: var(--color-danger); }
+.reponse-demande b { color: var(--color-danger); }
 .reponse-demande-intro { margin: 0; font-size: 14px; color: var(--color-text-muted); }
 .reponse-demande-intro strong { display: block; color: var(--color-text); }
 .reponse-demande-choix { display: flex; gap: 8px; }
@@ -1934,12 +1935,6 @@ button.rf-row {
 .simulation-jalon small { display: block; font-size: 13px; color: var(--color-text-muted); }
 .simulation-jalon-icone { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--color-success-soft); color: var(--color-success); }
 .simulation-jalon.is-retraite .simulation-jalon-icone { background: var(--color-accent-soft); color: var(--color-accent-strong); }
-.simulation-titularisation {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 12px; padding: 12px 14px;
-  border-radius: var(--radius-md); background: var(--color-accent-soft);
-}
-.simulation-titularisation label { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-accent-strong); }
-.simulation-titularisation input[type=range] { flex: 1 1 220px; accent-color: var(--color-success); }
 .simulation-note { margin: 10px 2px 0; font-size: 12px; color: var(--color-text-muted); }
 
 /* ---------- Le point du jour de Band'IAkam ---------- */

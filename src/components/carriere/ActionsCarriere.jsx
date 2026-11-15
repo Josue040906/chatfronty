@@ -16,7 +16,7 @@ import { getConges, getRetraiteAnalyse, getTitularisation, prendreRetraite } fro
 import { appliquerDocument, getDemandesAgent } from '../../api/documents';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
 import ReponseDemande from '../documents/ReponseDemande';
-import DecisionSigneeChamps from './DecisionSigneeChamps';
+import SignataireChamp from '../documents/SignataireChamp';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -38,7 +38,7 @@ function quand(date, today) {
  * - les demandes en cours : saisir leur réponse signée, appliquer celles qui
  *   sont acceptées à leur date d'effet ;
  * - les décisions déjà signées sans demande : une action directe, avec la
- *   décision signée : son signataire, et son numéro s'il en a un (réservées au Service du Personnel).
+ *   décision signée : on indique qui l'a signée (réservées au Service du Personnel).
  *   Une opération qui a déjà une demande en cours passe par cette demande :
  *   son bouton ouvre la demande, jamais une décision en double ;
  * - les demandes à préparer : la lettre à faire signer.
@@ -55,7 +55,7 @@ export default function ActionsCarriere({
   const [version, setVersion] = useState(0);
   const [ouvert, setOuvert] = useState('');
   const [dateDepart, setDateDepart] = useState(today);
-  const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
+  const [acte, setActe] = useState({ signataire: '' });
   const [ouvertes, setOuvertes] = useState([]);
   const [envoi, setEnvoi] = useState({ running: false, error: '', message: '' });
 
@@ -80,7 +80,7 @@ export default function ActionsCarriere({
 
   function ouvrir(nom) {
     setOuvert((actuel) => (actuel === nom ? '' : nom));
-    setActe({ referenceActe: '', signataire: '' });
+    setActe({ signataire: '' });
     setEnvoi({ running: false, error: '', message: '' });
   }
 
@@ -219,7 +219,7 @@ export default function ActionsCarriere({
                     <small>
                       {demande.reference_document}
                       {acceptee
-                        ? ` · acceptée${demande.decision_reference ? ` (${demande.decision_reference}` : ''}${demande.decision_signataire ? `, signé par ${demande.decision_signataire})` : demande.decision_reference ? ')' : ''}`
+                        ? ` · acceptée${demande.decision_signataire ? `, signée par ${demande.decision_signataire}` : ''}`
                         : ' · sans réponse : la lettre attend sa signature'}
                     </small>
                   </span>
@@ -318,7 +318,7 @@ export default function ActionsCarriere({
               onChange={(event) => setDateDepart(event.target.value)}
             />
           </label>
-          <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={envoi.running} />
+          <SignataireChamp value={acte.signataire} onChange={(signataire) => setActe({ signataire })} disabled={envoi.running} />
           <div className="documents-aside-actions">
             <button
               type="button"

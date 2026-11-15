@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { deciderDocument } from '../../api/documents';
 import { isoToday } from '../../utils/documentCycle';
+import SignataireChamp from './SignataireChamp';
 
 /**
  * La réponse reçue sur papier à une demande : acceptée (signataire, acte, date
@@ -11,7 +12,6 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
   const [form, setForm] = useState({
     decision: 'ACCEPTE',
     signataire: '',
-    reference: '',
     dateDecision: today,
     dateEffet: document.dateEffet ? String(document.dateEffet).slice(0, 10) : '',
     motif: '',
@@ -33,7 +33,6 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
       await deciderDocument(document.id, {
         decision: form.decision,
         signataire: form.signataire,
-        reference: form.reference || null,
         dateDecision: form.dateDecision,
         motif: acceptee ? null : form.motif || null,
         dateEffet: dateAccordee ? form.dateEffet || null : null,
@@ -58,16 +57,10 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
           </label>
         ))}
       </div>
-      <label>
-        <span>Signée par <b>*</b></span>
-        <input name="signataire" value={form.signataire} onChange={changer} required maxLength={255}
-          placeholder="Le Directeur des Ressources Humaines" />
-      </label>
-      <label>
-        <span>N° de la décision</span>
-        <input name="reference" value={form.reference} onChange={changer} maxLength={150}
-          placeholder="Arrêté n° 123/2026/MEF (s’il y en a un)" />
-      </label>
+      <SignataireChamp
+        value={form.signataire}
+        onChange={(signataire) => setForm((current) => ({ ...current, signataire }))}
+      />
       <div className="reponse-demande-dates">
         <label>
           <span>Date de la réponse <b>*</b></span>

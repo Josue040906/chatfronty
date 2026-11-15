@@ -4,7 +4,7 @@ import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import ActionsCarriere from '../../components/carriere/ActionsCarriere';
-import DecisionSigneeChamps from '../../components/carriere/DecisionSigneeChamps';
+import SignataireChamp from '../../components/documents/SignataireChamp';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -219,7 +219,7 @@ export default function CareerAnalysisPage({ user }) {
   const [proposalLoading, setProposalLoading] = useState(false);
   const [effectDate, setEffectDate] = useState(todayInputValue);
   // La décision signée qui fonde l'action directe en cours (mutation, avancement, reclassement).
-  const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
+  const [acte, setActe] = useState({ signataire: '' });
   const [onglet, setOnglet] = useState('carriere');
   const savingRef = useRef(false);
   const dialogRef = useRef(null);
@@ -400,7 +400,7 @@ export default function CareerAnalysisPage({ user }) {
   }, [location.key, location.state, canManageHr]);
 
   async function openAssignmentDialog() {
-    setActe({ referenceActe: '', signataire: '' });
+    setActe({ signataire: '' });
     setFeedback('');
     setFormError('');
     setAssignmentForm({ ...EMPTY_ASSIGNMENT_FORM, dateEffet: todayInputValue() });
@@ -518,7 +518,7 @@ export default function CareerAnalysisPage({ user }) {
   }
 
   async function openProposal(type) {
-    setActe({ referenceActe: '', signataire: '' });
+    setActe({ signataire: '' });
     setFeedback('');
     setFormError('');
     setProposal(null);
@@ -1104,7 +1104,7 @@ export default function CareerAnalysisPage({ user }) {
                     </div>
                   )}
                 {formError && <p className="career-inline-error" role="alert">{formError}</p>}
-                <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={saving} />
+                <SignataireChamp value={acte.signataire} onChange={(signataire) => setActe({ signataire })} disabled={saving} />
                 <div className="career-dialog-actions">
                   <button type="button" className="career-action-button secondary" onClick={closeDialog} disabled={saving}>Annuler</button>
                   <button type="submit" className="career-action-button primary" disabled={saving || assignmentOptionsLoading || !assignmentServices.length}>
@@ -1269,7 +1269,7 @@ export default function CareerAnalysisPage({ user }) {
                         <label className="career-effect-date">Date d’effet (celle de la décision)
                           <input type="date" max={todayInputValue()} min={dialog === 'avancement' ? nextDateInputValue(proposal.situationActuelle?.dateDebut) : dateInputValue(proposal.situationActuelle?.dateDebut) || undefined} required value={effectDate} onChange={(event) => setEffectDate(event.target.value)} />
                         </label>
-                        <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={saving} />
+                        <SignataireChamp value={acte.signataire} onChange={(signataire) => setActe({ signataire })} disabled={saving} />
                       </>
                     )}
                   </>
