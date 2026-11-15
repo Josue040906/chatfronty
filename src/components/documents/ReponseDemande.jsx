@@ -64,9 +64,9 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
           placeholder="Le Directeur des Ressources Humaines" />
       </label>
       <label>
-        <span>Référence de l’acte {acceptee && <b>*</b>}</span>
-        <input name="reference" value={form.reference} onChange={changer} required={acceptee} maxLength={150}
-          placeholder="Arrêté n° 123/2026/MEF" />
+        <span>N° de la décision</span>
+        <input name="reference" value={form.reference} onChange={changer} maxLength={150}
+          placeholder="Arrêté n° 123/2026/MEF (s’il y en a un)" />
       </label>
       <div className="reponse-demande-dates">
         <label>

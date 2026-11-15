@@ -16,7 +16,7 @@ import { getConges, getRetraiteAnalyse, getTitularisation, prendreRetraite } fro
 import { appliquerDocument, getDemandesAgent } from '../../api/documents';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
 import ReponseDemande from '../documents/ReponseDemande';
-import ActeSigneChamps from './ActeSigneChamps';
+import DecisionSigneeChamps from './DecisionSigneeChamps';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -38,7 +38,7 @@ function quand(date, today) {
  * - les demandes en cours : saisir leur réponse signée, appliquer celles qui
  *   sont acceptées à leur date d'effet ;
  * - les décisions déjà signées sans demande : une action directe, avec la
- *   référence de l'acte et son signataire (réservées au Service du Personnel).
+ *   décision signée : son signataire, et son numéro s'il en a un (réservées au Service du Personnel).
  *   Une opération qui a déjà une demande en cours passe par cette demande :
  *   son bouton ouvre la demande, jamais une décision en double ;
  * - les demandes à préparer : la lettre à faire signer.
@@ -266,7 +266,7 @@ export default function ActionsCarriere({
       {canManageHr && (
         <div className="actions-carriere-groupe">
           <p className="actions-carriere-libelle">
-            Décision déjà signée <span>· sans demande, avec la référence de l’acte</span>
+            Décision déjà signée <span>· sans demande : indiquez qui l’a signée</span>
           </p>
           <div className="actions-carriere-directes">
             {actions.map((action) => {
@@ -318,12 +318,12 @@ export default function ActionsCarriere({
               onChange={(event) => setDateDepart(event.target.value)}
             />
           </label>
-          <ActeSigneChamps acte={acte} onChange={setActe} disabled={envoi.running} />
+          <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={envoi.running} />
           <div className="documents-aside-actions">
             <button
               type="button"
               className="rf-btn rf-btn-primary"
-              disabled={envoi.running || !dateDepart || !acte.referenceActe.trim() || !acte.signataire.trim()}
+              disabled={envoi.running || !dateDepart || !acte.signataire.trim()}
               onClick={confirmerRetraite}
             >
               {envoi.running ? 'Enregistrement…' : 'Confirmer le départ'}

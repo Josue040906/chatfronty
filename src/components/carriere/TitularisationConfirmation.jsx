@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { titulariser } from '../../api/carrieres';
 import { isoToday } from '../../utils/documentCycle';
-import ActeSigneChamps from './ActeSigneChamps';
+import DecisionSigneeChamps from './DecisionSigneeChamps';
 
 /**
  * Titularisation d'un contractuel ou d'un stagiaire : son indice actuel est
@@ -60,13 +60,13 @@ export default function TitularisationConfirmation({ employeId, analyse, onDone,
           <input type="date" value={dateEffet} max={today} onChange={(event) => setDateEffet(event.target.value)} />
         </label>
       </div>
-      <ActeSigneChamps acte={acte} onChange={setActe} disabled={envoi.running} />
+      <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={envoi.running} />
       <p className="titularisation-note">Il devient fonctionnaire à ce grade ; sa période actuelle se ferme la veille.</p>
       <div className="documents-aside-actions">
         <button
           type="button"
           className="rf-btn rf-btn-primary"
-          disabled={envoi.running || !dateEffet || !acte.referenceActe.trim() || !acte.signataire.trim()}
+          disabled={envoi.running || !dateEffet || !acte.signataire.trim()}
           onClick={confirmer}
         >
           {envoi.running ? 'Enregistrement…' : 'Confirmer la titularisation'}

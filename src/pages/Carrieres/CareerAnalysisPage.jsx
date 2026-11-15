@@ -4,7 +4,7 @@ import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import ActionsCarriere from '../../components/carriere/ActionsCarriere';
-import ActeSigneChamps from '../../components/carriere/ActeSigneChamps';
+import DecisionSigneeChamps from '../../components/carriere/DecisionSigneeChamps';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -218,7 +218,7 @@ export default function CareerAnalysisPage({ user }) {
   const [proposal, setProposal] = useState(null);
   const [proposalLoading, setProposalLoading] = useState(false);
   const [effectDate, setEffectDate] = useState(todayInputValue);
-  // L'acte signé qui fonde l'action directe en cours (mutation, avancement, reclassement).
+  // La décision signée qui fonde l'action directe en cours (mutation, avancement, reclassement).
   const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
   const [onglet, setOnglet] = useState('carriere');
   const savingRef = useRef(false);
@@ -1104,7 +1104,7 @@ export default function CareerAnalysisPage({ user }) {
                     </div>
                   )}
                 {formError && <p className="career-inline-error" role="alert">{formError}</p>}
-                <ActeSigneChamps acte={acte} onChange={setActe} disabled={saving} />
+                <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={saving} />
                 <div className="career-dialog-actions">
                   <button type="button" className="career-action-button secondary" onClick={closeDialog} disabled={saving}>Annuler</button>
                   <button type="submit" className="career-action-button primary" disabled={saving || assignmentOptionsLoading || !assignmentServices.length}>
@@ -1266,10 +1266,10 @@ export default function CareerAnalysisPage({ user }) {
                     )}
                     {hasRequiredProposalData(dialog, proposal) && proposal.eligible !== false && (
                       <>
-                        <label className="career-effect-date">Date d’effet (celle de l’acte)
+                        <label className="career-effect-date">Date d’effet (celle de la décision)
                           <input type="date" max={todayInputValue()} min={dialog === 'avancement' ? nextDateInputValue(proposal.situationActuelle?.dateDebut) : dateInputValue(proposal.situationActuelle?.dateDebut) || undefined} required value={effectDate} onChange={(event) => setEffectDate(event.target.value)} />
                         </label>
-                        <ActeSigneChamps acte={acte} onChange={setActe} disabled={saving} />
+                        <DecisionSigneeChamps acte={acte} onChange={setActe} disabled={saving} />
                       </>
                     )}
                   </>
