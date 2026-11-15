@@ -150,3 +150,15 @@ export async function apiDelete(path) {
 
   return handleResponse(response);
 }
+
+/**
+ * Réveille les deux serveurs dès l'ouverture du site : sur un hébergement
+ * gratuit, ils s'endorment après une période sans visite et mettent environ
+ * une minute à redémarrer. L'appel est discret (aucune réponse lue, aucune
+ * erreur montrée) et ne transporte aucune donnée.
+ */
+export function reveillerServeurs() {
+  for (const base of [API_BASE_URL, BANDY_API_URL]) {
+    fetch(`${base}/api/sante`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+  }
+}
