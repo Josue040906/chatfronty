@@ -15,6 +15,7 @@ import {
 import { getConges, getRetraiteAnalyse, getTitularisation, prendreRetraite } from '../../api/carrieres';
 import { appliquerDocument, getDemandesAgent } from '../../api/documents';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
+import ReponseDemande from '../documents/ReponseDemande';
 import ActeSigneChamps from './ActeSigneChamps';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
@@ -34,9 +35,12 @@ function quand(date, today) {
 
 /**
  * Tout ce qu'on peut faire pour cet agent, au même endroit :
- * - les demandes acceptées (réponse signée saisie), à appliquer à leur date d'effet ;
+ * - les demandes en cours : saisir leur réponse signée, appliquer celles qui
+ *   sont acceptées à leur date d'effet ;
  * - les décisions déjà signées sans demande : une action directe, avec la
- *   référence de l'acte et son signataire (réservées au Service du Personnel) ;
+ *   référence de l'acte et son signataire (réservées au Service du Personnel).
+ *   Une opération qui a déjà une demande en cours passe par cette demande :
+ *   son bouton ouvre la demande, jamais une décision en double ;
  * - les demandes à préparer : la lettre à faire signer.
  * Chaque bouton dit où en est l'agent.
  */
@@ -52,7 +56,7 @@ export default function ActionsCarriere({
   const [ouvert, setOuvert] = useState('');
   const [dateDepart, setDateDepart] = useState(today);
   const [acte, setActe] = useState({ referenceActe: '', signataire: '' });
-  const [acceptees, setAcceptees] = useState([]);
+  const [ouvertes, setOuvertes] = useState([]);
   const [envoi, setEnvoi] = useState({ running: false, error: '', message: '' });
 
   useEffect(() => {
@@ -62,9 +66,11 @@ export default function ActionsCarriere({
     getRetraiteAnalyse(employeId).then(garder(setRetraite)).catch(vider(setRetraite));
     getConges(employeId).then(garder(setConges)).catch(vider(setConges));
     getTitularisation(employeId).then(garder(setTitularisation)).catch(vider(setTitularisation));
-    getDemandesAgent(employeId, 'ACCEPTE')
-      .then(garder(setAcceptees))
-      .catch(() => { if (!cancelled) setAcceptees([]); });
+    getDemandesAgent(employeId)
+      .then((lignes) => {
+        if (!cancelled) setOuvertes(lignes.filter((ligne) => ['CREE', 'ACCEPTE'].includes(ligne.statut)));
+      })
+      .catch(() => { if (!cancelled) setOuvertes([]); });
     return () => { cancelled = true; };
   }, [employeId, version]);
 
@@ -86,6 +92,19 @@ export default function ActionsCarriere({
     } catch (err) {
       setEnvoi({ running: false, error: err?.message || 'La demande n’a pas pu être appliquée.', message: '' });
     }
+  }
+
+  /** La réponse vient d'être saisie : une demande acceptée dont la date est atteinte s'applique aussitôt. */
+  async function reponseSaisie(demande, decision, dateEffet) {
+    if (decision !== 'ACCEPTE') {
+      termine(`Refus enregistré : la demande ${demande.reference_document} ne prendra pas effet.`);
+      return;
+    }
+    if (dateEffet && joursJusqua(dateEffet, today) > 0) {
+      termine(`Accord enregistré : la demande ${demande.reference_document} s’appliquera le ${formatJour(dateEffet)}.`);
+      return;
+    }
+    await appliquer(demande);
   }
 
   function termine(message) {
@@ -124,32 +143,47 @@ export default function ActionsCarriere({
       : `${formatJours(conges.solde)} jours disponibles`
     : 'Solde indisponible';
 
+  // L'opération d'un bouton direct qui a déjà une demande en cours passe par elle.
+  const demandeEnCours = (code) => ouvertes.find((demande) => demande.type_document_code === code);
+  const viaDemande = (code, action) => {
+    const demande = demandeEnCours(code);
+    if (!demande) return action;
+    return {
+      ...action,
+      detail: `Demande ${demande.reference_document} ${demande.statut === 'ACCEPTE' ? 'acceptée' : 'sans réponse'}`,
+      pret: demande.statut === 'ACCEPTE',
+      desactive: false,
+      onClick: () => ouvrir(`demande-${demande.id}`),
+      actif: ouvert === `demande-${demande.id}`,
+    };
+  };
+
   const actions = [
-    {
+    viaDemande('AVANCEMENT', {
       nom: 'avancement', titre: 'Avancement d’échelon', icone: TrendingUp, detail: avancementDetail,
       pret: avancementPret, onClick: onAvancement, visible: !dejaRetraite,
-    },
-    {
+    }),
+    viaDemande('MUTATION', {
       nom: 'mutation', titre: 'Mutation', icone: BriefcaseBusiness, detail: 'Service, poste ou lieu',
       onClick: onMutation, visible: !dejaRetraite,
-    },
+    }),
     {
       nom: 'reclassement', titre: 'Reclassement', icone: GraduationCap, detail: 'Selon le diplôme le plus élevé',
       onClick: onReclassement, visible: !dejaRetraite,
     },
-    {
+    viaDemande('TITULARISATION', {
       nom: 'titularisation', titre: 'Titulariser', icone: BadgeCheck,
       detail: titularisable
         ? `Vers ${titularisation.suggestion.code}, indice ${titularisation.suggestion.indice}`
         : titularisation?.raison || 'Non disponible',
       pret: titularisable, desactive: !titularisable, onClick: () => ouvrir('titularisation'),
       visible: nonTitulaire && !dejaRetraite, actif: ouvert === 'titularisation',
-    },
-    {
+    }),
+    viaDemande('RETRAITE', {
       nom: 'retraite', titre: 'Prendre sa retraite', icone: Hourglass, detail: retraiteDetail,
       pret: retraite?.possible && !dejaRetraite, desactive: !retraite?.possible || dejaRetraite,
       onClick: () => ouvrir('retraite'), visible: true, actif: ouvert === 'retraite',
-    },
+    }),
   ].filter((action) => action.visible);
 
   const demandes = [
@@ -158,39 +192,70 @@ export default function ActionsCarriere({
     { code: 'CONGE', titre: 'Demander un congé', icone: Palmtree, detail: congeDetail, visible: !dejaRetraite },
     { code: 'TITULARISATION', titre: 'Demander la titularisation', icone: BadgeCheck, detail: 'Vers fonctionnaire', visible: titularisable },
     { code: 'RETRAITE', titre: 'Demander le départ à la retraite', icone: Hourglass, detail: 'À la date choisie', visible: !dejaRetraite },
-  ].filter((demande) => demande.visible);
+  ].filter((demande) => demande.visible).map((demande) => {
+    const enCours = demandeEnCours(demande.code);
+    return enCours ? { ...demande, detail: `Déjà en cours : ${enCours.reference_document}`, desactive: true } : demande;
+  });
 
   return (
     <section className="career-section actions-carriere" aria-labelledby="actions-carriere-titre">
       <h2 id="actions-carriere-titre" className="ui-visually-hidden">Actions sur la carrière</h2>
 
-      {canManageHr && acceptees.length > 0 && (
+      {canManageHr && ouvertes.length > 0 && (
         <div className="actions-carriere-groupe">
           <p className="actions-carriere-libelle">
-            <FileCheck2 size={15} />Demandes acceptées <span>· la réponse signée est saisie</span>
+            <FileCheck2 size={15} />Demandes en cours <span>· une opération en cours se traite par sa demande</span>
           </p>
           <ul className="actions-carriere-acceptees">
-            {acceptees.map((demande) => {
+            {ouvertes.map((demande) => {
+              const acceptee = demande.statut === 'ACCEPTE';
               const jours = joursJusqua(demande.date_effet, today);
               const prete = jours == null || jours <= 0;
+              const deplie = ouvert === `demande-${demande.id}`;
               return (
-                <li key={demande.id}>
+                <li key={demande.id} className={`${acceptee ? 'is-acceptee' : 'is-sans-reponse'}${deplie ? ' is-ouverte' : ''}`}>
                   <span>
                     <strong>{demande.type_document || demande.objet}</strong>
                     <small>
                       {demande.reference_document}
-                      {demande.decision_reference ? ` · ${demande.decision_reference}` : ''}
-                      {demande.decision_signataire ? `, signé par ${demande.decision_signataire}` : ''}
+                      {acceptee
+                        ? ` · acceptée${demande.decision_reference ? ` (${demande.decision_reference}` : ''}${demande.decision_signataire ? `, signé par ${demande.decision_signataire})` : demande.decision_reference ? ')' : ''}`
+                        : ' · sans réponse : la lettre attend sa signature'}
                     </small>
                   </span>
-                  <button
-                    type="button"
-                    className="rf-btn rf-btn-primary"
-                    disabled={!prete || envoi.running}
-                    onClick={() => appliquer(demande)}
-                  >
-                    {prete ? 'Appliquer' : `Applicable le ${formatJour(demande.date_effet)}`}
-                  </button>
+                  {acceptee ? (
+                    <button
+                      type="button"
+                      className="rf-btn rf-btn-primary"
+                      disabled={!prete || envoi.running}
+                      onClick={() => appliquer(demande)}
+                    >
+                      {prete ? 'Appliquer' : `Applicable le ${formatJour(demande.date_effet)}`}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="rf-btn rf-btn-primary"
+                      aria-expanded={deplie}
+                      disabled={envoi.running}
+                      onClick={() => ouvrir(`demande-${demande.id}`)}
+                    >
+                      Saisir la réponse signée
+                    </button>
+                  )}
+                  {deplie && !acceptee && (
+                    <ReponseDemande
+                      document={{ id: demande.id, dateEffet: demande.date_effet, dateDocument: demande.date_document }}
+                      typeCode={demande.type_document_code}
+                      onDone={(decision, dateEffet) => reponseSaisie(demande, decision, dateEffet)}
+                      onCancel={() => setOuvert('')}
+                    />
+                  )}
+                  {deplie && acceptee && !prete && (
+                    <p className="actions-carriere-note">
+                      L’accord fixe la date d’effet au {formatJour(demande.date_effet)} : la demande s’appliquera ce jour-là.
+                    </p>
+                  )}
                 </li>
               );
             })}
@@ -281,7 +346,8 @@ export default function ActionsCarriere({
             {demandes.map((demande) => {
               const Icone = demande.icone;
               return (
-                <button key={demande.code} type="button" className="action-demande" onClick={() => preparer(demande.code)}>
+                <button key={demande.code} type="button" className="action-demande" disabled={demande.desactive}
+                  onClick={() => preparer(demande.code)}>
                   <Icone size={18} />
                   <span>
                     <strong>{demande.titre}</strong>

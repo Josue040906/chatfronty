@@ -1767,9 +1767,14 @@ button.rf-row {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px;
   border-radius: 14px; background: var(--color-success-soft); border: 1px solid rgb(47 107 79 / 0.25);
 }
-.actions-carriere-acceptees span { display: grid; gap: 2px; min-width: 0; }
-.actions-carriere-acceptees small { color: var(--color-text-muted); font-size: 12px; overflow-wrap: anywhere; }
+.actions-carriere-acceptees li > span { display: grid; gap: 2px; min-width: 0; }
+.actions-carriere-acceptees li > span small { color: var(--color-text-muted); font-size: 12px; overflow-wrap: anywhere; }
 .actions-carriere-acceptees .rf-btn { width: auto; }
+.actions-carriere-acceptees li.is-sans-reponse { background: var(--color-accent-soft); border-color: rgb(184 134 63 / 0.35); }
+.actions-carriere-acceptees li > .reponse-demande,
+.actions-carriere-acceptees li > .actions-carriere-note { flex-basis: 100%; }
+.actions-carriere-note { margin: 0; font-size: 13px; color: var(--color-text-muted); }
+.action-demande:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.6; transform: none; }
 .demande-carte-date { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .demande-carte-date input { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-surface); color: inherit; }
 

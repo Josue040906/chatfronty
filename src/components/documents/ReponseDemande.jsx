@@ -38,7 +38,7 @@ export default function ReponseDemande({ document, typeCode, onDone, onCancel })
         motif: acceptee ? null : form.motif || null,
         dateEffet: dateAccordee ? form.dateEffet || null : null,
       });
-      onDone?.(form.decision);
+      onDone?.(form.decision, dateAccordee && form.dateEffet ? form.dateEffet : document.dateEffet);
     } catch (err) {
       setEnvoi({ running: false, error: err?.message || 'La réponse n’a pas pu être enregistrée.' });
     }
