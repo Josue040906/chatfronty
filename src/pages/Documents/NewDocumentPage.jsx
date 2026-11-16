@@ -178,6 +178,10 @@ export default function NewDocumentPage() {
   const selectedAgent = agents.find(
     (agent) => String(agent.id) === formData.employeId
   );
+  // Vers un autre service, une affectation exige un poste (règle de l'API, vérifiée dès la demande).
+  const posteObligatoire = isMutationRequest
+    && Boolean(formData.serviceSouhaiteId)
+    && String(formData.serviceSouhaiteId) !== String(selectedAgent?.service_id ?? '');
   const filteredServices = formData.directionSouhaiteeId
     ? services.filter(
         (service) =>
@@ -368,6 +372,16 @@ export default function NewDocumentPage() {
         !formData.lieuTravailSouhaite.trim()
       ) {
         setError('Indiquez au moins un élément de la situation souhaitée.');
+        return;
+      }
+
+      if (posteObligatoire && !formData.posteSouhaiteId) {
+        setError('Précisez le poste souhaité dans le nouveau service : une affectation exige un poste.');
+        return;
+      }
+
+      if (formData.directionSouhaiteeId && !formData.serviceSouhaiteId && !formData.lieuTravailSouhaite.trim()) {
+        setError('Précisez le service et le poste souhaités : une direction seule ne suffit pas.');
         return;
       }
 
@@ -879,7 +893,7 @@ export default function NewDocumentPage() {
                     </div>
                     <div className={prefillClass('rf-field', 'posteSouhaiteId', prefilled)}>
                       <label htmlFor="posteSouhaiteId">
-                        Poste souhaité
+                        {posteObligatoire ? 'Poste souhaité *' : 'Poste souhaité'}
                       </label>
                       <select
                         id="posteSouhaiteId"
@@ -887,18 +901,25 @@ export default function NewDocumentPage() {
                         value={formData.posteSouhaiteId}
                         onChange={handleChange}
                         disabled={saving || loadingPostes || !formData.serviceSouhaiteId}
+                        required={posteObligatoire}
+                        aria-describedby={posteObligatoire ? 'posteSouhaiteId-aide' : undefined}
                       >
                         <option value="">
                           {formData.serviceSouhaiteId
                             ? loadingPostes
                               ? 'Chargement des postes...'
-                              : 'Ne pas préciser'
+                              : posteObligatoire ? 'Choisissez un poste' : 'Ne pas préciser'
                             : 'Choisissez d’abord un service'}
                         </option>
                         {trierPostes(postes).map((poste) => (
                           <option key={poste.id} value={poste.id}>{libellePoste(poste)}</option>
                         ))}
                       </select>
+                      {posteObligatoire && (
+                        <small id="posteSouhaiteId-aide">
+                          Obligatoire : dans un autre service, l’affectation exige un poste.
+                        </small>
+                      )}
                     </div>
                     <div className={prefillClass('rf-field', 'lieuTravailSouhaite', prefilled)}>
                       <label htmlFor="lieuTravailSouhaite">Lieu de travail souhaité</label>
