@@ -60,6 +60,8 @@ export default function SimulationCarriere({ employeId }) {
         yHaut: y(etape.indice),
         projete: etape.nature === 'PROJETE',
         actuel: etape.nature === 'ACTUEL',
+        // La catégorie n'est qu'une mention : écrite au début de chaque suite de marches de même catégorie.
+        debutCategorie: Boolean(etape.categorie) && (i === 0 || marchesSources[i - 1].categorie !== etape.categorie),
       };
     });
     const grilles = [];
@@ -96,6 +98,7 @@ export default function SimulationCarriere({ employeId }) {
         <div className="simulation-resume">
           <span>Indice à la retraite</span>
           <strong>{simulation.indiceFinal ?? '—'}</strong>
+          {simulation.categorie && <small>Catégorie {simulation.categorie}</small>}
         </div>
       </div>
 
@@ -118,7 +121,8 @@ export default function SimulationCarriere({ employeId }) {
           {dessin.marches.map((marche, index) => (
             <g key={index}>
               <title>
-                {`${formatJour(marche.date)} — ${marche.gradeLibelle} (${marche.gradeCode}), indice ${marche.indice}`
+                {`${formatJour(marche.date)} — ${marche.gradeLibelle} (${marche.gradeCode})`
+                  + `${marche.categorie ? `, catégorie ${marche.categorie}` : ''}, indice ${marche.indice}`
                   + `${marche.projete ? ' — projection' : ''}`}
               </title>
               <rect
@@ -138,6 +142,11 @@ export default function SimulationCarriere({ employeId }) {
                 <text x={(marche.x1 + marche.x2) / 2} y={marche.yHaut - 7} textAnchor="middle"
                   className={`simulation-grade${marche.actuel ? ' is-actuel' : ''}`}>
                   {marche.gradeCode}
+                </text>
+              )}
+              {marche.debutCategorie && marche.x2 - marche.x1 > 34 && (
+                <text x={marche.x1 + 6} y={dessin.sol - 8} className="simulation-categorie">
+                  {`cat. ${marche.categorie}`}
                 </text>
               )}
             </g>
@@ -176,7 +185,7 @@ export default function SimulationCarriere({ employeId }) {
             {prochaine ? (
               <>
                 <strong>{formatJour(prochaine.date)}</strong>
-                <small>{prochaine.gradeLibelle} ({prochaine.gradeCode}) · indice {prochaine.indice}</small>
+                <small>{prochaine.gradeLibelle} ({prochaine.gradeCode}) · cat. {prochaine.categorie} · indice {prochaine.indice}</small>
               </>
             ) : <small>Plus d’avancement prévu dans ce parcours.</small>}
           </div>
@@ -188,7 +197,7 @@ export default function SimulationCarriere({ employeId }) {
             {prochaineClasse ? (
               <>
                 <strong>{formatJour(prochaineClasse.date)}</strong>
-                <small>{prochaineClasse.gradeLibelle} · indice {prochaineClasse.indice}</small>
+                <small>{prochaineClasse.gradeLibelle} · cat. {prochaineClasse.categorie} · indice {prochaineClasse.indice}</small>
               </>
             ) : <small>Aucun avant la retraite.</small>}
           </div>
@@ -200,7 +209,7 @@ export default function SimulationCarriere({ employeId }) {
             {retraite ? (
               <>
                 <strong>{formatJour(retraite.date)}</strong>
-                <small>{retraite.gradeCode} · indice {retraite.indice}</small>
+                <small>{retraite.gradeCode} · cat. {retraite.categorie} · indice {retraite.indice}</small>
               </>
             ) : <small>Date de droit inconnue.</small>}
           </div>
