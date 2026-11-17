@@ -198,7 +198,7 @@
 }
 
 .rf-search:focus-within {
-  box-shadow: 0 0 0 4px rgb(184 134 63 / 0.18);
+  box-shadow: 0 0 0 4px rgb(201 154 62 / 0.18);
 }
 
 .rf-select {
@@ -301,7 +301,7 @@
 .rf-pill-en_attente small { font-weight: 600; opacity: 0.8; }
 .rf-pill-applicable {
   background: var(--color-accent-soft); color: var(--color-accent-strong);
-  box-shadow: 0 0 0 0 rgb(184 134 63 / 0.45); animation: demande-halo 2.4s ease-out infinite;
+  box-shadow: 0 0 0 0 rgb(201 154 62 / 0.45); animation: demande-halo 2.4s ease-out infinite;
 }
 .rf-pill-applique { background: var(--color-success-soft); color: var(--color-success); }
 .rf-pill-annule { background: var(--color-danger-soft); color: var(--color-danger); }
@@ -515,7 +515,7 @@ button.rf-row {
 .rf-field select:focus,
 .rf-field textarea:focus {
   border: 1.5px solid var(--color-brand);
-  box-shadow: 0 0 0 4px rgb(184 134 63 / 0.18);
+  box-shadow: 0 0 0 4px rgb(201 154 62 / 0.18);
 }
 
 .rf-field input:disabled,
@@ -826,7 +826,7 @@ button.rf-row {
 .rf-steps .is-current .rf-step-dot {
   background: var(--color-brand);
   color: var(--color-on-brand);
-  box-shadow: 0 0 0 5px rgb(184 134 63 / 0.25);
+  box-shadow: 0 0 0 5px rgb(201 154 62 / 0.25);
 }
 .rf-steps .is-current > span:nth-child(2) { font-weight: 700; color: var(--color-text); }
 .rf-step-line { flex: 1; height: 2px; margin-right: 14px; background: var(--color-border-strong); }
@@ -1676,9 +1676,9 @@ button.rf-row {
 
 /* ---------- Suivi d'une demande : frise, effet, confirmation ---------- */
 @keyframes demande-halo {
-  0% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0.45); }
-  70% { box-shadow: 0 0 0 8px rgb(184 134 63 / 0); }
-  100% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0); }
+  0% { box-shadow: 0 0 0 0 rgb(201 154 62 / 0.45); }
+  70% { box-shadow: 0 0 0 8px rgb(201 154 62 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(201 154 62 / 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .rf-pill-applicable, .demande-appliquer-pret, .demande-frise-etape.is-actif .demande-frise-point { animation: none; }
@@ -1771,7 +1771,7 @@ button.rf-row {
 .actions-carriere-acceptees li > span { display: grid; gap: 2px; min-width: 0; }
 .actions-carriere-acceptees li > span small { color: var(--color-text-muted); font-size: 12px; overflow-wrap: anywhere; }
 .actions-carriere-acceptees .rf-btn { width: auto; }
-.actions-carriere-acceptees li.is-sans-reponse { background: var(--color-accent-soft); border-color: rgb(184 134 63 / 0.35); }
+.actions-carriere-acceptees li.is-sans-reponse { background: var(--color-accent-soft); border-color: rgb(201 154 62 / 0.35); }
 .actions-carriere-acceptees li > .reponse-demande,
 .actions-carriere-acceptees li > .actions-carriere-note { flex-basis: 100%; }
 .actions-carriere-note { margin: 0; font-size: 13px; color: var(--color-text-muted); }
@@ -1845,7 +1845,7 @@ button.rf-row {
 }
 .type-emploi-badge.is-grand { padding: 4px 12px; font-size: 13px; }
 .type-emploi-badge.is-fonctionnaire { background: var(--color-success-soft); color: var(--color-success); border-color: rgb(47 107 79 / 0.25); }
-.type-emploi-badge.is-contractuel { background: var(--color-accent-soft); color: var(--color-accent-strong); border-color: rgb(184 134 63 / 0.35); }
+.type-emploi-badge.is-contractuel { background: var(--color-accent-soft); color: var(--color-accent-strong); border-color: rgb(201 154 62 / 0.35); }
 .type-emploi-badge.is-stagiaire { background: var(--color-info-soft); color: var(--color-info); border-color: rgb(60 100 140 / 0.25); }
 .agent-profile-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; }
 .agents-types .rf-chip { gap: 6px; }
@@ -1869,7 +1869,7 @@ button.rf-row {
 .plan-postes-service h3 { margin: 4px 0 0; font: 600 16px var(--font-display); }
 .plan-poste { display: grid; gap: 8px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); }
 .plan-poste.is-libre { border-color: rgb(47 107 79 / 0.35); }
-.plan-poste.is-se_libere { border-color: rgb(184 134 63 / 0.45); }
+.plan-poste.is-se_libere { border-color: rgb(201 154 62 / 0.45); }
 .plan-poste-tete { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
 .plan-poste-tete span { font-variant-numeric: tabular-nums; color: var(--color-text-muted); font-weight: 600; }
 .plan-poste-sieges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
@@ -1879,7 +1879,7 @@ button.rf-row {
 }
 .plan-siege.is-occupe { border: 1px solid var(--color-border); background: var(--color-surface-sunken); cursor: pointer; transition: transform 140ms ease; }
 .plan-siege.is-occupe:hover { transform: translateY(-2px); }
-.plan-siege.is-depart { background: var(--color-accent-soft); border-color: rgb(184 134 63 / 0.4); }
+.plan-siege.is-depart { background: var(--color-accent-soft); border-color: rgb(201 154 62 / 0.4); }
 .plan-siege.is-libre { border: 2px dashed rgb(47 107 79 / 0.45); color: var(--color-success); justify-content: center; align-content: center; }
 .plan-siege-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font-weight: 700; font-size: 13px; }
 .plan-siege-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -1909,13 +1909,13 @@ button.rf-row {
 .simulation-axe { stroke: var(--color-text-muted); stroke-width: 1.5; }
 .simulation-marche { stroke: none; }
 .simulation-marche.is-fonctionnaire { fill: rgb(47 107 79 / 0.22); }
-.simulation-marche.is-contractuel { fill: rgb(184 134 63 / 0.25); }
+.simulation-marche.is-contractuel { fill: rgb(201 154 62 / 0.25); }
 .simulation-marche.is-stagiaire { fill: rgb(62 108 138 / 0.22); }
 .simulation-marche.is-projete { fill-opacity: 0.45; }
 .simulation-marche.is-actuel.is-fonctionnaire { fill: rgb(47 107 79 / 0.42); }
-.simulation-marche.is-actuel.is-contractuel { fill: rgb(184 134 63 / 0.45); }
+.simulation-marche.is-actuel.is-contractuel { fill: rgb(201 154 62 / 0.45); }
 .simulation-marche.is-actuel.is-stagiaire { fill: rgb(62 108 138 / 0.42); }
-.simulation-hachure { stroke: rgb(184 134 63 / 0.35); stroke-width: 2; }
+.simulation-hachure { stroke: rgb(201 154 62 / 0.35); stroke-width: 2; }
 .simulation-palier { stroke-width: 3; stroke-linecap: round; }
 .simulation-palier.is-fonctionnaire { stroke: var(--color-success); }
 .simulation-palier.is-contractuel { stroke: var(--color-accent); }

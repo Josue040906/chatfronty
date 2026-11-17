@@ -419,8 +419,8 @@ export default function AgentProfilePage({ user }) {
             className="rf-hero-art"
             aria-hidden="true"
           >
-            <circle cx="150" cy="150" r="130" fill="none" stroke="#B8863F" strokeOpacity=".4" strokeWidth="2" />
-            <circle cx="150" cy="150" r="90" fill="none" stroke="#B8863F" strokeOpacity=".3" strokeWidth="2" />
+            <circle cx="150" cy="150" r="130" fill="none" stroke="#C99A3E" strokeOpacity=".4" strokeWidth="2" />
+            <circle cx="150" cy="150" r="90" fill="none" stroke="#C99A3E" strokeOpacity=".3" strokeWidth="2" />
           </svg>
 
           <div className="rf-profile-id">

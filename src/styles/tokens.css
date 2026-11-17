@@ -11,31 +11,31 @@
    ========================================================= */
 
 :root {
-  /* ---- Couleurs : thème chaud ---- */
-  --color-bg: #FAF6EF;
-  --color-surface: #FFFDF9;
-  --color-surface-sunken: #F4EDE0;
+  /* ---- Couleurs : thème « Cacao & ambre » (espace agent) ---- */
+  --color-bg: #F8F2E8;
+  --color-surface: #FFFEFB;
+  --color-surface-sunken: #F1E6D4;
   --color-text: #2B1D14;
-  --color-text-muted: #6F5F51;
-  --color-border: rgb(43 29 20 / 0.10);
-  --color-border-strong: rgb(43 29 20 / 0.18);
+  --color-text-muted: #6E5644;
+  --color-border: #E8DCC8;
+  --color-border-strong: #D8C6AA;
 
-  --color-brand: #6B4A32;
-  --color-brand-strong: #4E3422;
+  --color-brand: #5C3A21;
+  --color-brand-strong: #3F2614;
   --color-on-brand: #FFFDF9;
 
-  --color-accent: #B8863F;
+  --color-accent: #C99A3E;
   --color-accent-strong: #7C5818;
-  --color-accent-soft: #F3E6CF;
+  --color-accent-soft: #F7EACB;
 
-  --color-menu: #33221A;
+  --color-menu: #2A1911;
   --color-menu-text: rgb(255 253 249 / 0.68);
   --color-menu-text-strong: #FFFDF9;
   --color-menu-label: rgb(255 253 249 / 0.42);
   --color-menu-border: rgb(255 253 249 / 0.08);
   --color-menu-hover: rgb(255 253 249 / 0.07);
-  --color-menu-active: rgb(184 134 63 / 0.20);
-  --color-menu-accent: #D9B36F;
+  --color-menu-active: rgb(201 154 62 / 0.22);
+  --color-menu-accent: #E2BC6A;
 
   --color-success: #2F6B4F;
   --color-success-soft: #E3F0E8;
@@ -49,10 +49,10 @@
   /* Palette des graphiques (10 teintes, texte et valeurs toujours affichés
      à côté : la couleur ne porte jamais seule l'information). */
   --chart-1: #4A3426;
-  --chart-2: #6B4A32;
+  --chart-2: #5C3A21;
   --chart-3: #9C7A5B;
   --chart-4: #8A6A1F;
-  --chart-5: #D4A24A;
+  --chart-5: #C99A3E;
   --chart-6: #2F6B4F;
   --chart-7: #6FA386;
   --chart-8: #A89A8A;
@@ -96,7 +96,7 @@
   --field-radius: 12px;
 
   /* ---- Ombres douces en couches ---- */
-  --shadow-ink: 43 29 20;
+  --shadow-ink: 63 38 20;
   --shadow-card:
     0 1px 1px rgb(var(--shadow-ink) / 0.04),
     0 3px 8px rgb(var(--shadow-ink) / 0.04),

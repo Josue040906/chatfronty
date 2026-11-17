@@ -1,12 +1,45 @@
 import { useState } from 'react';
 import {
   ArrowRight,
+  Eye,
+  EyeOff,
   LockKeyhole,
   Mail,
   Sparkles,
   UserRound,
 } from 'lucide-react';
 import { inscrireUtilisateur } from '../../api/utilisateurs';
+
+function PasswordInput({ id, value, onChange, placeholder, autoComplete }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="login-input-wrapper">
+      <LockKeyhole size={17} />
+
+      <input
+        id={id}
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        required
+      />
+
+      <button
+        type="button"
+        className="login-password-toggle"
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+        aria-pressed={visible}
+        aria-controls={id}
+      >
+        {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+      </button>
+    </div>
+  );
+}
 
 export default function LoginPage({ onLogin }) {
   const [mode, setMode] = useState('login');
@@ -205,21 +238,15 @@ export default function LoginPage({ onLogin }) {
                   Mot de passe
                 </label>
 
-                <div className="login-input-wrapper">
-                  <LockKeyhole size={17} />
-
-                  <input
-                    id="login-password"
-                    type="password"
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
-                    placeholder="Votre mot de passe"
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
+                <PasswordInput
+                  id="login-password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Votre mot de passe"
+                  autoComplete="current-password"
+                />
               </div>
 
               <button
@@ -305,21 +332,15 @@ export default function LoginPage({ onLogin }) {
                   Mot de passe
                 </label>
 
-                <div className="login-input-wrapper">
-                  <LockKeyhole size={17} />
-
-                  <input
-                    id="register-password"
-                    type="password"
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
-                    placeholder="Votre mot de passe"
-                    autoComplete="new-password"
-                    required
-                  />
-                </div>
+                <PasswordInput
+                  id="register-password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Votre mot de passe"
+                  autoComplete="new-password"
+                />
               </div>
 
               <div className="login-field">
@@ -327,21 +348,15 @@ export default function LoginPage({ onLogin }) {
                   Confirmer le mot de passe
                 </label>
 
-                <div className="login-input-wrapper">
-                  <LockKeyhole size={17} />
-
-                  <input
-                    id="register-confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) =>
-                      setConfirmPassword(event.target.value)
-                    }
-                    placeholder="Répétez votre mot de passe"
-                    autoComplete="new-password"
-                    required
-                  />
-                </div>
+                <PasswordInput
+                  id="register-confirm-password"
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(event.target.value)
+                  }
+                  placeholder="Répétez votre mot de passe"
+                  autoComplete="new-password"
+                />
               </div>
 
               <button

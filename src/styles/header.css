@@ -203,8 +203,8 @@
   animation: notification-count-pulse 2.4s ease-out infinite;
 }
 @keyframes notification-count-pulse {
-  0% { box-shadow: 0 0 0 0 rgb(184 134 63 / 0.5); }
-  70%, 100% { box-shadow: 0 0 0 9px rgb(184 134 63 / 0); }
+  0% { box-shadow: 0 0 0 0 rgb(201 154 62 / 0.5); }
+  70%, 100% { box-shadow: 0 0 0 9px rgb(201 154 62 / 0); }
 }
 @media (prefers-reduced-motion: reduce) { .notification-count { animation: none; } }
 

@@ -27,8 +27,8 @@ export default function AgentDialogCard({
         style={{ left: -90, top: -210 }}
         aria-hidden="true"
       >
-        <circle cx="210" cy="210" r="190" fill="none" stroke="#B8863F" strokeOpacity=".32" strokeWidth="2" />
-        <circle cx="210" cy="210" r="130" fill="none" stroke="#B8863F" strokeOpacity=".26" strokeWidth="2" />
+        <circle cx="210" cy="210" r="190" fill="none" stroke="#C99A3E" strokeOpacity=".32" strokeWidth="2" />
+        <circle cx="210" cy="210" r="130" fill="none" stroke="#C99A3E" strokeOpacity=".26" strokeWidth="2" />
       </svg>
 
       <p className="rf-dialog-kicker">{kicker}</p>
