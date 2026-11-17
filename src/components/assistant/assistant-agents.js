@@ -36,6 +36,16 @@ function validScore(agent) {
     : null;
 }
 
+/** Les agents qu'un autre outil que la recherche a examinés : par son agentId, ou le profil lu. */
+function agentsExamines(toolResults) {
+  return toolResults
+    .filter((toolResult) => toolResult?.name !== 'search_agents')
+    .map((toolResult) => (toolResult.name === 'get_agent_profile'
+      ? toolResult.result?.id
+      : Number(toolResult.arguments?.agentId)))
+    .filter((id) => Number.isSafeInteger(id) && id > 0);
+}
+
 export function getNavigableAgents(toolResults) {
   if (!Array.isArray(toolResults)) {
     return [];
@@ -73,6 +83,15 @@ export function getNavigableAgents(toolResults) {
         reason: matchReason(agent, typeEmploi ? [...meta, typeEmploi] : meta),
         score: validScore(agent),
       });
+    }
+  }
+
+  // Une recherche qui servait seulement à retrouver un agent (« le deuxième ») ne
+  // réaffiche pas toute la liste : seuls les agents que la réponse examine restent.
+  const examines = agentsExamines(toolResults).filter((id) => agents.has(id));
+  if (examines.length > 0) {
+    for (const id of [...agents.keys()]) {
+      if (!examines.includes(id)) agents.delete(id);
     }
   }
 

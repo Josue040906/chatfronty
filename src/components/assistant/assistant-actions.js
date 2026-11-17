@@ -266,6 +266,7 @@ const TOOL_TRACES = {
   list_document_types: () => 'Types de demande',
   list_diploma_options: () => 'Référentiel des diplômes',
   simulate_career: () => 'Simulation de carrière',
+  check_titularisation: () => 'Conditions de titularisation',
 };
 
 /** « Recherche d’agents · 2 résultats · Fiche d’agent » : les sources de la réponse, sans doublon. */

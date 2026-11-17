@@ -43,6 +43,19 @@ describe('getNavigableAgents', () => {
     expect(agent.reason).toBe('Licence Informatique (Université d’Antananarivo, 2017) · 36');
   });
 
+  it('keeps only the agent the answer examines when a search served to find it', () => {
+    const recherche = {
+      name: 'search_agents',
+      result: { agents: [{ id: 94, prenom: 'Ony', nom: 'R' }, { id: 95, prenom: 'Tsiry', nom: 'R' }] },
+    };
+    const noms = (outils) => getNavigableAgents(outils).map(({ name }) => name);
+
+    expect(noms([recherche])).toEqual(['Ony R', 'Tsiry R']);
+    expect(noms([recherche, { name: 'check_titularisation', arguments: { agentId: 95 }, result: {} }])).toEqual(['Tsiry R']);
+    expect(noms([recherche, { name: 'get_agent_profile', arguments: { query: 'Tsiry' }, result: { id: 95 } }])).toEqual(['Tsiry R']);
+    expect(noms([recherche, { name: 'simulate_career', arguments: { agentId: 7 }, result: {} }])).toEqual(['Ony R', 'Tsiry R']);
+  });
+
   it('does not repeat in the reason what the row already shows', () => {
     const [agent] = getNavigableAgents([{
       name: 'search_agents',
