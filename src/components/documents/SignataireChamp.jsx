@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { getSignataires } from '../../api/documents';
+import Combobox from '../ui/Combobox';
 
 // La liste ne change pas d'un formulaire à l'autre : un seul appel par visite.
 let signatairesEnCours = null;
@@ -18,7 +19,7 @@ function chargerSignataires() {
  * et chefs de service en poste. On peut écrire un autre nom.
  */
 export default function SignataireChamp({ value, onChange, disabled = false }) {
-  const liste = useId();
+  const champ = useId();
   const [signataires, setSignataires] = useState([]);
 
   useEffect(() => {
@@ -28,24 +29,19 @@ export default function SignataireChamp({ value, onChange, disabled = false }) {
   }, []);
 
   return (
-    <label className="signataire-champ">
-      <span>Signée par <b>*</b></span>
-      <input
+    <div className="signataire-champ">
+      <label htmlFor={champ}><span>Signée par <b>*</b></span></label>
+      <Combobox
+        id={champ}
         name="signataire"
-        list={liste}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={onChange}
+        options={signataires.map((signataire) => ({ value: signataire.libelle }))}
         disabled={disabled}
         required
         maxLength={255}
-        autoComplete="off"
         placeholder="Choisissez ou écrivez le nom du signataire"
       />
-      <datalist id={liste}>
-        {signataires.map((signataire) => (
-          <option key={signataire.libelle} value={signataire.libelle} />
-        ))}
-      </datalist>
-    </label>
+    </div>
   );
 }

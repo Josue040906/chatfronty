@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, FileText, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill } from '../../utils/bandyPrefill';
 import DocumentPdfPreview from './DocumentPdfPreview';
@@ -9,31 +9,14 @@ import { getAgents } from '../../api/agents';
 import { getDirections } from '../../api/directions';
 import {
   createDocumentRequest,
-  getDocumentRequestPdf,
   getDocumentTypes,
 } from '../../api/documents';
+import VilleField from '../../components/forms/VilleField';
 import { getPostesByService } from '../../api/postes';
 import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
 import { getConges, getRetraiteAnalyse, getTitularisation } from '../../api/carrieres';
 import { formatJour, formatJours, joursConge } from '../../utils/documentCycle';
-
-function downloadPdfInNewTab(pdfWindow, blob) {
-  const url = URL.createObjectURL(blob);
-
-  if (pdfWindow) {
-    pdfWindow.opener = null;
-    pdfWindow.location = url;
-  } else {
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noreferrer';
-    link.click();
-  }
-
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
 
 function todayInputValue() {
   const now = new Date();
@@ -93,10 +76,7 @@ export default function NewDocumentPage() {
   const [loadingPostes, setLoadingPostes] = useState(false);
   const [mutationOptionsError, setMutationOptionsError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [openingPdf, setOpeningPdf] = useState(false);
   const [error, setError] = useState('');
-  const [pdfError, setPdfError] = useState('');
-  const [createdDocument, setCreatedDocument] = useState(null);
   const [retraite, setRetraite] = useState(null);
   const [soldeConge, setSoldeConge] = useState(null);
   const [titularisation, setTitularisation] = useState(null);
@@ -174,7 +154,6 @@ export default function NewDocumentPage() {
   const isMutationRequest = selectedType?.code === 'MUTATION';
   const isRetirementRequest = selectedType?.code === 'RETRAITE';
   const isTitularisationRequest = selectedType?.code === 'TITULARISATION';
-  const hasPdfTemplate = canOpenPdf(selectedType);
   const selectedAgent = agents.find(
     (agent) => String(agent.id) === formData.employeId
   );
@@ -279,7 +258,6 @@ export default function NewDocumentPage() {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
     setError('');
-    setPdfError('');
     setMutationOptionsError('');
     if (name === 'typeDocumentId') {
       setPostes([]);
@@ -322,7 +300,6 @@ export default function NewDocumentPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-    setPdfError('');
 
     if (!formData.typeDocumentId || !formData.employeId) {
       setError('Sélectionnez un type de document et un agent.');
@@ -394,7 +371,10 @@ export default function NewDocumentPage() {
     try {
       setSaving(true);
       const result = await createDocumentRequest(documentRequest(formData, selectedType));
-      setCreatedDocument(result);
+      // La liste affiche la nouvelle demande, ouverte avec sa lettre : pas d'écran intermédiaire.
+      navigate('/documents', {
+        state: { demandeCreee: { id: result?.id, reference: result?.referenceDocument } },
+      });
     } catch (err) {
       console.error(err);
       setError(
@@ -404,116 +384,6 @@ export default function NewDocumentPage() {
     } finally {
       setSaving(false);
     }
-  }
-
-  async function handleOpenPdf() {
-    if (!createdDocument?.id) return;
-
-    const pdfWindow = window.open('', '_blank');
-    setOpeningPdf(true);
-    setPdfError('');
-
-    try {
-      const pdf = await getDocumentRequestPdf(createdDocument.id);
-      downloadPdfInNewTab(pdfWindow, pdf);
-    } catch (err) {
-      console.error(err);
-      pdfWindow?.close();
-      setPdfError(
-        err?.message || 'Le PDF du document ne peut pas être ouvert.'
-      );
-    } finally {
-      setOpeningPdf(false);
-    }
-  }
-
-  function startAnotherDocument() {
-    setCreatedDocument(null);
-    setFormData((current) => ({
-      ...current,
-      employeId: '',
-      destinataire: '',
-      dateDebut: '',
-      dateFin: '',
-      motif: '',
-      directionSouhaiteeId: '',
-      serviceSouhaiteId: '',
-      posteSouhaiteId: '',
-      lieuTravailSouhaite: '',
-      dateEffetSouhaitee: '',
-      dateDepartSouhaitee: '',
-    }));
-    setPostes([]);
-    setLoadingPostes(false);
-    setError('');
-    setPdfError('');
-  }
-
-  if (createdDocument) {
-    const dateEffet = createdDocument.dateEffet;
-
-    return (
-      <div className="rf-page">
-        <header className="rf-head">
-          <div>
-            <p className="rf-eyebrow">Documents RH</p>
-            <h1 className="rf-title">Demande créée</h1>
-            <p className="rf-lead">
-              {dateEffet && dateEffet > todayInputValue()
-                ? `Elle deviendra applicable le ${formatJour(dateEffet)} ; vous serez prévenu ce jour-là.`
-                : 'Elle est déjà applicable : vous pouvez l’appliquer depuis la liste des documents.'}
-            </p>
-          </div>
-        </header>
-
-        <div className="rf-card new-document-done">
-          <span className="rf-ico"><FileText size={22} /></span>
-          <div>
-            <strong>Document créé avec succès.</strong>
-            <p>
-              Référence :{' '}
-              <strong className="rf-mono">
-                {createdDocument.referenceDocument || 'attribuée par le serveur'}
-              </strong>
-            </p>
-          </div>
-        </div>
-
-        {pdfError && (
-          <p className="rf-error" role="alert">{pdfError}</p>
-        )}
-
-        {!hasPdfTemplate && (
-          <p className="rf-note">
-            Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.
-          </p>
-        )}
-
-        <div className="rf-actions new-document-done-actions">
-          <button
-            type="button"
-            className="rf-btn"
-            onClick={() => navigate('/documents')}
-          >
-            Retour aux documents
-          </button>
-          <button type="button" className="rf-btn" onClick={startAnotherDocument}>
-            Nouveau document
-          </button>
-          {hasPdfTemplate && (
-            <button
-              type="button"
-              className="rf-btn rf-btn-primary"
-              onClick={handleOpenPdf}
-              disabled={openingPdf}
-            >
-              <FileText size={18} />
-              {openingPdf ? 'Ouverture du PDF...' : 'Voir le PDF'}
-            </button>
-          )}
-        </div>
-      </div>
-    );
   }
 
   const hasMotif = isLeaveRequest || isAdvancementRequest || isMutationRequest || isRetirementRequest
@@ -923,14 +793,12 @@ export default function NewDocumentPage() {
                     </div>
                     <div className={prefillClass('rf-field', 'lieuTravailSouhaite', prefilled)}>
                       <label htmlFor="lieuTravailSouhaite">Lieu de travail souhaité</label>
-                      <input
+                      <VilleField
                         id="lieuTravailSouhaite"
                         name="lieuTravailSouhaite"
-                        type="text"
                         value={formData.lieuTravailSouhaite}
                         onChange={handleChange}
-                        maxLength={255}
-                        placeholder="Ne pas préciser"
+                        placeholder="Ne pas préciser (lieu actuel)"
                         disabled={saving}
                       />
                     </div>

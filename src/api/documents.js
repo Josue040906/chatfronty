@@ -100,8 +100,9 @@ export async function getSignataires() {
   return normalizeResponse(await apiGet('/api/documents/signataires'));
 }
 
-export async function annulerDocument(id) {
-  return apiPost(`/api/documents/${encodeURIComponent(id)}/annuler`, {});
+/** Annuler une demande créée ou acceptée ; le motif est exigé pour une demande acceptée. */
+export async function annulerDocument(id, motif) {
+  return apiPost(`/api/documents/${encodeURIComponent(id)}/annuler`, motif ? { motif } : {});
 }
 
 export async function archiverDocument(id) {

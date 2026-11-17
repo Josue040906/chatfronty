@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AlertTriangle,
+  CheckCircle2,
   ChevronDown,
   FileText,
   Plus,
   Search,
   X,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { getAgents } from '../../api/agents';
 import useUrlFilter from '../../hooks/useUrlFilter';
@@ -15,7 +17,6 @@ import {
   getDocumentRequestPdf,
   getDocumentRequests,
   appliquerDocument,
-  annulerDocument,
   archiverDocument,
   getDocumentTypes,
 } from '../../api/documents';
@@ -33,6 +34,7 @@ import {
 } from '../../utils/documentCycle';
 import { DemandeEffet, DemandeFrise } from '../../components/documents/DemandeSuivi';
 import ReponseDemande from '../../components/documents/ReponseDemande';
+import AnnulerDemande from '../../components/documents/AnnulerDemande';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -214,6 +216,10 @@ export default function DocumentsPage({ user }) {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState('');
   const [cycle, setCycle] = useState({ running: '', message: '', error: '' });
+  const location = useLocation();
+  // La demande qu'on vient de créer : la liste l'ouvre aussitôt, avec sa lettre.
+  const [demandeCreee] = useState(() => location.state?.demandeCreee || null);
+  const demandeCreeeOuverte = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -247,6 +253,21 @@ export default function DocumentsPage({ user }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!demandeCreee) return;
+    // L'état de navigation est consommé : un rechargement ne rouvre pas le message.
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (loading || !demandeCreee || demandeCreeeOuverte.current) return;
+    demandeCreeeOuverte.current = true;
+    const creee = documents.find((item) => item.id === demandeCreee.id);
+    if (creee) selectDocument(creee);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, documents, demandeCreee]);
 
   const typeById = useMemo(
     () => new Map(types.map((type) => [String(type.id), type])),
@@ -455,6 +476,15 @@ export default function DocumentsPage({ user }) {
       {pdfError && (
         <p className="rf-error" role="alert">{pdfError}</p>
       )}
+      {demandeCreee && (
+        <p className="documents-nouvelle" role="status">
+          <CheckCircle2 size={18} aria-hidden="true" />
+          <span>
+            Demande <strong>{demandeCreee.reference || 'créée'}</strong> enregistrée : sa lettre est ouverte
+            ci-contre, prête à faire signer.
+          </span>
+        </p>
+      )}
 
       <div className="rf-toolbar">
         <label className="rf-search">
@@ -543,7 +573,7 @@ export default function DocumentsPage({ user }) {
                     key={item.id}
                     className={`rf-row documents-row${
                       selectedDocument?.id === item.id ? ' is-selected' : ''
-                    }`}
+                    }${demandeCreee?.id === item.id ? ' is-nouvelle' : ''}`}
                   >
                     <span className={`rf-tile${index % 2 ? ' rf-tile-info' : ''}`}>
                       <FileText size={24} />
@@ -567,7 +597,8 @@ export default function DocumentsPage({ user }) {
                     </span>
                     <span
                       className={`rf-pill rf-pill-${phase.code.toLowerCase()}`}
-                      title={item.dateEffet ? `Date d’effet : ${formatJour(item.dateEffet)}` : undefined}
+                      title={item.empechement
+                        || (item.dateEffet ? `Date d’effet : ${formatJour(item.dateEffet)}` : undefined)}
                     >
                       {phase.label}
                       {phase.code === 'EN_ATTENTE' && <small> · J-{phase.jours}</small>}
@@ -611,6 +642,15 @@ export default function DocumentsPage({ user }) {
               {selectedDocument.referenceDocument || 'Sans référence'}
             </p>
             <DemandeFrise document={selectedDocument} />
+            {selectedDocument.empechement && (
+              <p className="demande-empechement" role="alert">
+                <AlertTriangle size={16} aria-hidden="true" />
+                <span>
+                  <strong>Cette demande ne peut plus produire son effet.</strong>
+                  {selectedDocument.empechement} Annulez-la ; une nouvelle demande pourra être faite si besoin.
+                </span>
+              </p>
+            )}
             {selectedDocument.decision && (
               <div className={`demande-decision is-${String(selectedDocument.statut).toLowerCase()}`}>
                 <p>{decisionLabel(selectedDocument.decision)}</p>
@@ -685,6 +725,21 @@ export default function DocumentsPage({ user }) {
                       onDone={(decision) => reponseEnregistree(selectedDocument, decision)}
                       onCancel={() => setCycle((current) => ({ ...current, repondre: false }))}
                     />
+                  ) : cycle.annuler ? (
+                    <AnnulerDemande
+                      id={selectedDocument.id}
+                      reference={selectedDocument.referenceDocument}
+                      acceptee={selectedDocument.statut === 'ACCEPTE'}
+                      empechement={selectedDocument.empechement}
+                      onDone={() => {
+                        const update = (item) => (item.id === selectedDocument.id
+                          ? { ...item, statut: 'ANNULE', empechement: null } : item);
+                        setDocuments((current) => current.map(update));
+                        setSelectedDocument((current) => (current ? update(current) : current));
+                        setCycle({ running: '', error: '', message: 'Demande annulée : elle ne prendra pas effet.' });
+                      }}
+                      onCancel={() => setCycle((current) => ({ ...current, annuler: false }))}
+                    />
                   ) : cycle.confirmer ? (
                     <div className="demande-confirmation" role="group" aria-label="Confirmer l’application">
                       <p>
@@ -739,9 +794,9 @@ export default function DocumentsPage({ user }) {
                           type="button"
                           className="rf-btn"
                           disabled={Boolean(cycle.running)}
-                          onClick={() => runCycle(selectedDocument, 'annuler', annulerDocument, 'ANNULE', 'Demande annulée.')}
+                          onClick={() => setCycle({ running: '', message: '', error: '', annuler: true })}
                         >
-                          {cycle.running === 'annuler' ? 'Annulation…' : 'Annuler la demande'}
+                          Annuler la demande
                         </button>
                       )}
                       {actions.archiver && (

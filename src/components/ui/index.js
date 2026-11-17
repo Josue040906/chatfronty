@@ -8,3 +8,4 @@ export { default as PageHeader } from './PageHeader';
 export { default as Segmented } from './Segmented';
 export { default as Skeleton } from './Skeleton';
 export { default as StatCard } from './StatCard';
+export { default as Combobox } from './Combobox';

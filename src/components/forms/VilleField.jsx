@@ -7,6 +7,7 @@ export default function VilleField({
   value = '',
   onChange,
   disabled = false,
+  placeholder = 'Aucune ville sélectionnée',
 }) {
   const [villes, setVilles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +62,7 @@ export default function VilleField({
         aria-describedby={error ? `${id}-error` : undefined}
       >
         <option value="">
-          {loading ? 'Chargement des villes…' : 'Aucune ville sélectionnée'}
+          {loading ? 'Chargement des villes…' : placeholder}
         </option>
         {selectedValue && !currentVille && (
           <option value={selectedValue}>

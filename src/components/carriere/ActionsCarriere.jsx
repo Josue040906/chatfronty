@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   ArrowUpRight,
   BadgeCheck,
   BriefcaseBusiness,
@@ -15,6 +16,7 @@ import {
 import { getConges, getRetraiteAnalyse, getTitularisation, prendreRetraite } from '../../api/carrieres';
 import { appliquerDocument, getDemandesAgent } from '../../api/documents';
 import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/documentCycle';
+import AnnulerDemande from '../documents/AnnulerDemande';
 import ReponseDemande from '../documents/ReponseDemande';
 import SignataireChamp from '../documents/SignataireChamp';
 import TitularisationConfirmation from './TitularisationConfirmation';
@@ -36,7 +38,8 @@ function quand(date, today) {
 /**
  * Tout ce qu'on peut faire pour cet agent, au même endroit :
  * - les demandes en cours : saisir leur réponse signée, appliquer celles qui
- *   sont acceptées à leur date d'effet ;
+ *   sont acceptées à leur date d'effet, annuler celles qu'on abandonne ou que
+ *   l'API déclare impossibles (la raison est affichée) ;
  * - les décisions déjà signées sans demande : une action directe, avec la
  *   décision signée : on indique qui l'a signée (réservées au Service du Personnel).
  *   Une opération qui a déjà une demande en cours passe par cette demande :
@@ -150,8 +153,10 @@ export default function ActionsCarriere({
     if (!demande) return action;
     return {
       ...action,
-      detail: `Demande ${demande.reference_document} ${demande.statut === 'ACCEPTE' ? 'acceptée' : 'sans réponse'}`,
-      pret: demande.statut === 'ACCEPTE',
+      detail: demande.empechement
+        ? `Demande ${demande.reference_document} bloquée : à annuler`
+        : `Demande ${demande.reference_document} ${demande.statut === 'ACCEPTE' ? 'acceptée' : 'sans réponse'}`,
+      pret: demande.statut === 'ACCEPTE' && !demande.empechement,
       desactive: false,
       onClick: () => ouvrir(`demande-${demande.id}`),
       actif: ouvert === `demande-${demande.id}`,
@@ -209,11 +214,14 @@ export default function ActionsCarriere({
           <ul className="actions-carriere-acceptees">
             {ouvertes.map((demande) => {
               const acceptee = demande.statut === 'ACCEPTE';
+              const bloquee = Boolean(demande.empechement);
               const jours = joursJusqua(demande.date_effet, today);
               const prete = jours == null || jours <= 0;
               const deplie = ouvert === `demande-${demande.id}`;
+              const annulation = ouvert === `annuler-${demande.id}`;
+              const etat = bloquee ? 'is-bloquee' : acceptee ? 'is-acceptee' : 'is-sans-reponse';
               return (
-                <li key={demande.id} className={`${acceptee ? 'is-acceptee' : 'is-sans-reponse'}${deplie ? ' is-ouverte' : ''}`}>
+                <li key={demande.id} className={`${etat}${deplie || annulation ? ' is-ouverte' : ''}`}>
                   <span>
                     <strong>{demande.type_document || demande.objet}</strong>
                     <small>
@@ -223,7 +231,16 @@ export default function ActionsCarriere({
                         : ' · sans réponse : la lettre attend sa signature'}
                     </small>
                   </span>
-                  {acceptee ? (
+                  <button
+                    type="button"
+                    className={`rf-btn${bloquee ? ' rf-btn-primary' : ' rf-btn-ghost'}`}
+                    aria-expanded={annulation}
+                    disabled={envoi.running}
+                    onClick={() => ouvrir(`annuler-${demande.id}`)}
+                  >
+                    Annuler
+                  </button>
+                  {bloquee ? null : acceptee ? (
                     <button
                       type="button"
                       className="rf-btn rf-btn-primary"
@@ -248,6 +265,25 @@ export default function ActionsCarriere({
                       document={{ id: demande.id, dateEffet: demande.date_effet, dateDocument: demande.date_document }}
                       typeCode={demande.type_document_code}
                       onDone={(decision, dateEffet) => reponseSaisie(demande, decision, dateEffet)}
+                      onCancel={() => setOuvert('')}
+                    />
+                  )}
+                  {bloquee && (
+                    <p className="demande-empechement" role="alert">
+                      <AlertTriangle size={16} aria-hidden="true" />
+                      <span>
+                        <strong>Cette demande ne peut plus produire son effet.</strong>
+                        {demande.empechement}
+                      </span>
+                    </p>
+                  )}
+                  {annulation && (
+                    <AnnulerDemande
+                      id={demande.id}
+                      reference={demande.reference_document}
+                      acceptee={acceptee}
+                      empechement={demande.empechement}
+                      onDone={() => termine(`Demande ${demande.reference_document} annulée : elle ne prendra pas effet.`)}
                       onCancel={() => setOuvert('')}
                     />
                   )}

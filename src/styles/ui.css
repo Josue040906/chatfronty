@@ -405,3 +405,73 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------- Champ avec suggestions (Combobox) ---------- */
+
+.ui-combobox {
+  position: relative;
+}
+
+.ui-combobox input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 34px;
+}
+
+.ui-combobox-chevron {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.ui-combobox-liste {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 248px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lift);
+  animation: ui-combobox-ouverture 140ms var(--ease-out);
+}
+
+.ui-combobox-liste li {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ui-combobox-liste li small {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.ui-combobox-liste li.is-actif {
+  background: var(--color-surface-sunken);
+}
+
+.ui-combobox-liste li[aria-selected='true'] {
+  color: var(--color-brand);
+  font-weight: 600;
+}
+
+@keyframes ui-combobox-ouverture {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}

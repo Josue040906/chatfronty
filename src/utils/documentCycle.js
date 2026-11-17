@@ -3,7 +3,10 @@
 // Acceptée ou Refusée (signataire, acte, date). Une demande acceptée devient
 // applicable à la date d'effet accordée (c'est une date, pas un statut), puis
 // Appliquée par un agent du Personnel : son effet est produit par l'API.
-// Créée, elle peut être Annulée ; appliquée, refusée ou annulée, elle s'Archive.
+// Créée ou acceptée, elle peut être Annulée (acceptée : avec un motif) ;
+// appliquée, refusée ou annulée, elle s'Archive. L'API signale aussi, sur une
+// demande en cours, ce qui l'empêche désormais de produire son effet
+// (« empechement ») : elle est alors bloquée et ne peut plus que s'annuler.
 // Le front ne fait que montrer les actions permises ; l'API reste seule juge.
 
 export const DOCUMENT_STATUSES = [
@@ -17,6 +20,9 @@ export const DOCUMENT_STATUSES = [
 
 /** Filtre « à appliquer » : des demandes acceptées dont la date d'effet est atteinte. */
 export const APPLICABLE = 'APPLICABLE';
+
+/** Une demande en cours que l'API déclare impossible : à annuler. */
+export const BLOQUE = 'BLOQUE';
 
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
@@ -65,6 +71,9 @@ export function delaiLabel(jours) {
  * (acceptée, date atteinte), ou son statut enregistré (CREE, REFUSE…).
  */
 export function documentPhase(document, today = isoToday()) {
+  if (document?.empechement && ['CREE', 'ACCEPTE'].includes(document?.statut)) {
+    return { code: BLOQUE, label: 'Bloquée', jours: null };
+  }
   if (document?.statut === 'ACCEPTE') {
     const jours = joursJusqua(document.dateEffet, today);
     if (jours != null && jours > 0) {
@@ -90,7 +99,7 @@ export function documentActions(document, user, today = isoToday()) {
     appliquer: acceptee && personnel && phase.code === APPLICABLE,
     // Le bouton reste visible, désactivé, avec le temps qui reste.
     appliquerPlusTard: acceptee && personnel && phase.code === 'EN_ATTENTE',
-    annuler: creee && (estAuteur || chef),
+    annuler: (creee || acceptee) && (estAuteur || chef),
     archiver: ['APPLIQUE', 'REFUSE', 'ANNULE'].includes(document?.statut),
   };
 }
