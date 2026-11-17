@@ -313,6 +313,10 @@
 
 .assistant-agent-info strong { font-size: 14px; }
 
+/* Dans une liste compacte, le badge garde sa couleur et perd son icône. */
+.assistant-agent-row .type-emploi-badge { padding: 3px 8px; font-size: 11px; }
+.assistant-agent-row .type-emploi-badge svg { display: none; }
+
 .assistant-agent-info small {
   overflow: hidden;
   color: var(--color-text-muted);
@@ -324,6 +328,11 @@
 .assistant-agent-chevron { color: var(--color-text-muted); }
 
 .assistant-agent-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
   margin: 0;
   padding: 8px 12px;
   border-top: 1px solid var(--color-border);
@@ -331,6 +340,20 @@
   color: var(--color-text-muted);
   font-size: 12.5px;
 }
+
+.assistant-agent-foot button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-brand);
+  font: 600 12.5px var(--font-ui);
+  cursor: pointer;
+}
+
+.assistant-agent-foot button:hover { text-decoration: underline; }
 
 /* Liens vers une page */
 

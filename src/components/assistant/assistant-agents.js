@@ -9,15 +9,21 @@ const MAX_REASON = 160;
 
 /**
  * Pourquoi l'API a retenu l'agent (champ « correspondance ») : les valeurs
- * des critères qui l'ont fait choisir, en clair, sur une ligne.
+ * des critères qui l'ont fait choisir, en clair, sur une ligne. Une valeur
+ * que la fiche montre déjà (poste, service, type d'emploi) n'est pas répétée.
  */
-function matchReason(agent) {
+function matchReason(agent, shown) {
   const match = agent?.correspondance;
   if (!match || typeof match !== 'object' || Array.isArray(match)) {
     return '';
   }
+  const visibles = shown.map((part) => part.toLowerCase());
   const reason = Object.values(match)
     .filter((value) => ['string', 'number'].includes(typeof value) && String(value).trim())
+    .filter((value) => {
+      const texte = String(value).trim().toLowerCase();
+      return !visibles.some((part) => texte.includes(part));
+    })
     .join(' · ');
   return reason.length > MAX_REASON ? `${reason.slice(0, MAX_REASON - 1)}…` : reason;
 }
@@ -56,14 +62,15 @@ export function getNavigableAgents(toolResults) {
         continue;
       }
 
+      const typeEmploi = typeof agent.type_emploi === 'string' ? agent.type_emploi : null;
+      const meta = [agent.poste, agent.service]
+        .filter((part) => typeof part === 'string' && part.trim());
       agents.set(agent.id, {
         id: String(agent.id),
         name,
-        meta: [agent.poste, agent.service]
-          .filter((part) => typeof part === 'string' && part.trim())
-          .join(' · '),
-        typeEmploi: typeof agent.type_emploi === 'string' ? agent.type_emploi : null,
-        reason: matchReason(agent),
+        meta: meta.join(' · '),
+        typeEmploi,
+        reason: matchReason(agent, typeEmploi ? [...meta, typeEmploi] : meta),
         score: validScore(agent),
       });
     }

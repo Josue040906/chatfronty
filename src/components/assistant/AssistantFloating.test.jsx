@@ -43,6 +43,25 @@ describe('getNavigableAgents', () => {
     expect(agent.reason).toBe('Licence Informatique (Université d’Antananarivo, 2017) · 36');
   });
 
+  it('does not repeat in the reason what the row already shows', () => {
+    const [agent] = getNavigableAgents([{
+      name: 'search_agents',
+      result: {
+        agents: [{
+          id: 8,
+          prenom: 'Lina',
+          nom: 'ANDRIATSILAVINA',
+          poste: 'Chef de service',
+          service: 'Service Juridique',
+          type_emploi: 'Fonctionnaire',
+          correspondance: { service: 'SJUR Service Juridique', type: 'Fonctionnaire', categorie: 'A' },
+        }],
+      },
+    }]);
+
+    expect(agent.reason).toBe('A');
+  });
+
   it('keeps every approximate candidate, but only near ones beside an exact match', () => {
     const candidate = (id, score) => ({ id, prenom: 'P', nom: `N${id}`, score_correspondance: score });
     const shown = (scores) => getNavigableAgents([{

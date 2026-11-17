@@ -190,7 +190,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                 <span className="assistant-agent-info">
                   <strong>{agent.name}</strong>
                   {agent.meta && <small>{agent.meta}</small>}
-                  {agent.reason && agent.reason !== agent.typeEmploi && (
+                  {agent.reason && (
                     <small className="assistant-agent-reason">{agent.reason}</small>
                   )}
                   {agent.similarityPercent !== null && (
@@ -201,12 +201,21 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
                 <ChevronRight size={16} className="assistant-agent-chevron" aria-hidden="true" />
               </button>
             ))}
-            {item.agents.length > 1 && (
-              <p className="assistant-agent-foot">{item.agents.length} agents</p>
+            {(item.agents.length > 1 || item.navigation?.length > 0) && (
+              <div className="assistant-agent-foot">
+                <span>{item.agents.length} agent{item.agents.length > 1 ? 's' : ''}</span>
+                {/* Sous une liste d'agents, la suite proposée prend place dans son pied. */}
+                {item.navigation?.map((action) => (
+                  <button key={action.route} type="button" onClick={() => onOpenRoute(action.route)}>
+                    {action.label}
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         )}
-        {item.navigation?.length > 0 && (
+        {!item.agents?.length && item.navigation?.length > 0 && (
           <div className="assistant-message-actions">
             {item.navigation.map((action) => (
               <button
@@ -309,7 +318,7 @@ export default function AssistantFloating({ user }) {
   const userId = user?.userId;
   const conversationStorageKey = getConversationStorageKey(userId);
   const [openState, setOpen] = useState(false);
-  // Le point du jour, montré à la première ouverture de la journée, même en pleine conversation.
+  // Le point du jour, montré à la première ouverture de la journée jusqu'à la question suivante.
   const [pointDuJour, setPointDuJour] = useState(false);
   const [expandedState, setExpanded] = useState(false);
   // La page /assistant est la même conversation, ouverte en plein écran.
@@ -782,6 +791,8 @@ export default function AssistantFloating({ user }) {
     let optimisticMessageAdded = false;
     let sendOutcome = 'success';
     let sendStatus = null;
+    // Le point du jour cède la place à la conversation dès la première question.
+    setPointDuJour(false);
     setPendingInitialMessage(text);
     setLoading(true);
     setSendError('');
