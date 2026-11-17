@@ -68,6 +68,9 @@ function fieldLabel(name) {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+// Ce que fait le bouton de confirmation, dit en clair selon l'outil.
+const CONFIRM_LABELS = { create_document_draft: 'Créer le brouillon' };
+
 /**
  * Tâches confirmées : rien n'est exécuté tant que l'utilisateur n'a pas
  * cliqué « Confirmer ». La carte récapitule ce qui sera envoyé.
@@ -82,14 +85,19 @@ export function getConfirmationActions(actions) {
       // Le résumé vérifié par l'API (aperçu) dit en clair ce qui sera créé ;
       // sans lui, la carte montre les champs envoyés.
       const verified = isPlainObject(action.summary) && Object.keys(action.summary).length > 0;
+      const details = Object.entries(verified ? action.summary : (isPlainObject(action.fields) ? action.fields : {}))
+        .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
+        .map(([name, value]) => ({ label: verified ? name : fieldLabel(name), value: String(value) }));
+      // Le type de document sert de titre à la carte ; il n'est pas répété dans les détails.
+      const titre = details.find(({ label }) => label === 'Document');
       return {
         confirmationId: action.confirmationId,
         status: 'pending',
         outcome: '',
         verified,
-        details: Object.entries(verified ? action.summary : (isPlainObject(action.fields) ? action.fields : {}))
-          .filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value))
-          .map(([name, value]) => ({ label: verified ? name : fieldLabel(name), value: String(value) })),
+        title: titre?.value || 'Action à confirmer',
+        confirmLabel: CONFIRM_LABELS[action.tool] || 'Confirmer',
+        details: titre ? details.filter((detail) => detail !== titre) : details,
       };
     });
 }
@@ -243,6 +251,45 @@ export function getStatistics(toolResults) {
   };
 }
 
+const plural = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+
+// Ce que Bandy a consulté, en mots de l'utilisateur ; un outil absent de cette liste n'est pas cité.
+const TOOL_TRACES = {
+  search_agents: (result) => (Number.isSafeInteger(result?.total)
+    ? `Recherche d’agents · ${plural(result.total, 'résultat')}` : 'Recherche d’agents'),
+  get_agent_profile: () => 'Fiche d’agent',
+  get_my_profile: () => 'Ton profil',
+  get_my_activities: () => 'Tes activités',
+  get_my_tasks: () => 'Le point du jour',
+  get_organization_info: () => 'Organisation',
+  list_documents: (result) => (Array.isArray(result) ? `Demandes · ${result.length}` : 'Demandes'),
+  list_document_types: () => 'Types de demande',
+  list_diploma_options: () => 'Référentiel des diplômes',
+  simulate_career: () => 'Simulation de carrière',
+};
+
+/** « Recherche d’agents · 2 résultats · Fiche d’agent » : les sources de la réponse, sans doublon. */
+export function getToolTrace(toolResults) {
+  if (!Array.isArray(toolResults)) {
+    return [];
+  }
+  const traces = [];
+  for (const toolResult of toolResults) {
+    const trace = TOOL_TRACES[toolResult?.name]?.(toolResult.result);
+    const base = trace?.split(' · ')[0];
+    const index = traces.findIndex((existing) => existing.split(' · ')[0] === base);
+    if (!trace) {
+      continue;
+    }
+    if (index === -1) {
+      traces.push(trace);
+    } else {
+      traces[index] = trace; // le dernier appel du même outil fait foi
+    }
+  }
+  return traces;
+}
+
 /**
  * Ce que la bulle de Bandy affiche sous son texte. Quand Bandy propose une
  * action (ouvrir une page, une tâche préparée ou à confirmer), la recherche
@@ -263,6 +310,7 @@ export function buildBandyReply(response) {
   const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
   return {
     statistics: getStatistics(response?.toolResults),
+    trace: getToolTrace(response?.toolResults),
     agents: proposesAction ? [] : found,
     navigation,
     prepared,

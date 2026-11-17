@@ -8,6 +8,7 @@ import {
   getPreparedActions,
   getStatistics,
   getTodoItems,
+  getToolTrace,
   isInternalRoute,
 } from './assistant-actions';
 
@@ -25,6 +26,8 @@ describe('getConfirmationActions', () => {
       status: 'pending',
       outcome: '',
       verified: false,
+      title: 'Action à confirmer',
+      confirmLabel: 'Confirmer',
       details: [
         { label: 'Motif', value: 'Congé annuel' },
         { label: 'Date effet souhaitee', value: '2026-12-01' },
@@ -66,8 +69,10 @@ describe('getConfirmationActions with an API preview', () => {
     }]);
 
     expect(card.verified).toBe(true);
+    // Le type de document devient le titre de la carte, et le bouton dit ce qu'il fait.
+    expect(card.title).toBe('Demande de congé');
+    expect(card.confirmLabel).toBe('Créer le brouillon');
     expect(card.details).toEqual([
-      { label: 'Document', value: 'Demande de congé' },
       { label: 'Agent', value: 'BEFANAMBINANA Hasina (AG-028)' },
       { label: 'Du', value: '01/12/2026' },
     ]);
@@ -355,5 +360,18 @@ describe('getStatistics', () => {
     expect(getStatistics(undefined)).toBeNull();
     expect(buildBandyReply({ toolResults: grouped([{ sexe: 'F', nombre: 16 }]) }).statistics.rows)
       .toEqual([['F', '16']]);
+  });
+});
+
+describe('getToolTrace', () => {
+  it('names what Band’IAkam consulted, once per tool, in the user’s words', () => {
+    expect(getToolTrace([
+      { name: 'search_agents', result: { total: 5 } },
+      { name: 'get_agent_profile', result: {} },
+      { name: 'search_agents', result: { total: 2 } },
+      { name: 'outil_inconnu', result: {} },
+    ])).toEqual(['Recherche d’agents · 2 résultats', 'Fiche d’agent']);
+    expect(getToolTrace([{ name: 'search_agents', result: { total: 1 } }])).toEqual(['Recherche d’agents · 1 résultat']);
+    expect(getToolTrace(undefined)).toEqual([]);
   });
 });
