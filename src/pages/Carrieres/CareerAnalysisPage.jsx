@@ -35,6 +35,7 @@ import {
   getDiplomaOptions,
   getEmployeeDiplomas,
   getReclassementProposal,
+  getAffectationsHistory,
   getReclassementHistory,
   proposeEstablishment,
 } from '../../api/carrieres';
@@ -191,6 +192,10 @@ export default function CareerAnalysisPage({ user }) {
   const [history, setHistory] = useState([]);
   const [reclassementHistory, setReclassementHistory] = useState([]);
   const [reclassementHistoryError, setReclassementHistoryError] = useState('');
+  const [affectations, setAffectations] = useState([]);
+  const [affectationsError, setAffectationsError] = useState('');
+  // Augmente après chaque changement de carrière : les historiques se relisent.
+  const [historiqueVersion, setHistoriqueVersion] = useState(0);
   const [diplomas, setDiplomas] = useState([]);
   const [diplomaOptions, setDiplomaOptions] = useState(EMPTY_DIPLOMA_OPTIONS);
   const [assignmentServices, setAssignmentServices] = useState([]);
@@ -227,6 +232,7 @@ export default function CareerAnalysisPage({ user }) {
   const assignmentPostesRequestRef = useRef(0);
 
   async function refreshCareerData() {
+    setHistoriqueVersion((version) => version + 1);
     const [agentResult, analysisResult] = await Promise.all([
       getAgentById(id),
       analyserCarriere(id).catch((analysisError) => {
@@ -342,6 +348,26 @@ export default function CareerAnalysisPage({ user }) {
       cancelled = true;
     };
   }, [canManageHr, id]);
+
+  useEffect(() => {
+    if (!canManageHr) return undefined;
+    let cancelled = false;
+    getAffectationsHistory(id)
+      .then((result) => {
+        if (!cancelled) {
+          setAffectations(result);
+          setAffectationsError('');
+        }
+      })
+      .catch((loadError) => {
+        if (!cancelled) {
+          setAffectationsError(loadError.message || 'Impossible de charger l’historique des affectations.');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canManageHr, id, historiqueVersion]);
 
   /** Le dialogue d'ajout d'un diplôme, vide ou prérempli (proposition de Bandy). */
   function showDiplomaDialog(proposition, scan = null) {
@@ -797,7 +823,12 @@ export default function CareerAnalysisPage({ user }) {
   const ongletsHistorique = [
     { cle: 'carriere', titre: 'Carrière', nombre: history.length },
     { cle: 'reclassements', titre: 'Reclassements', nombre: reclassementHistory.length },
+    // La première affectation est la prise de poste : les suivantes sont des mutations.
+    { cle: 'mutations', titre: 'Mutations', nombre: Math.max(affectations.length - 1, 0) },
   ];
+  const titresHistorique = {
+    carriere: 'Historique de carrière', reclassements: 'Reclassements', mutations: 'Affectations et mutations',
+  };
   const ongletActif = canManageHr ? onglet : 'carriere';
 
   return (
@@ -882,7 +913,7 @@ export default function CareerAnalysisPage({ user }) {
       <div className="career-historiques">
         <section className="career-panel career-historique-carriere" aria-labelledby="historique-carriere-titre">
           <div className="career-historiques-tete">
-            <h2 id="historique-carriere-titre">{ongletActif === 'reclassements' ? 'Reclassements' : 'Historique de carrière'}</h2>
+            <h2 id="historique-carriere-titre">{titresHistorique[ongletActif]}</h2>
             {canManageHr && (
               <div className="org-dialog-onglets" role="tablist" aria-label="Historique affiché">
                 {ongletsHistorique.map((item) => (
@@ -946,6 +977,45 @@ export default function CareerAnalysisPage({ user }) {
                   </div>
                 </div>
               ))}
+            </div>
+          ))}
+
+          {ongletActif === 'mutations' && (affectationsError ? (
+            <div className="career-inline-error" role="alert">{affectationsError}</div>
+          ) : affectations.length === 0 ? (
+            <div className="career-history-empty">Aucune affectation enregistrée pour cet agent.</div>
+          ) : (
+            <div className="career-timeline">
+              {affectations.map((item, index) => {
+                const precedente = affectations[index + 1];
+                const nature = !precedente
+                  ? 'Prise de poste'
+                  : String(precedente.service_id) === String(item.service_id) ? 'Changement de poste' : 'Mutation';
+                return (
+                  <div className={`career-timeline-item is-affectation${item.date_fin ? '' : ' is-actuelle'}`} key={item.id}>
+                    <div className="career-timeline-marker" />
+                    <div className="career-timeline-content">
+                      <div className="career-timeline-top">
+                        <strong>{item.poste || 'Poste non renseigné'}</strong>
+                        <span>{formatDate(item.date_debut)}{item.date_fin ? ` → ${formatDate(item.date_fin)}` : ' → aujourd’hui'}</span>
+                      </div>
+                      <p>
+                        <span className="career-affectation-nature">{nature}</span>
+                        {item.service}{item.service_code ? ` (${item.service_code})` : ''}
+                        {precedente && String(precedente.service_id) !== String(item.service_id) && (
+                          <> · depuis {precedente.service}</>
+                        )}
+                      </p>
+                      {(item.reference_acte || item.observation) && (
+                        <p className="career-affectation-acte">
+                          {[item.reference_acte, item.observation !== item.reference_acte ? item.observation : null]
+                            .filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </section>

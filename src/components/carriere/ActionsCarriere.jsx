@@ -19,6 +19,7 @@ import { formatJour, formatJours, isoToday, joursJusqua } from '../../utils/docu
 import AnnulerDemande from '../documents/AnnulerDemande';
 import ReponseDemande from '../documents/ReponseDemande';
 import SignataireChamp from '../documents/SignataireChamp';
+import CongesResume from './CongesResume';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -205,6 +206,8 @@ export default function ActionsCarriere({
   return (
     <section className="career-section actions-carriere" aria-labelledby="actions-carriere-titre">
       <h2 id="actions-carriere-titre" className="ui-visually-hidden">Actions sur la carrière</h2>
+
+      <CongesResume conges={conges} />
 
       {canManageHr && ouvertes.length > 0 && (
         <div className="actions-carriere-groupe">

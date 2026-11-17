@@ -885,3 +885,46 @@
 /* Le bandeau prend la couleur du type d'emploi de l'agent. */
 .career-analysis-page .career-analysis-hero.type-contractuel { background: linear-gradient(145deg, #9A6B2A, #3E2A1D); }
 .career-analysis-page .career-analysis-hero.type-stagiaire { background: linear-gradient(145deg, #2F5B78, #1C2836); }
+
+/* ---------- Historique des affectations (onglet Mutations) ---------- */
+.career-analysis-page .career-timeline-item.is-affectation .career-timeline-marker { background: var(--color-info); }
+.career-analysis-page .career-timeline-item.is-affectation.is-actuelle .career-timeline-marker {
+  background: var(--color-brand);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 18%, transparent);
+}
+.career-affectation-nature {
+  display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: var(--radius-pill);
+  background: var(--color-info-soft); color: var(--color-info); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.career-affectation-acte { margin-top: 4px; color: var(--color-text-muted); font-size: 12px; }
+
+/* ---------- Congés de l'année, sur une ligne ---------- */
+.conges-resume {
+  margin-bottom: 16px; padding: 10px 14px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); background: var(--color-surface);
+}
+.conges-resume.is-en-conge { border-color: color-mix(in srgb, var(--color-success) 35%, transparent); background: var(--color-success-soft); }
+.conges-resume-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; }
+.conges-resume-icone {
+  display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+  border-radius: 50%; background: var(--color-success-soft); color: var(--color-success);
+}
+.conges-resume-ligne > strong { font-size: 14px; }
+.conges-resume-chiffres { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; color: var(--color-text-muted); }
+.conges-resume-chiffres b { color: var(--color-text); font-size: 15px; }
+.conges-resume-encours {
+  padding: 2px 10px; border-radius: var(--radius-pill); background: var(--color-success); color: var(--color-on-brand);
+  font-size: 12px; font-weight: 600;
+}
+.conges-resume-bouton {
+  display: inline-flex; align-items: center; gap: 4px; margin-left: auto; padding: 4px 10px; border: 0;
+  border-radius: var(--radius-pill); background: transparent; color: var(--color-brand); font: inherit;
+  font-weight: 600; cursor: pointer;
+}
+.conges-resume-bouton:hover { background: var(--color-surface-sunken); }
+.conges-resume-bouton[aria-expanded='true'] svg { transform: rotate(180deg); }
+.conges-resume-detail { display: grid; gap: 2px; margin: 10px 0 0; padding: 8px 0 0; border-top: 1px solid var(--color-border); list-style: none; }
+.conges-resume-detail li { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 4px 2px; font-size: 13px; }
+.conges-resume-detail li span:nth-child(2) { font-weight: 600; }
+.conges-resume-detail .rf-mono { color: var(--color-text-muted); font-size: 12px; }

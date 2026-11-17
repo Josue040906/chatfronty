@@ -123,3 +123,9 @@ export async function titulariser(employeId, dateEffet, acte) {
 export async function getSimulation(employeId) {
   return apiGet(`/api/carrieres/employes/${encodeURIComponent(employeId)}/simulation`);
 }
+
+/** Les affectations de l'agent, la plus récente d'abord (poste, service, dates, acte). */
+export async function getAffectationsHistory(employeId) {
+  const response = await apiGet(`/api/employes/${encodeURIComponent(employeId)}/affectations`);
+  return Array.isArray(response) ? response : response?.value || [];
+}
