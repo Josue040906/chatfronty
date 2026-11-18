@@ -15,14 +15,14 @@ import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 import useValidationImmediate from '../../hooks/useValidationImmediate';
-import { erreurCin, erreurDatePassee, erreurMatricule, erreurNom } from '../../utils/validationAgent';
+import { erreurCin, erreurDatePassee, erreurEmail, erreurMatricule, erreurNom } from '../../utils/validationAgent';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { getGrilleIndiciaire, getParcoursGrades } from '../../api/parcours';
 
 const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
 // Les champs vérifiés dès qu'on les quitte, étape par étape.
-const CHAMPS_ETAPE = [['matricule', 'nom', 'prenom'], ['cin', 'telephone', 'dateNaissance'], ['dateEmbauche']];
+const CHAMPS_ETAPE = [['matricule', 'nom', 'prenom'], ['cin', 'telephone', 'email', 'dateNaissance'], ['dateEmbauche']];
 
 const EMPTY_FORM = {
   matricule: '',
@@ -33,6 +33,7 @@ const EMPTY_FORM = {
   localiteResidenceId: '',
   cin: '',
   telephone: '',
+  email: '',
   dateNaissance: '',
   lieuNaissance: '',
   dateEmbauche: '',
@@ -300,6 +301,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
     cin: (v) => erreurCin(v.cin),
     telephone: (v) => (v.telephone && !isPhoneNumberValid(v.telephone)
       ? 'Le numéro est invalide : vérifiez le pays, l’indicatif et le nombre de chiffres.' : ''),
+    email: (v) => erreurEmail(v.email),
     dateNaissance: (v) => erreurDatePassee(v.dateNaissance, 'La date de naissance', aujourdhui)
       || (v.dateNaissance && naissanceMax && v.dateNaissance > naissanceMax
         ? `L’agent doit avoir au moins ${ageMinimum} ans à son embauche.` : ''),
@@ -481,6 +483,20 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     />
                   </div>
                   {aide('telephone')}
+                </label>
+                <label className="rf-field">
+                  <span className="rf-label">E-mail</span>
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    maxLength={150}
+                    autoComplete="off"
+                    placeholder="nom@mef.gov.mg"
+                    {...champProps('email')}
+                  />
+                  {aide('email')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Date de naissance</span>

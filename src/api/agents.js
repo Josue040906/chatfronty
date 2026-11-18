@@ -63,6 +63,7 @@ export async function createAgent(data) {
     localiteResidenceId: data.localiteResidenceId || null,
     cin: data.cin || null,
     telephone: data.telephone || null,
+    email: data.email || null,
     dateNaissance: data.dateNaissance || null,
     lieuNaissance: data.lieuNaissance || null,
     dateEmbauche: data.dateEmbauche,
@@ -101,6 +102,8 @@ export async function updateAgent(id, data) {
       effacerLocaliteResidence: Boolean(data.effacerLocaliteResidence),
       cin: data.cin,
       telephone: data.telephone,
+      // Absent (undefined) : inchangé ; vide : effacé.
+      email: data.email,
       dateNaissance: data.dateNaissance || null,
       lieuNaissance: data.lieuNaissance,
     }

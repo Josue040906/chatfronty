@@ -1975,3 +1975,66 @@ button.rf-row {
 @media (prefers-reduced-motion: reduce) {
   .documents-row.is-nouvelle { animation: none; }
 }
+
+/* ---------- Profil agent : carte d'identité et blocs titrés ---------- */
+.profil-carte-poste { margin-top: 6px !important; font-size: 16px; font-weight: 600; color: var(--color-text); }
+.profil-carte-service { margin-top: 2px !important; font-size: 14px; line-height: 1.5; color: var(--color-text-muted); }
+
+.profil-faits {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0 0;
+}
+.profil-faits > div {
+  padding: 12px 6px;
+  border-radius: 14px;
+  background: var(--color-bg);
+  text-align: center;
+}
+.profil-faits dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.profil-faits dt svg { color: var(--color-accent-strong); }
+.profil-faits dd { margin: 3px 0 0; font-size: 18px; font-weight: 700; color: var(--color-text); }
+
+.profil-carte-actions {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.profil-carte-actions .rf-btn { padding: 0 12px; text-decoration: none; }
+
+.profil-sections { gap: 16px; }
+.profil-sections > .profil-section { padding: 24px 28px; }
+.profil-section-titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 4px;
+  font: 600 22px / 1.2 var(--font-display);
+  color: var(--color-text);
+}
+.profil-section-titre .rf-ico { width: 34px; height: 34px; border-radius: 11px; }
+.profil-section-grille {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 28px;
+  margin: 8px 0 0;
+}
+.profil-section-grille .rf-info.is-large { grid-column: span 2; }
+
+@media (max-width: 1100px) {
+  .profil-section-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .profil-section-grille { grid-template-columns: 1fr; }
+  .profil-section-grille .rf-info.is-large { grid-column: auto; }
+}

@@ -26,6 +26,7 @@ import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 import { gradeLabel } from '../../utils/parcours';
+import { erreurEmail } from '../../utils/validationAgent';
 
 function formatDate(value) {
   if (!value) {
@@ -68,6 +69,8 @@ function toPersonalForm(profil = {}) {
     localiteResidenceId: profil.localite_residence_id || '',
     effacerLocaliteResidence: false,
     telephone: profil.telephone || '',
+    // L'adresse e-mail de l'agent, distincte de celle du compte de connexion.
+    email: profil.email_agent || '',
   };
 }
 
@@ -241,6 +244,11 @@ export default function ProfilPage({ user, onUserUpdated }) {
   }
 
   async function handleSaveProfil() {
+    const emailInvalide = erreurEmail(form.email);
+    if (emailInvalide) {
+      setSaveError(emailInvalide);
+      return;
+    }
     if (!isPhoneNumberValid(form.telephone)) {
       setSaveError(
         'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
@@ -686,6 +694,19 @@ export default function ProfilPage({ user, onUserUpdated }) {
                 disabled={saving}
               />
             }
+            disabled={saving}
+          />
+
+          <InfoItem
+            label="E-mail professionnel"
+            value={profil.email_agent}
+            icon={Mail}
+            editing={editing}
+            name="email"
+            type="email"
+            maxLength={150}
+            editValue={form.email}
+            onChange={handlePersonalChange}
             disabled={saving}
           />
 

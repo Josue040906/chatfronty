@@ -6,6 +6,7 @@ import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import ActionsCarriere from '../../components/carriere/ActionsCarriere';
 import SignataireChamp from '../../components/documents/SignataireChamp';
 import { useToast } from '../../components/ui/toastContext';
+import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '../../utils/agentFaits';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -14,7 +15,10 @@ import { gradeLabel, indiceLabel } from '../../utils/parcours';
 import {
   ArrowLeft,
   ArrowUpRight,
-  BriefcaseBusiness,
+  Cake,
+  Hourglass,
+  Palmtree,
+  Phone,
   CheckCircle2,
   History,
   Plus,
@@ -38,6 +42,7 @@ import {
   getReclassementProposal,
   getAffectationsHistory,
   getReclassementHistory,
+  getRetraiteAnalyse,
   proposeEstablishment,
 } from '../../api/carrieres';
 import {
@@ -197,6 +202,7 @@ export default function CareerAnalysisPage({ user }) {
   const [affectationsError, setAffectationsError] = useState('');
   // Augmente après chaque changement de carrière : les historiques se relisent.
   const [historiqueVersion, setHistoriqueVersion] = useState(0);
+  const [retraite, setRetraite] = useState(null);
   const [diplomas, setDiplomas] = useState([]);
   const [diplomaOptions, setDiplomaOptions] = useState(EMPTY_DIPLOMA_OPTIONS);
   const [assignmentServices, setAssignmentServices] = useState([]);
@@ -349,6 +355,14 @@ export default function CareerAnalysisPage({ user }) {
       cancelled = true;
     };
   }, [canManageHr, id]);
+
+  useEffect(() => {
+    let actif = true;
+    getRetraiteAnalyse(id)
+      .then((resultat) => { if (actif) setRetraite(resultat); })
+      .catch(() => { if (actif) setRetraite(null); });
+    return () => { actif = false; };
+  }, [id, historiqueVersion]);
 
   useEffect(() => {
     if (!canManageHr) return undefined;
@@ -829,6 +843,31 @@ export default function CareerAnalysisPage({ user }) {
   };
   const ongletActif = canManageHr ? onglet : 'carriere';
 
+  const age = ageAgent(agent.date_naissance);
+  const ancienneteService = dureeService(agent.date_embauche);
+  const retraitePossible = retraite?.dateRetraite ? null : retraite?.datePossible;
+  const heroFaits = [
+    {
+      Icone: Cake, label: 'Âge', valeur: age != null ? `${age} ans` : '—',
+      detail: [agent.date_naissance && `Né${agent.sexe === 'F' ? 'e' : ''} le ${formatDate(agent.date_naissance)}`,
+        agent.lieu_naissance && `à ${agent.lieu_naissance}`].filter(Boolean).join(' '),
+    },
+    {
+      Icone: Hourglass, label: 'Années de service', valeur: ancienneteService ? libelleDuree(ancienneteService) : '—',
+      detail: agent.date_embauche && `Embauché${agent.sexe === 'F' ? 'e' : ''} le ${formatDate(agent.date_embauche)}`,
+    },
+    retraite?.dateRetraite
+      ? { Icone: Palmtree, label: 'Retraite', valeur: formatDate(retraite.dateRetraite), detail: 'Départ enregistré' }
+      : {
+        Icone: Palmtree, label: 'Retraite possible', valeur: retraitePossible ? formatDate(retraitePossible) : '—',
+        detail: retraitePossible && (delaiJusqua(retraitePossible) ? `Dans ${delaiJusqua(retraitePossible)}` : 'Durée de service atteinte'),
+      },
+    {
+      Icone: Phone, label: 'Contact', valeur: agent.telephone || agent.email_agent || '—',
+      detail: [agent.telephone && agent.email_agent, agent.cin && `CIN ${formatCin(agent.cin)}`].filter(Boolean).join(' · '),
+    },
+  ];
+
   return (
     <div className="career-analysis-page rf-page">
       <button type="button" className="career-back-button" onClick={() => navigate(`/agents/${id}`)}>
@@ -852,40 +891,52 @@ export default function CareerAnalysisPage({ user }) {
               <h1>{agentName}</h1>
               <TypeEmploiBadge type={agent.type_emploi} grand />
             </div>
-            <p className="career-analysis-meta">
-              <span><BriefcaseBusiness size={15} />{agent.poste || 'Poste non renseigné'}</span>
-              <span>{[agent.service, agent.direction].filter(Boolean).join(' · ') || 'Service non renseigné'}</span>
-              <span>Embauché le {formatDate(agent.date_embauche)}</span>
-              <span className="career-hero-matricule">{agent.matricule || '—'}</span>
-              <button type="button" className="career-hero-lien" onClick={() => navigate(`/agents/${id}`)}>
-                Voir le profil <ArrowUpRight size={14} />
-              </button>
+            <p className="career-hero-poste">
+              {[agent.poste || 'Poste non renseigné', agent.service].filter(Boolean).join(' · ')}
             </p>
+            {(agent.direction || agent.lieu_travail) && (
+              <p className="career-hero-direction">{[agent.direction, agent.lieu_travail].filter(Boolean).join(' · ')}</p>
+            )}
+          </div>
+          <div className="career-hero-cote">
+            <span className="career-hero-matricule">{agent.matricule || '—'}</span>
+            <button type="button" className="career-hero-profil" onClick={() => navigate(`/agents/${id}`)}>
+              Voir le profil <ArrowUpRight size={16} />
+            </button>
           </div>
         </div>
 
-        {analysis.situationActuelle && (
-          <div className="career-hero-situation">
-            <dl className="career-situation-ruban">
-              <div><dt>Catégorie</dt><dd>{situation.categorieCode || agent.categorie || '—'}</dd></div>
-              <div><dt>Corps</dt><dd>{agent.corps_libelle || agent.corps || '—'}</dd></div>
-              <div className="is-grade">
-                <dt>Grade</dt>
-                <dd>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</dd>
-              </div>
-              <div><dt>Indice</dt><dd>{situation.indice ?? '—'}</dd></div>
-              <div><dt>Parcours</dt><dd>{situation.parcours || '—'}</dd></div>
-              <div><dt>Depuis</dt><dd>{formatDate(situation.dateDebut)}</dd></div>
-            </dl>
-            <AncienneteAnneau
-              mois={seniority.moisTotal}
-              requis={condition.dureeMinMois}
-              eligible={analysis.eligible}
-            />
-          </div>
-        )}
+        <dl className="career-hero-faits">
+          {heroFaits.map(({ Icone, label, valeur, detail }) => (
+            <div key={label}>
+              <dt><Icone size={14} aria-hidden="true" />{label}</dt>
+              <dd>{valeur}</dd>
+              {detail && <dd className="career-hero-fait-detail">{detail}</dd>}
+            </div>
+          ))}
+        </dl>
       </section>
 
+      {analysis.situationActuelle && (
+        <section className="career-situation-carte" aria-label="Situation de carrière">
+          <dl className="career-situation-ruban">
+            <div><dt>Catégorie</dt><dd>{situation.categorieCode || agent.categorie || '—'}</dd></div>
+            <div className="is-grade">
+              <dt>Grade</dt>
+              <dd>{gradeLabel(situation.gradeLibelle, situation.gradeCode)}</dd>
+            </div>
+            <div><dt>Indice</dt><dd>{situation.indice ?? '—'}</dd></div>
+            <div><dt>Corps</dt><dd>{agent.corps_libelle || agent.corps || '—'}</dd></div>
+            <div><dt>Parcours</dt><dd>{situation.parcours || '—'}</dd></div>
+            <div><dt>Dans ce grade depuis</dt><dd>{formatDate(situation.dateDebut)}</dd></div>
+          </dl>
+          <AncienneteAnneau
+            mois={seniority.moisTotal}
+            requis={condition.dureeMinMois}
+            eligible={analysis.eligible}
+          />
+        </section>
+      )}
 
       {!analysis.situationActuelle && (
         <section className="career-empty-analysis">

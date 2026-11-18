@@ -4,10 +4,15 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
+  Award,
+  BriefcaseBusiness,
   CalendarDays,
   Building2,
-  Camera,
+  Cake,
+  Hourglass,
   IdCard,
+  Landmark,
+  Mail,
   MapPin,
   Phone,
   Users,
@@ -39,6 +44,10 @@ import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import { useToast } from '../../components/ui/toastContext';
+import { getRetraiteAnalyse } from '../../api/carrieres';
+import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '../../utils/agentFaits';
+import useValidationImmediate from '../../hooks/useValidationImmediate';
+import { erreurEmail } from '../../utils/validationAgent';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -90,9 +99,14 @@ export default function AgentProfilePage({ user }) {
     effacerLocaliteResidence: false,
     cin: '',
     telephone: '',
+    email: '',
     dateNaissance: '',
     lieuNaissance: '',
     photo: '',
+  });
+  const [retraite, setRetraite] = useState(null);
+  const { erreur, verifier, champProps } = useValidationImmediate(form, {
+    email: (valeurs) => erreurEmail(valeurs.email),
   });
 
   useEffect(() => {
@@ -145,6 +159,14 @@ export default function AgentProfilePage({ user }) {
   }, [id, location.key, location.state]);
 
   useEffect(() => {
+    let actif = true;
+    getRetraiteAnalyse(id)
+      .then((resultat) => { if (actif) setRetraite(resultat); })
+      .catch(() => { if (actif) setRetraite(null); });
+    return () => { actif = false; };
+  }, [id]);
+
+  useEffect(() => {
     return () => {
       if (photoPreview) {
         URL.revokeObjectURL(photoPreview);
@@ -162,6 +184,7 @@ export default function AgentProfilePage({ user }) {
       effacerLocaliteResidence: false,
       cin: data.cin || '',
       telephone: data.telephone || '',
+      email: data.email_agent || '',
       dateNaissance: data.date_naissance
         ? data.date_naissance.substring(0, 10)
         : '',
@@ -255,6 +278,10 @@ export default function AgentProfilePage({ user }) {
   }
 
   async function handleSave() {
+    if (!verifier(['email'])) {
+      document.getElementById('email')?.focus();
+      return;
+    }
     if (!isPhoneNumberValid(form.telephone)) {
       setSaveError(
         'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
@@ -360,37 +387,62 @@ export default function AgentProfilePage({ user }) {
 
   const photoUrl = getEmployeePhotoUrl(agent.photo);
   const displayedPhoto = photoPreview || photoUrl;
-  const infoItems = [
-    [UserRound, 'Nom', agent.nom],
-    [UserRound, 'Prénom', agent.prenom],
-    [Users, 'Sexe', agent.sexe === 'M' ? 'Masculin' : agent.sexe === 'F' ? 'Féminin' : agent.sexe],
-    [IdCard, 'CIN', agent.cin, 'mono'],
-    [Phone, 'Téléphone', agent.telephone],
-    [MapPin, 'Adresse', agent.adresse],
-    [CalendarDays, 'Date de naissance', agent.date_naissance ? formatDate(agent.date_naissance) : ''],
-    [MapPin, 'Lieu de naissance', agent.lieu_naissance],
-    [CalendarDays, "Date d'embauche", agent.date_embauche ? formatDate(agent.date_embauche) : ''],
-    [Building2, 'Lieu de travail', agent.lieu_travail],
-    [Camera, 'Photo', agent.photo ? 'Photo enregistrée' : 'Aucune photo'],
+  const age = ageAgent(agent.date_naissance);
+  const service = dureeService(agent.date_embauche);
+  const sexe = agent.sexe === 'M' ? 'Masculin' : agent.sexe === 'F' ? 'Féminin' : agent.sexe;
+  const naissance = [agent.date_naissance && formatDate(agent.date_naissance), agent.lieu_naissance]
+    .filter(Boolean).join(', ');
+  const grade = agent.grade_libelle
+    ? `${agent.grade_libelle}${agent.grade_code ? ` (${agent.grade_code})` : ''}`
+    : agent.grade_code;
+  const retraitePossible = retraite?.dateRetraite ? null : retraite?.datePossible;
+  const faits = [
+    { Icone: Cake, label: 'Âge', valeur: age != null ? `${age} ans` : '—' },
+    { Icone: Hourglass, label: 'Service', valeur: service ? `${service.annees} an${service.annees > 1 ? 's' : ''}` : '—' },
+    { Icone: Award, label: 'Indice', valeur: agent.indice ?? '—' },
+  ];
+  const sections = [
+    {
+      cle: 'identite', titre: 'Identité', Icone: UserRound,
+      items: [
+        [UserRound, 'Nom', agent.nom],
+        [UserRound, 'Prénom', agent.prenom],
+        [Users, 'Sexe', sexe],
+        [CalendarDays, 'Naissance', naissance],
+        [IdCard, 'CIN', formatCin(agent.cin), 'mono'],
+      ],
+    },
+    {
+      cle: 'contact', titre: 'Contact et adresse', Icone: Phone,
+      items: [
+        [Phone, 'Téléphone', agent.telephone],
+        [Mail, 'E-mail', agent.email_agent],
+        [MapPin, 'Adresse', agent.adresse, 'large'],
+      ],
+    },
+    {
+      cle: 'poste', titre: 'Poste actuel', Icone: BriefcaseBusiness,
+      items: [
+        [BriefcaseBusiness, 'Poste', agent.poste],
+        [Building2, 'Service', agent.service],
+        [Landmark, 'Direction', agent.direction],
+        [MapPin, 'Lieu de travail', agent.lieu_travail],
+        [CalendarDays, 'Embauche', agent.date_embauche
+          && `${formatDate(agent.date_embauche)}${service ? ` · ${libelleDuree(service)} de service` : ''}`],
+        [Award, 'Catégorie · grade', [agent.categorie, grade].filter(Boolean).join(' · ')],
+        [Hourglass, 'Retraite possible', retraite?.dateRetraite
+          ? `Partie le ${formatDate(retraite.dateRetraite)}`
+          : retraitePossible && `${formatDate(retraitePossible)}${delaiJusqua(retraitePossible) ? ` · dans ${delaiJusqua(retraitePossible)}` : ''}`],
+      ],
+    },
   ];
   const openCareer = () => navigate(`/carrieres/${agent.id}/analyse`);
-  // Ce que la carte de carrière annonce : la situation actuelle, en bref.
-  const yearsOfService = agent.date_embauche
-    ? Math.floor((Date.now() - new Date(agent.date_embauche).getTime()) / (365.25 * 24 * 3600 * 1000))
-    : null;
-  const careerFacts = [
-    agent.categorie && `Catégorie ${agent.categorie}`,
-    agent.corps_libelle || agent.corps,
-    agent.type_emploi,
-    Number.isFinite(yearsOfService) && yearsOfService >= 0
-      && `${yearsOfService} an${yearsOfService > 1 ? 's' : ''} de service`,
-  ].filter(Boolean);
   const formPercent = Math.round(
-    ([form.nom, form.prenom, form.sexe, form.adresse, form.cin, form.telephone,
+    ([form.nom, form.prenom, form.sexe, form.adresse, form.cin, form.telephone, form.email,
       form.dateNaissance, form.lieuNaissance, agent.date_embauche, agent.lieu_travail,
       displayedPhoto]
       .filter((value) => value && String(value).trim() !== '').length /
-      11) * 100
+      12) * 100
   );
 
   return (
@@ -399,7 +451,6 @@ export default function AgentProfilePage({ user }) {
         <ArrowLeft size={18} />
         Retour aux agents
       </button>
-
 
       <div className="rf-profile">
         <aside className="rf-card rf-profile-card">
@@ -424,79 +475,73 @@ export default function AgentProfilePage({ user }) {
                 initials={getEmployeeInitials(agent)}
               />
             </div>
-            <p className="rf-eyebrow" style={{ marginTop: 16 }}>Profil agent</p>
             <h1>{formatName(agent)}</h1>
             <div className="agent-profile-badges">
               <TypeEmploiBadge type={agent.type_emploi} grand />
               <AgentPresence agent={agent} />
             </div>
-            <p className="rf-lead" style={{ margin: 0 }}>
-              {agent.poste || 'Poste non renseigné'}
-            </p>
-            <p className="rf-profile-matricule">
-              Matricule {agent.matricule || 'non renseigné'}
-            </p>
+            <p className="profil-carte-poste">{agent.poste || 'Poste non renseigné'}</p>
+            {(agent.service || agent.direction) && (
+              <p className="profil-carte-service">
+                {agent.service}
+                {agent.service && agent.direction && <br />}
+                {agent.direction}
+              </p>
+            )}
+            <p className="rf-profile-matricule">{agent.matricule || 'Matricule non renseigné'}</p>
           </div>
 
-          <div className="rf-profile-actions">
+          <dl className="profil-faits">
+            {faits.map(({ Icone, label, valeur }) => (
+              <div key={label}>
+                <dt><Icone size={14} aria-hidden="true" />{label}</dt>
+                <dd>{valeur}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="profil-carte-actions">
+            <a
+              href={`/carrieres/${agent.id}/analyse`}
+              className="rf-btn rf-btn-primary"
+              onClick={(event) => {
+                event.preventDefault();
+                openCareer();
+              }}
+            >
+              Carrière
+              <ArrowRight size={16} />
+            </a>
             <button type="button" className="rf-btn" onClick={openEditModal}>
-              <Pencil size={18} />
+              <Pencil size={16} />
               Modifier
             </button>
           </div>
         </aside>
 
-        <div className="rf-profile-main">
-          <section className="rf-card" aria-labelledby="agent-identity">
-            <p className="rf-eyebrow">Identité</p>
-            <h2 id="agent-identity" className="rf-section-title">Informations personnelles</h2>
-            <dl className="rf-info-grid">
-              {infoItems.map(([Icon, label, value, kind]) => (
-                <div className="rf-info" key={label}>
-                  <span className="rf-ico"><Icon size={18} /></span>
-                  <div>
-                    <dt>{label}</dt>
-                    <dd className={kind === 'mono' ? 'rf-mono-plain' : undefined}>
-                      {value || '—'}
-                    </dd>
+        <div className="rf-profile-main profil-sections">
+          {sections.map(({ cle, titre, Icone, items }) => (
+            <section className="rf-card profil-section" aria-labelledby={`profil-${cle}`} key={cle}>
+              <h2 id={`profil-${cle}`} className="profil-section-titre">
+                <span className="rf-ico"><Icone size={18} /></span>
+                {titre}
+              </h2>
+              <dl className="profil-section-grille">
+                {items.map(([IconeChamp, label, valeur, genre]) => (
+                  <div className={`rf-info${genre === 'large' ? ' is-large' : ''}`} key={label}>
+                    <span className="rf-ico"><IconeChamp size={17} /></span>
+                    <div>
+                      <dt>{label}</dt>
+                      <dd className={genre === 'mono' ? 'rf-mono-plain' : undefined}>{valeur || '—'}</dd>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </dl>
-            <PieceScanneeLinks cibleType="AGENT" cibleId={agent.id} refreshKey={scanRefresh} />
-          </section>
-
-          <a
-            href={`/carrieres/${agent.id}/analyse`}
-            className="rf-card rf-card-hover rf-career"
-            onClick={(event) => {
-              event.preventDefault();
-              openCareer();
-            }}
-          >
-            <div className="rf-career-bars" aria-hidden="true">
-              <span style={{ height: 14 }} />
-              <span style={{ height: 26 }} />
-              <span style={{ height: 38 }} />
-              <span style={{ height: 50 }} />
-              <span style={{ height: 62 }} />
-            </div>
-            <div className="rf-career-text">
-              <p className="rf-career-kicker">Parcours professionnel</p>
-              <h2>Analyse de carrière</h2>
-              {careerFacts.length > 0 ? (
-                <ul className="rf-career-facts">
-                  {careerFacts.map((fact) => <li key={fact}>{fact}</li>)}
-                </ul>
-              ) : (
-                <p>Situation, diplômes et évolution possible de l’agent.</p>
+                ))}
+              </dl>
+              {cle === 'identite' && (
+                <PieceScanneeLinks cibleType="AGENT" cibleId={agent.id} refreshKey={scanRefresh} />
               )}
-            </div>
-            <span className="rf-btn rf-btn-primary">
-              Voir l’analyse
-              <ArrowRight size={18} />
-            </span>
-          </a>
+            </section>
+          ))}
         </div>
       </div>
 
@@ -587,6 +632,23 @@ export default function AgentProfilePage({ user }) {
                     }
                     disabled={saving}
                   />
+                </div>
+
+                <div className="rf-field">
+                  <label htmlFor="email">E-mail</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    maxLength={150}
+                    autoComplete="off"
+                    placeholder="nom@mef.gov.mg"
+                    disabled={saving}
+                    {...champProps('email')}
+                  />
+                  {erreur('email') && <small id="email-erreur" className="rf-field-error">{erreur('email')}</small>}
                 </div>
 
                 <div className={prefillClass('rf-field', 'cin', prefilled)}>

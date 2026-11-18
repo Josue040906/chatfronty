@@ -29,6 +29,7 @@ export async function updateProfil(userId, data) {
     localiteResidenceId: data.localiteResidenceId || null,
     effacerLocaliteResidence: Boolean(data.effacerLocaliteResidence),
     telephone: data.telephone,
+    email: data.email ?? undefined,
   });
 }
 

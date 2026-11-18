@@ -34,3 +34,11 @@ export function erreurDatePassee(valeur, libelle, aujourdhui, obligatoire = fals
   if (!valeur) return obligatoire ? `${libelle} est obligatoire.` : '';
   return valeur > aujourdhui ? `${libelle} ne peut pas être future.` : '';
 }
+
+/** Adresse e-mail facultative ; même règle que l'API (qui vérifie aussi qu'elle n'est pas déjà prise). */
+export function erreurEmail(valeur) {
+  const texte = String(valeur || '').trim();
+  if (!texte) return '';
+  if (texte.length > 150) return 'L’adresse e-mail ne peut pas dépasser 150 caractères.';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(texte) ? '' : 'L’adresse e-mail est invalide (exemple : nom@mef.gov.mg).';
+}
