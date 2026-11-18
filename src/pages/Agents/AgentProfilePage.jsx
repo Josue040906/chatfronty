@@ -51,6 +51,7 @@ import { erreurEmail } from '../../utils/validationAgent';
 import ProfilComplementaireSection from '../../components/agents/ProfilComplementaireSection';
 import TelechargerCv from '../../components/agents/TelechargerCv';
 import { getProfilComplementaire, saveProfilComplementaire } from '../../api/profilComplementaire';
+import { lirePropositionComplement } from '../../utils/profilComplementaire';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -108,6 +109,8 @@ export default function AgentProfilePage({ user }) {
     photo: '',
   });
   const [retraite, setRetraite] = useState(null);
+  // Langues, compétences et formations proposées par Band'IAkam (tâche préparée) : celles de cette navigation.
+  const propositionComplement = lirePropositionComplement(readPrefill(location.state));
   const { erreur, verifier, champProps } = useValidationImmediate(form, {
     email: (valeurs) => erreurEmail(valeurs.email),
   });
@@ -554,7 +557,10 @@ export default function AgentProfilePage({ user }) {
             </section>
           ))}
           <ProfilComplementaireSection
+            key={propositionComplement ? location.key : 'profil-complementaire'}
             cle={`agent-${agent.id}`}
+            proposition={propositionComplement}
+            ouvrirProposition={prefilled.length === 0}
             charger={() => getProfilComplementaire(agent.id)}
             enregistrer={(donnees) => saveProfilComplementaire(agent.id, donnees)}
             peutModifier={['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role)}

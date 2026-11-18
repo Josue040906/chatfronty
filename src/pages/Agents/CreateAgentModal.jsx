@@ -17,7 +17,8 @@ import { isPhoneNumberValid } from '../../utils/phone';
 import useValidationImmediate from '../../hooks/useValidationImmediate';
 import ProfilComplementaireEditeur from '../../components/agents/ProfilComplementaireEditeur';
 import { getCompetencesConnues, saveProfilComplementaire } from '../../api/profilComplementaire';
-import { PROFIL_VIDE, estVide, versApi } from '../../utils/profilComplementaire';
+import { PROFIL_VIDE, estVide, fusionnerProposition, lirePropositionComplement, versApi } from '../../utils/profilComplementaire';
+import { applyPrefill, prefillClass } from '../../utils/bandyPrefill';
 import { erreurCin, erreurDatePassee, erreurEmail, erreurMatricule, erreurNom } from '../../utils/validationAgent';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -48,8 +49,12 @@ const EMPTY_FORM = {
   lieuTravail: '',
 };
 
-export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
-  const [form, setForm] = useState(EMPTY_FORM);
+export default function CreateAgentModal({ acteurId, onClose, onCreated, prefill = null }) {
+  // Tâche préparée par Band'IAkam (d'après une pièce jointe, un CV…) : les champs
+  // proposés remplissent le formulaire et restent surlignés ; rien n'est créé avant « Créer ».
+  const [proposition] = useState(() => applyPrefill(EMPTY_FORM, prefill));
+  const prefilled = proposition.changed;
+  const [form, setForm] = useState(proposition.form);
   const [services, setServices] = useState([]);
   const [postes, setPostes] = useState([]);
   const [typesEmploi, setTypesEmploi] = useState([]);
@@ -65,7 +70,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(0);
-  const [complement, setComplement] = useState(() => structuredClone(PROFIL_VIDE));
+  const [complement, setComplement] = useState(() => fusionnerProposition(PROFIL_VIDE, lirePropositionComplement(prefill)));
+  const complementPropose = Boolean(lirePropositionComplement(prefill));
   const [competencesConnues, setCompetencesConnues] = useState([]);
 
   useEffect(() => {
@@ -390,6 +396,12 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
             </button>
           </header>
 
+          {(prefilled.length > 0 || complementPropose) && (
+            <p className="bandy-prefill-notice" role="status">
+              Band’IAkam a prérempli les champs surlignés en vert{complementPropose ? ', ainsi que les langues, compétences ou formations de la dernière étape' : ''}.
+              Vérifiez-les et complétez le reste : aucun agent n’est créé avant votre validation.
+            </p>
+          )}
           {formError && <p className="rf-error" role="alert">{formError}</p>}
           {optionsError && <p className="rf-error" role="alert">{optionsError}</p>}
 
@@ -421,7 +433,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
           >
             <legend>Identité</legend>
             <div className="rf-dialog-grid">
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'matricule', prefilled)}>
                   <span className="rf-label">Matricule <b>*</b></span>
                   <input
                     name="matricule"
@@ -434,7 +446,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('matricule')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'nom', prefilled)}>
                   <span className="rf-label">Nom <b>*</b></span>
                   <input
                     name="nom"
@@ -447,7 +459,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('nom')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'prenom', prefilled)}>
                   <span className="rf-label">Prénom</span>
                   <input
                     name="prenom"
@@ -459,7 +471,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('prenom')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'sexe', prefilled)}>
                   <span className="rf-label">Sexe</span>
                   <select name="sexe" value={form.sexe} onChange={handleChange}>
                     <option value="">Sélectionner</option>
@@ -479,7 +491,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
           >
             <legend>Coordonnées et naissance</legend>
             <div className="rf-dialog-grid">
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'cin', prefilled)}>
                   <span className="rf-label">CIN</span>
                   <input
                     name="cin"
@@ -491,7 +503,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('cin')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'telephone', prefilled)}>
                   <span className="rf-label">Téléphone</span>
                   <div onBlur={() => quitter('telephone')} className="rf-field-groupe">
                     <PhoneField
@@ -504,7 +516,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   </div>
                   {aide('telephone')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'email', prefilled)}>
                   <span className="rf-label">E-mail</span>
                   <input
                     name="email"
@@ -518,7 +530,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('email')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'dateNaissance', prefilled)}>
                   <span className="rf-label">Date de naissance</span>
                   <input
                     name="dateNaissance"
@@ -530,7 +542,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                   />
                   {aide('dateNaissance')}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'lieuNaissance', prefilled)}>
                   <span className="rf-label">Lieu de naissance</span>
                   <VilleField
                     id="lieuNaissance"
@@ -565,7 +577,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
           >
             <legend>Affectation et statut</legend>
             <div className="rf-dialog-grid">
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'serviceId', prefilled)}>
                   <span className="rf-label">Service <b>*</b></span>
                   <select
                     name="serviceId"
@@ -581,7 +593,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'posteId', prefilled)}>
                   <span className="rf-label">Poste <b>*</b></span>
                   <select
                     name="posteId"
@@ -610,7 +622,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     </small>
                   )}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'dateEmbauche', prefilled)}>
                   <span className="rf-label">Date d’embauche <b>*</b></span>
                   <input
                     name="dateEmbauche"
@@ -627,7 +639,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     <small className="rf-hint">Au moins {ageMinimum} ans à l’embauche.</small>
                   )}
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'lieuTravail', prefilled)}>
                   <span className="rf-label">Lieu de travail</span>
                   <VilleField
                     id="lieuTravail"
@@ -636,7 +648,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                   />
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'typeEmploiId', prefilled)}>
                   <span className="rf-label">Type d’emploi</span>
                   <select
                     name="typeEmploiId"
@@ -651,7 +663,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'categorieId', prefilled)}>
                   <span className="rf-label">Catégorie</span>
                   <select
                     name="categorieId"
@@ -666,7 +678,7 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     ))}
                   </select>
                 </label>
-                <label className="rf-field">
+                <label className={prefillClass('rf-field', 'echelonId', prefilled)}>
                   <span className="rf-label">Grade de départ</span>
                   <select
                     name="echelonId"

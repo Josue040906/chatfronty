@@ -119,6 +119,7 @@ export function confirmationOutcomeMessage(outcome) {
 
 const PREPARED_LABELS = [
   { pattern: /^\/agents\/\d+$/, label: 'Ouvrir la modification préremplie' },
+  { pattern: /^\/agents$/, label: 'Ouvrir la création d’agent préremplie' },
   { pattern: /^\/documents\/nouveau$/, label: 'Ouvrir le nouveau document prérempli' },
   { pattern: /^\/carrieres\/\d+\/analyse$/, label: 'Ouvrir le diplôme prérempli' },
 ];
@@ -295,6 +296,28 @@ export function getToolTrace(toolResults) {
 }
 
 /**
+ * Une sélection demandée : la dernière recherche d'agents a été limitée à
+ * MAX_AGENT_CARDS agents ou moins (« donne-m'en 3 ») et en a renvoyé. Ses
+ * cartes s'affichent alors même si le total dépasse ce seuil ; le bouton de
+ * la liste complète reste proposé à côté.
+ */
+function isRequestedSelection(toolResults) {
+  const search = Array.isArray(toolResults)
+    ? toolResults.filter((toolResult) => toolResult?.name === 'search_agents').at(-1)
+    : null;
+  const agents = search?.result?.agents;
+  if (!Array.isArray(agents) || agents.length === 0 || agents.length > MAX_AGENT_CARDS) {
+    return false;
+  }
+  try {
+    const limit = JSON.parse(search.arguments?.criteriaJson)?.limit;
+    return Number.isSafeInteger(limit) && limit > 0 && limit <= MAX_AGENT_CARDS;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Ce que la bulle de Bandy affiche sous son texte. Quand Bandy propose une
  * action (ouvrir une page, une tâche préparée ou à confirmer), la recherche
  * qui a servi à trouver les agents n'est qu'une étape intermédiaire : ses
@@ -312,10 +335,13 @@ export function buildBandyReply(response) {
   const filteredList = listProposed ? null : getFilteredListAction(response?.toolResults);
   const navigation = [...(filteredList ? [filteredList] : []), ...proposed];
   const proposesAction = navigation.length > 0 || prepared.length > 0 || confirmations.length > 0;
+  // Seul le bouton de la liste complète est proposé, et l'utilisateur a demandé quelques agents : on les montre.
+  const selection = proposed.length === 0 && prepared.length === 0 && confirmations.length === 0
+    && isRequestedSelection(response?.toolResults);
   return {
     statistics: getStatistics(response?.toolResults),
     trace: getToolTrace(response?.toolResults),
-    agents: proposesAction ? [] : found,
+    agents: proposesAction && !selection ? [] : found,
     navigation,
     prepared,
     confirmations,

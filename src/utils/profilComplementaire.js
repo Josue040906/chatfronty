@@ -69,3 +69,53 @@ export function estVide(profil) {
   return !profil || (!profil.situationMatrimoniale && (profil.nombreEnfants === '' || profil.nombreEnfants == null)
     && profil.langues.length === 0 && profil.competences.length === 0 && profil.formations.length === 0);
 }
+
+const normaliser = (texte) => String(texte || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+const morceaux = (texte) => (typeof texte === 'string' ? texte.split(';').map((morceau) => morceau.trim()).filter(Boolean) : []);
+
+/**
+ * Langues, compétences et formations proposées par Band'IAkam, au format du
+ * catalogue : langues « Français:COURANT;Anglais:NOTIONS », compétences
+ * « Gestion de la paie;Rédaction juridique », formations « intitulé|organisme|année;… ».
+ * null s'il n'y a rien.
+ */
+export function lirePropositionComplement(champs) {
+  if (!champs || typeof champs !== 'object') return null;
+  const codes = NIVEAUX.map(([code]) => code);
+  const langues = morceaux(champs.langues).map((morceau) => {
+    const [langue, niveau = ''] = morceau.split(':').map((partie) => partie.trim());
+    return { langue, niveau: codes.includes(niveau.toUpperCase()) ? niveau.toUpperCase() : '' };
+  }).filter((langue) => langue.langue);
+  const competences = morceaux(champs.competences);
+  const formations = morceaux(champs.formations).map((morceau) => {
+    const [intitule = '', organisme = '', annee = ''] = morceau.split('|').map((partie) => partie.trim());
+    return { intitule, organisme, annee: /^\d{4}$/.test(annee) ? annee : '', dureeJours: '' };
+  }).filter((formation) => formation.intitule);
+  return langues.length || competences.length || formations.length ? { langues, competences, formations } : null;
+}
+
+/**
+ * Le profil, complété par la proposition : une langue déjà présente prend le
+ * niveau proposé, une compétence ou une formation déjà présente n'est pas doublée.
+ */
+export function fusionnerProposition(profil, proposition) {
+  const base = structuredClone(profil || PROFIL_VIDE);
+  if (!proposition) return base;
+  for (const langue of proposition.langues) {
+    const existante = base.langues.find((l) => normaliser(l.langue) === normaliser(langue.langue));
+    if (existante) {
+      if (langue.niveau) existante.niveau = langue.niveau;
+    } else {
+      base.langues.push({ ...langue });
+    }
+  }
+  for (const competence of proposition.competences) {
+    if (!base.competences.some((c) => normaliser(c) === normaliser(competence))) base.competences.push(competence);
+  }
+  for (const formation of proposition.formations) {
+    if (!base.formations.some((f) => normaliser(f.intitule) === normaliser(formation.intitule))) {
+      base.formations.push({ ...formation });
+    }
+  }
+  return base;
+}

@@ -1478,7 +1478,7 @@ button.rf-row {
 .rf-field.bandy-prefilled > .rf-label { color: var(--color-success); }
 .rf-field.bandy-prefilled > label::after,
 .rf-field.bandy-prefilled > .rf-label::after {
-  content: 'Proposé par Bandy';
+  content: 'Proposé par Band’IAkam';
   margin-left: 8px;
   padding: 2px 8px;
   border-radius: 999px;
@@ -2501,3 +2501,6 @@ button.rf-row {
   .emails-agent-liste button { grid-template-columns: 40px minmax(0, 1fr); }
   .emails-agent-liste .statut-pastille { grid-column: 2; justify-self: start; }
 }
+
+/* Fiche agent : langues, compétences ou formations proposées par Band'IAkam, à vérifier. */
+.pc-proposition { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }

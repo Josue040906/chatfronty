@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { BookOpenCheck, HeartHandshake, Languages, Pencil, Sparkles, X } from 'lucide-react';
 import { getCompetencesConnues } from '../../api/profilComplementaire';
 import {
-  NIVEAUX, depuisApi, estVide, libelle, situationFamiliale, versApi,
+  NIVEAUX, depuisApi, estVide, fusionnerProposition, libelle, situationFamiliale, versApi,
 } from '../../utils/profilComplementaire';
 import { useToast } from '../ui/toastContext';
 import ProfilComplementaireEditeur from './ProfilComplementaireEditeur';
@@ -13,18 +13,39 @@ import ProfilComplementaireEditeur from './ProfilComplementaireEditeur';
  * fenêtre. charger() et enregistrer(donnees) disent à qui il appartient
  * (un agent, ou l'utilisateur lui-même).
  */
-export default function ProfilComplementaireSection({ charger, enregistrer, peutModifier, cle }) {
+export default function ProfilComplementaireSection({
+  charger, enregistrer, peutModifier, cle, proposition = null, ouvrirProposition = true,
+}) {
   const toast = useToast();
   const [profil, setProfil] = useState(null);
   const [erreur, setErreur] = useState('');
   const [edition, setEdition] = useState(null);
   const [competencesConnues, setCompetencesConnues] = useState([]);
   const [envoi, setEnvoi] = useState({ running: false, error: '' });
+  // La proposition de Band'IAkam a-t-elle déjà été ouverte pour vérification ?
+  const [propositionVue, setPropositionVue] = useState(false);
+
+  function verifierProposition() {
+    setEdition(fusionnerProposition(profil, proposition));
+    setPropositionVue(true);
+    setEnvoi({ running: false, error: '' });
+    getCompetencesConnues().then(setCompetencesConnues).catch(() => setCompetencesConnues([]));
+  }
 
   useEffect(() => {
     let actif = true;
     charger()
-      .then((reponse) => { if (actif) setProfil(depuisApi(reponse)); })
+      .then((reponse) => {
+        if (!actif) return;
+        const actuel = depuisApi(reponse);
+        setProfil(actuel);
+        // Proposition de Band'IAkam : la fenêtre s'ouvre complétée, rien n'est enregistré avant « Enregistrer ».
+        if (proposition && peutModifier && ouvrirProposition) {
+          setEdition(fusionnerProposition(actuel, proposition));
+          setPropositionVue(true);
+          getCompetencesConnues().then(setCompetencesConnues).catch(() => setCompetencesConnues([]));
+        }
+      })
       .catch((err) => { if (actif) setErreur(err?.message || 'Impossible de charger ces informations.'); });
     return () => { actif = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,6 +88,19 @@ export default function ProfilComplementaireSection({ charger, enregistrer, peut
       </div>
 
       {erreur && <p className="rf-error" role="alert">{erreur}</p>}
+      {proposition && peutModifier && profil && !propositionVue && (
+        <div className="bandy-prefill-notice pc-proposition" role="status">
+          <span>
+            Band’IAkam propose aussi :{' '}
+            {[
+              ...proposition.langues.map((langue) => `${langue.langue}${langue.niveau ? ` (${libelle(NIVEAUX, langue.niveau).toLowerCase()})` : ''}`),
+              ...proposition.competences,
+              ...proposition.formations.map((formation) => formation.intitule),
+            ].join(' · ')}
+          </span>
+          <button type="button" className="rf-btn rf-btn-sm" onClick={verifierProposition}>Vérifier</button>
+        </div>
+      )}
       {profil && estVide(profil) && (
         <p className="pc-vide">
           Aucune information pour l’instant{peutModifier ? ' : situation familiale, langues, compétences et formations se saisissent ici.' : '.'}

@@ -236,7 +236,7 @@ const AssistantMessage = memo(function AssistantMessage({ item, onOpenRoute, onS
               <span className="assistant-card-icon" aria-hidden="true"><FilePen size={17} /></span>
               <span className="assistant-card-title">
                 <strong>{action.label}</strong>
-                <small>Les champs proposés sont surlignés en vert : vérifie-les avant d’enregistrer.</small>
+                <small>Les champs proposés sont surlignés en vert : vérifiez-les avant d’enregistrer.</small>
               </span>
             </div>
             <div className="assistant-card-buttons">

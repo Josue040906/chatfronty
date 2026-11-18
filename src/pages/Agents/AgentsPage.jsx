@@ -6,7 +6,8 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { readPrefill } from '../../utils/bandyPrefill';
 
 import { getAgents, searchAgentIds } from '../../api/agents';
 import { Skeleton } from '../../components/ui';
@@ -64,10 +65,16 @@ export default function AgentsPage({ user }) {
   // Le bouton « + » du menu ouvre la création depuis n'importe quel écran : /agents?nouveau=1.
   const [searchParams, setSearchParams] = useSearchParams();
   const creationDemandee = searchParams.get('nouveau') === '1';
-  const creationOuverte = createOpen || creationDemandee;
+  // Une création préparée par Band'IAkam : chaque navigation qui en porte une ouvre la
+  // fenêtre préremplie, même si la page Agents était déjà affichée ; fermer l'oublie.
+  const location = useLocation();
+  const [navigationTraitee, setNavigationTraitee] = useState(null);
+  const prefillCreation = navigationTraitee === location.key ? null : readPrefill(location.state);
+  const creationOuverte = createOpen || creationDemandee || Boolean(prefillCreation);
 
   function fermerCreation() {
     setCreateOpen(false);
+    setNavigationTraitee(location.key);
     if (creationDemandee) {
       setSearchParams({}, { replace: true });
     }
@@ -484,6 +491,8 @@ export default function AgentsPage({ user }) {
 
       {creationOuverte && canCreateAgent && (
         <CreateAgentModal
+          key={prefillCreation ? location.key : 'creation'}
+          prefill={prefillCreation}
           acteurId={user?.userId}
           onClose={fermerCreation}
           onCreated={handleAgentCreated}
