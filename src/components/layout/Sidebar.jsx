@@ -1,259 +1,334 @@
 import {
   Activity,
   BarChart3,
-  BriefcaseBusiness,
   Building2,
+  FilePlus2,
   FileText,
   GitBranch,
   LayoutDashboard,
   Mail,
-  ShieldCheck,
+  Plus,
   Settings,
+  ShieldCheck,
+  UserPlus,
   Users,
   X,
-  Plus,
 } from 'lucide-react';
 
-import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { listerComptesEnAttente } from '../../api/utilisateurs';
+import { getMessagesAgents } from '../../api/messagesAgents';
 
-const mainNavigation = [
+/*
+ * Le menu en espaces : cinq entrées seulement dans la barre.
+ * Un espace qui regroupe plusieurs pages ouvre un panneau qui les présente,
+ * chacune avec une ligne d'explication. Un espace d'une seule page y mène directement.
+ * Le bouton « + » rassemble les créations, accessibles depuis n'importe quel écran.
+ * « personnel » : réservé au Service du Personnel ; « chef » : réservé au chef.
+ */
+const ESPACES = [
   {
-    id: 'dashboard',
-    short: 'Accueil',
-    label: 'Tableau de bord',
+    id: 'accueil',
+    label: 'Accueil',
     icon: LayoutDashboard,
-    path: '/dashboard',
+    description: 'Votre tableau de bord et ce que vous avez fait récemment.',
+    pages: [
+      { path: '/dashboard', label: 'Tableau de bord', hint: 'Chiffres clés et tâches du jour', icon: LayoutDashboard },
+      { path: '/activites', label: 'Mes activités', hint: 'Ce que vous avez fait récemment', icon: Activity },
+    ],
   },
   {
-    id: 'organisation',
-    short: 'Organisation',
-    label: 'Organisation',
-    icon: Building2,
-    path: '/organisation',
-  },
-  {
-    // Qui part et qui succède : réservé au Service du Personnel.
-    id: 'releve',
-    short: 'Relève',
-    label: 'Départs et relève',
-    icon: GitBranch,
-    path: '/releve',
-    personnel: true,
-  },
-  {
-    id: 'agents',
-    short: 'Agents',
-    label: 'Agents',
+    id: 'personnel',
+    label: 'Personnel',
     icon: Users,
-    path: '/agents',
+    description: 'Les agents, leur carrière et la relève des postes qui vont se libérer.',
+    pages: [
+      { path: '/agents', label: 'Agents', hint: 'Fiches, dossiers et CV', icon: Users },
+      { path: '/carrieres', label: 'Carrières', hint: 'Avancements, reclassements, simulations', icon: BarChart3 },
+      { path: '/releve', label: 'Préparer les départs', hint: 'Qui part, quel poste, qui peut succéder', icon: GitBranch, personnel: true },
+    ],
   },
   {
-    id: 'carrieres',
-    short: 'Carrières',
-    label: 'Carrières',
-    icon: BarChart3,
-    path: '/carrieres',
+    id: 'structure',
+    label: 'Structure',
+    icon: Building2,
+    pages: [
+      { path: '/organisation', label: 'Organisation', hint: 'Directions, services et postes', icon: Building2 },
+    ],
   },
   {
-    id: 'activites',
-    short: 'Activités',
-    label: 'Mes activités',
-    icon: Activity,
-    path: '/activites',
-  },
-];
-
-const documentNavigation = [
-  {
-    id: 'documents',
-    short: 'Documents',
-    label: 'Documents RH',
-    icon: FileText,
-    path: '/documents',
-  },
-  {
-    id: 'nouveau-document',
-    short: 'Nouveau',
-    label: 'Nouveau document',
-    icon: Plus,
-    path: '/documents/nouveau',
-  },
-  {
-    id: 'messages',
-    short: 'Messages',
-    label: 'Messages aux agents',
+    id: 'courrier',
+    label: 'Courrier',
     icon: Mail,
-    path: '/messages',
-    personnel: true,
+    description: 'Les documents administratifs et les e-mails à envoyer aux agents.',
+    pages: [
+      { path: '/documents', label: 'Documents RH', hint: 'Arrêtés, décisions, attestations', icon: FileText },
+      { path: '/messages', label: 'E-mails aux agents', hint: 'Relire et envoyer les e-mails préparés', icon: Mail, personnel: true, badge: 'emails' },
+    ],
   },
-];
-
-const administrationNavigation = [
   {
-    id: 'administration',
-    short: 'Admin',
-    label: 'Administration',
+    id: 'admin',
+    label: 'Admin',
     icon: Settings,
-    path: '/administration',
+    description: 'Le paramétrage de l’application et les comptes.',
+    pages: [
+      { path: '/administration', label: 'Administration', hint: 'Directions, services, postes, parcours', icon: Settings },
+      { path: '/administration/demandes-inscription', label: 'Demandes d’inscription', hint: 'Comptes à valider', icon: ShieldCheck, chef: true, badge: 'inscriptions' },
+    ],
   },
 ];
 
-function NavigationItem({ item, onClose, badge = 0 }) {
-  const Icon = item.icon;
+// « action » : un raccourci de création, jamais affiché comme la page en cours.
+const CREATIONS = [
+  { path: '/documents/nouveau', label: 'Nouveau document', hint: 'Arrêté, décision, attestation…', icon: FilePlus2, action: true },
+  { path: '/agents?nouveau=1', label: 'Ajouter un agent', hint: 'Créer la fiche d’un nouvel agent', icon: UserPlus, personnel: true, action: true },
+];
 
+/** L'espace auquel appartient la page affichée, pour le mettre en valeur dans la barre. */
+function espaceCourant(pathname, espaces) {
+  let meilleur = null;
+  let longueur = 0;
+  for (const espace of espaces) {
+    for (const page of espace.pages) {
+      const chemin = page.path.split('?')[0];
+      const correspond = pathname === chemin || pathname.startsWith(`${chemin}/`);
+      if (correspond && chemin.length > longueur) {
+        meilleur = espace.id;
+        longueur = chemin.length;
+      }
+    }
+  }
+  return meilleur;
+}
+
+function Pastille({ nombre, label }) {
+  if (!nombre) return null;
   return (
-    <NavLink
-      to={item.path}
-      end={item.path === '/documents' || item.path === '/administration'}
-      className={({ isActive }) =>
-        `sidebar-nav-item ${
-          isActive ? 'sidebar-nav-item-active' : ''
-        }`
-      }
-      onClick={onClose}
-      title={item.label}
-      aria-label={
-        badge > 0
-          ? `${item.label}, ${badge} en attente`
-          : item.label
-      }
-    >
-      <span className="sidebar-nav-icon">
-        <Icon size={20} strokeWidth={1.75} />
-        {badge > 0 && (
-          <span className="sidebar-nav-badge" aria-hidden="true">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        )}
-      </span>
-      <span className="sidebar-nav-label">
-        {item.short || item.label}
-      </span>
-    </NavLink>
+    <span className="sidebar-nav-badge" aria-hidden="true" title={label}>
+      {nombre > 99 ? '99+' : nombre}
+    </span>
   );
 }
 
-const demandesNavigation = {
-  id: 'demandes-inscription',
-  short: 'Demandes',
-  label: 'Demandes d’inscription',
-  icon: ShieldCheck,
-  path: '/administration/demandes-inscription',
-};
+function PanneauEspace({ id, titre, sousTitre, description, pages, compteurs, onNavigate, onClose }) {
+  return (
+    <section id={id} className="sidebar-flyout" aria-label={titre}>
+      <header className="sidebar-flyout-header">
+        <div>
+          <p className="sidebar-flyout-eyebrow">{sousTitre}</p>
+          <h2>{titre}</h2>
+        </div>
+        <button type="button" className="sidebar-flyout-close" onClick={onClose} aria-label="Fermer le panneau">
+          <X size={16} />
+        </button>
+      </header>
+      {description && <p className="sidebar-flyout-description">{description}</p>}
+      <ul className="sidebar-flyout-list">
+        {pages.map((page) => {
+          const Icon = page.icon;
+          const nombre = page.badge ? compteurs[page.badge] : 0;
+          return (
+            <li key={page.path}>
+              <NavLink
+                to={page.path}
+                end={page.path === '/documents' || page.path === '/administration'}
+                className={({ isActive }) => `sidebar-flyout-item${isActive && !page.action ? ' is-active' : ''}`}
+                onClick={onNavigate}
+              >
+                <span className="sidebar-flyout-icon"><Icon size={18} strokeWidth={1.8} /></span>
+                <span className="sidebar-flyout-text">
+                  <strong>{page.label}</strong>
+                  <span>{page.hint}</span>
+                </span>
+                {nombre > 0 && <span className="sidebar-flyout-count">{nombre}</span>}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
 
 export default function Sidebar({ user, open, onClose }) {
   const isChef = user?.role === 'SPERS_CHEF';
   const estPersonnel = isChef || user?.role === 'SPERS_AGENT';
-  const visible = (item) => !item.personnel || estPersonnel;
-  const [pendingCount, setPendingCount] = useState(0);
+  const autorise = (page) => (!page.personnel || estPersonnel) && (!page.chef || isChef);
+  const { pathname } = useLocation();
+  const [panneau, setPanneau] = useState(null);
+  const [compteurs, setCompteurs] = useState({ inscriptions: 0, emails: 0 });
+  const racine = useRef(null);
+
+  const espaces = ESPACES
+    .map((espace) => ({ ...espace, pages: espace.pages.filter(autorise) }))
+    .filter((espace) => espace.pages.length > 0);
+  const creations = CREATIONS.filter(autorise);
+  const actif = espaceCourant(pathname, espaces);
 
   useEffect(() => {
-    if (!isChef) {
-      return undefined;
+    let annule = false;
+    if (isChef) {
+      listerComptesEnAttente()
+        .then((r) => !annule && setCompteurs((c) => ({ ...c, inscriptions: Array.isArray(r) ? r.length : 0 })))
+        .catch(() => {});
     }
-
-    let cancelled = false;
-
-    listerComptesEnAttente()
-      .then((result) => {
-        if (!cancelled) {
-          setPendingCount(Array.isArray(result) ? result.length : 0);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setPendingCount(0);
-        }
-      });
-
+    if (estPersonnel) {
+      getMessagesAgents({ statut: 'PROPOSE' })
+        .then((r) => !annule && setCompteurs((c) => ({ ...c, emails: r.length })))
+        .catch(() => {});
+    }
     return () => {
-      cancelled = true;
+      annule = true;
     };
-  }, [isChef]);
+  }, [isChef, estPersonnel]);
+
+  // Le panneau se ferme avec Échap ou un clic ailleurs.
+  useEffect(() => {
+    if (!panneau) return undefined;
+    function surTouche(event) {
+      if (event.key === 'Escape') setPanneau(null);
+    }
+    function surClic(event) {
+      if (racine.current && !racine.current.contains(event.target)) setPanneau(null);
+    }
+    document.addEventListener('keydown', surTouche);
+    document.addEventListener('mousedown', surClic);
+    return () => {
+      document.removeEventListener('keydown', surTouche);
+      document.removeEventListener('mousedown', surClic);
+    };
+  }, [panneau]);
+
+  function basculer(id) {
+    setPanneau((courant) => (courant === id ? null : id));
+  }
+
+  function apresNavigation() {
+    setPanneau(null);
+    onClose();
+  }
+
+  const espaceOuvert = espaces.find((espace) => espace.id === panneau);
+  const compteurEspace = (espace) =>
+    espace.pages.reduce((total, page) => total + (page.badge ? compteurs[page.badge] || 0 : 0), 0);
 
   return (
     <>
       <div
-        className={`sidebar-overlay ${
-          open ? 'sidebar-overlay-visible' : ''
-        }`}
+        className={`sidebar-overlay ${open ? 'sidebar-overlay-visible' : ''}`}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <aside
-        className={`app-sidebar ${
-          open ? 'app-sidebar-open' : ''
-        }`}
-        aria-label="Navigation principale"
-      >
-        <div className="sidebar-header">
-          <NavLink
-            to="/dashboard"
-            className="sidebar-brand"
-            onClick={onClose}
-            title="SYGPERS – Gestion des ressources humaines"
-          >
-            <div className="sidebar-brand-mark">
-              <span>SY</span>
-            </div>
-          </NavLink>
+      <div ref={racine} className={`sidebar-root${open ? ' sidebar-root-open' : ''}`}>
+        <aside className={`app-sidebar ${open ? 'app-sidebar-open' : ''}`} aria-label="Navigation principale">
+          <div className="sidebar-header">
+            <NavLink
+              to="/dashboard"
+              className="sidebar-brand"
+              onClick={apresNavigation}
+              title="SYGPERS – Gestion des ressources humaines"
+            >
+              <div className="sidebar-brand-mark">
+                <span>SY</span>
+              </div>
+            </NavLink>
 
-          <button
-            type="button"
-            className="sidebar-close"
-            onClick={onClose}
-            aria-label="Fermer le menu"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <nav className="sidebar-navigation">
-          <div className="sidebar-nav-list">
-            {mainNavigation.filter(visible).map((item) => (
-              <NavigationItem
-                key={item.id}
-                item={item}
-                onClose={onClose}
-              />
-            ))}
+            <button type="button" className="sidebar-close" onClick={onClose} aria-label="Fermer le menu">
+              <X size={18} />
+            </button>
           </div>
 
-          <div className="sidebar-nav-list sidebar-nav-group">
-            {documentNavigation.filter(visible).map((item) => (
-              <NavigationItem
-                key={item.id}
-                item={item}
-                onClose={onClose}
-              />
-            ))}
-          </div>
+          {creations.length > 0 && (
+            <button
+              type="button"
+              className={`sidebar-create${panneau === 'creer' ? ' is-open' : ''}`}
+              onClick={() => basculer('creer')}
+              aria-expanded={panneau === 'creer'}
+              aria-controls="sidebar-panneau-creer"
+              aria-label="Créer : nouveau document, nouvel agent"
+              title="Créer"
+            >
+              <Plus size={22} strokeWidth={2.4} />
+            </button>
+          )}
 
-          <div className="sidebar-nav-list sidebar-nav-group">
-            {administrationNavigation.map((item) => (
-              <NavigationItem
-                key={item.id}
-                item={item}
-                onClose={onClose}
-              />
-            ))}
-            {isChef && (
-              <NavigationItem
-                item={demandesNavigation}
-                onClose={onClose}
-                badge={pendingCount}
-              />
-            )}
-          </div>
-        </nav>
+          <nav className="sidebar-navigation">
+            {espaces.map((espace) => {
+              const Icon = espace.icon;
+              const nombre = compteurEspace(espace);
+              const classe = `sidebar-nav-item${actif === espace.id ? ' sidebar-nav-item-active' : ''}${
+                panneau === espace.id ? ' sidebar-nav-item-open' : ''
+              }`;
+              const contenu = (
+                <>
+                  <span className="sidebar-nav-icon">
+                    <Icon size={20} strokeWidth={1.75} />
+                    <Pastille nombre={nombre} label={`${nombre} en attente`} />
+                  </span>
+                  <span className="sidebar-nav-label">{espace.label}</span>
+                </>
+              );
+              const etiquette = nombre > 0 ? `${espace.label}, ${nombre} en attente` : espace.label;
 
-        <div className="sidebar-footer" title="Espace RH – MEF Madagascar">
-          <BriefcaseBusiness size={16} />
-        </div>
-      </aside>
+              if (espace.pages.length === 1) {
+                return (
+                  <NavLink
+                    key={espace.id}
+                    to={espace.pages[0].path}
+                    className={classe}
+                    onClick={apresNavigation}
+                    title={espace.pages[0].label}
+                    aria-label={etiquette}
+                  >
+                    {contenu}
+                  </NavLink>
+                );
+              }
+              return (
+                <button
+                  key={espace.id}
+                  type="button"
+                  className={classe}
+                  onClick={() => basculer(espace.id)}
+                  aria-expanded={panneau === espace.id}
+                  aria-controls={`sidebar-panneau-${espace.id}`}
+                  aria-label={etiquette}
+                  title={espace.label}
+                >
+                  {contenu}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {espaceOuvert && (
+          <PanneauEspace
+            id={`sidebar-panneau-${espaceOuvert.id}`}
+            titre={espaceOuvert.label}
+            sousTitre="Espace"
+            description={espaceOuvert.description}
+            pages={espaceOuvert.pages}
+            compteurs={compteurs}
+            onNavigate={apresNavigation}
+            onClose={() => setPanneau(null)}
+          />
+        )}
+        {panneau === 'creer' && (
+          <PanneauEspace
+            id="sidebar-panneau-creer"
+            titre="Créer"
+            sousTitre="Nouveau"
+            description="Les créations, à portée de main depuis n’importe quel écran."
+            pages={creations}
+            compteurs={compteurs}
+            onNavigate={apresNavigation}
+            onClose={() => setPanneau(null)}
+          />
+        )}
+      </div>
     </>
   );
 }

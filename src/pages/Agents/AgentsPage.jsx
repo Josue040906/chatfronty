@@ -6,7 +6,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { getAgents, searchAgentIds } from '../../api/agents';
 import { Skeleton } from '../../components/ui';
@@ -61,6 +61,17 @@ export default function AgentsPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+  // Le bouton « + » du menu ouvre la création depuis n'importe quel écran : /agents?nouveau=1.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const creationDemandee = searchParams.get('nouveau') === '1';
+  const creationOuverte = createOpen || creationDemandee;
+
+  function fermerCreation() {
+    setCreateOpen(false);
+    if (creationDemandee) {
+      setSearchParams({}, { replace: true });
+    }
+  }
   const toast = useToast();
   const [selectedId, setSelectedId] = useState(null);
 
@@ -162,7 +173,7 @@ export default function AgentsPage({ user }) {
   );
 
   async function handleAgentCreated(feedback) {
-    setCreateOpen(false);
+    fermerCreation();
     if (feedback?.tone === 'success') toast.succes(feedback.message);
     else toast.erreur(feedback?.message);
 
@@ -471,10 +482,10 @@ export default function AgentsPage({ user }) {
         ) : null}
       </div>
 
-      {createOpen && canCreateAgent && (
+      {creationOuverte && canCreateAgent && (
         <CreateAgentModal
           acteurId={user?.userId}
-          onClose={() => setCreateOpen(false)}
+          onClose={fermerCreation}
           onCreated={handleAgentCreated}
         />
       )}
