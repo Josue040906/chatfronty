@@ -2097,32 +2097,10 @@ button.rf-row {
 .profil-carte-actions .profil-carte-cv { grid-column: 1 / -1; }
 
 /* ---------- E-mails aux agents : fenêtre d'envoi et page Messages ---------- */
-.message-dialogue {
-  width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box;
-  display: grid; gap: 14px; padding: 24px 28px;
-}
-.message-dialogue-tete { display: flex; align-items: center; gap: 12px; }
-.message-dialogue-tete > div { flex: 1; min-width: 0; }
-.message-dialogue-tete .rf-eyebrow { margin: 0; }
-.message-dialogue-tete h2 { margin: 2px 0 0; font: 600 22px / 1.2 var(--font-display); }
-.message-destinataire { margin: 0; padding: 10px 14px; border-radius: var(--radius-md); background: var(--color-surface-sunken); font-size: 14px; }
-.message-destinataire.is-manquant { background: var(--color-danger-soft); color: var(--color-danger); }
 .message-mode {
   display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: var(--radius-md);
   background: var(--color-info-soft); color: var(--color-info); font-size: 13px;
 }
-.message-dialogue textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; line-height: 1.55; }
-.message-dialogue-pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.message-dialogue-pied > span { display: flex; gap: 10px; }
-
-.messages-liste { display: grid; gap: 12px; }
-.message-carte { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 20px; }
-.message-carte-texte { flex: 1 1 320px; min-width: 0; display: grid; gap: 3px; }
-.message-carte-texte strong { font-size: 15px; }
-.message-carte-texte small { color: var(--color-text-muted); font-size: 13px; }
-.message-carte-statut { padding: 3px 10px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; background: var(--color-surface-sunken); color: var(--color-text-muted); }
-.message-carte-statut.is-envoye { background: var(--color-success-soft); color: var(--color-success); }
-.message-carte-statut.is-echec { background: var(--color-danger-soft); color: var(--color-danger); }
 .notification-email-button {
   align-self: center; display: inline-flex; align-items: center; gap: 4px; margin-right: 4px; padding: 6px 10px; border: 0;
   border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-strong);
@@ -2383,3 +2361,84 @@ button.rf-row {
 .poste-mission-texte { margin: 6px 0 0; color: var(--color-text); font-size: 14px; line-height: 1.6; white-space: pre-line; }
 .poste-mission-texte.is-vide { color: var(--color-text-muted); font-style: italic; }
 @media (max-width: 760px) { .poste-mission { grid-template-columns: 1fr; } }
+
+/* ---------- E-mails aux agents : la liste ---------- */
+.courriel-page { max-width: 1080px; }
+.courriel-liste { margin: 0; padding: 0; list-style: none; overflow: hidden; }
+.courriel {
+  position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) auto 112px; align-items: center; gap: 16px;
+  padding: 16px 22px; border-bottom: 1px solid var(--color-border); transition: background 0.18s;
+}
+.courriel:last-child { border-bottom: 0; }
+.courriel:hover { background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent); }
+.courriel.is-urgent::before {
+  content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0; background: var(--color-danger);
+}
+.courriel-texte { display: grid; gap: 6px; min-width: 0; }
+.courriel-texte strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.courriel-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--color-text-muted); font-size: 13px; }
+.courriel-sans-adresse { color: var(--color-danger); font-weight: 600; }
+
+/* La tuile d'un événement : une couleur par famille. */
+.courriel-icone {
+  --ton: var(--color-text-muted);
+  --ton-fond: var(--color-surface-sunken);
+  width: 44px; height: 44px; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 14px; background: var(--ton-fond); color: var(--ton);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ton) 18%, transparent);
+}
+.courriel-icone.is-affectation { --ton: var(--color-info); --ton-fond: var(--color-info-soft); }
+.courriel-icone.is-carriere { --ton: var(--color-success); --ton-fond: var(--color-success-soft); }
+.courriel-icone.is-retraite { --ton: var(--color-accent-strong); --ton-fond: var(--color-accent-soft); }
+.courriel-icone.is-refus { --ton: var(--color-danger); --ton-fond: var(--color-danger-soft); }
+@media (max-width: 900px) {
+  .courriel { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px 12px; }
+  .courriel > .statut-pastille { grid-column: 2; justify-self: start; }
+  .courriel .depart-action { grid-column: 3; grid-row: 1 / span 2; }
+  .courriel-texte strong { white-space: normal; }
+}
+
+/* ---------- Le volet de lecture : une lettre ---------- */
+/* Au-dessus du bouton de l'assistant (1000), sous l'assistant en plein écran (1200). */
+.rf-overlay.message-volet-fond { z-index: 1100; justify-content: flex-end; align-items: stretch; padding: 16px; }
+.message-volet {
+  width: min(560px, 100%); max-height: calc(100vh - 32px); box-sizing: border-box; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 18px; padding: 24px 28px;
+  border-radius: var(--radius-xl); background: var(--color-surface); box-shadow: var(--shadow-lift);
+  animation: volet-in 280ms var(--ease-out) both;
+}
+@keyframes volet-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+.message-volet-tete { display: flex; align-items: center; gap: 12px; }
+.message-volet-type { flex: 1; margin: 0; font-size: 13px; font-weight: 700; color: var(--color-text); }
+.message-volet-type span { color: var(--color-text-muted); font-weight: 600; }
+.message-lettre {
+  flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 40%, transparent), var(--color-border)) border-box;
+  border-color: transparent;
+  box-shadow: 0 1px 0 var(--color-border), 0 18px 32px -28px rgb(var(--shadow-ink) / 0.6);
+}
+.message-lettre-a { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding-bottom: 14px; border-bottom: 1px dashed var(--color-border); font-size: 14px; }
+.message-lettre-a.is-manquant .message-lettre-adresse { color: var(--color-danger); font-weight: 600; }
+.message-lettre-etiquette { color: var(--color-text-muted); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.message-lettre-adresse { color: var(--color-text-muted); font-size: 13px; }
+.message-lettre-adresse a { color: inherit; font-weight: 700; text-underline-offset: 2px; }
+.message-lettre-adresse a:hover { color: var(--color-brand); }
+.message-lettre-sujet { margin: 0; font: 600 22px / 1.3 var(--font-display); color: var(--color-text); }
+.message-lettre-corps { color: var(--color-text); font-size: 15px; line-height: 1.75; white-space: pre-line; }
+.message-lettre-modifier {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-surface);
+  color: var(--color-brand); font: 600 13px var(--font-ui); cursor: pointer; transition: background 0.18s;
+}
+.message-lettre-modifier:hover { background: var(--color-surface-sunken); }
+.message-lettre textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; line-height: 1.6; }
+.message-volet-pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 4px; }
+.message-volet-pied > span { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 600px) {
+  .rf-overlay.message-volet-fond { padding: 0; }
+  .message-volet { max-height: 100vh; border-radius: 0; padding: 20px 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .message-volet { animation: none; } }

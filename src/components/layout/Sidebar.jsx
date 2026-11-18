@@ -173,13 +173,18 @@ export default function Sidebar({ user, open, onClose }) {
         .then((r) => !annule && setCompteurs((c) => ({ ...c, inscriptions: Array.isArray(r) ? r.length : 0 })))
         .catch(() => {});
     }
-    if (estPersonnel) {
+    const compterEmails = () => {
+      if (!estPersonnel) return;
       getMessagesAgents({ statut: 'PROPOSE' })
         .then((r) => !annule && setCompteurs((c) => ({ ...c, emails: r.length })))
         .catch(() => {});
-    }
+    };
+    compterEmails();
+    // Un e-mail envoyé ou écarté ailleurs : la pastille suit.
+    window.addEventListener('messages-agents:change', compterEmails);
     return () => {
       annule = true;
+      window.removeEventListener('messages-agents:change', compterEmails);
     };
   }, [isChef, estPersonnel]);
 

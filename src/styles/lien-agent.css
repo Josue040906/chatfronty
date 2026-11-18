@@ -123,7 +123,8 @@
 /* --- La carte d'aperçu --- */
 .agent-apercu {
   position: fixed;
-  z-index: 500;
+  /* Au-dessus des fenêtres et du volet des e-mails (1100). */
+  z-index: 1150;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 22px;
