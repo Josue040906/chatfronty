@@ -1,3 +1,4 @@
+import PosteMission from '../../components/agents/PosteMission';
 import { useEffect, useState } from 'react';
 import {
   BriefcaseBusiness,
@@ -741,6 +742,14 @@ export default function ProfilPage({ user, onUserUpdated }) {
             Lecture seule
           </span>
         </div>
+
+        <PosteMission
+          poste={profil.poste}
+          service={profil.service}
+          direction={profil.direction}
+          descriptionPoste={profil.description_poste}
+          descriptionService={profil.description_service}
+        />
 
         <div className="profil-grid">
 

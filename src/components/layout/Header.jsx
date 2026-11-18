@@ -1,3 +1,4 @@
+import TexteAvecAgent from '../agents/TexteAvecAgent';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bell,
@@ -378,13 +379,12 @@ export default function Header({
 
                     return (
                       <div className="notification-row" key={notification.id}>
-                        <button
-                          type="button"
+                        {/* Un clic sur la notification la marque comme lue ; le nom de l'agent mène à son profil. */}
+                        <div
                           className={`notification-item ${
                             isRead ? 'notification-read' : 'notification-unread'
                           }`}
                           onClick={() => marquerCommeLue(notification)}
-                          disabled={isRead || isUpdating}
                         >
                           <span className="notification-item-icon">
                             <Bell size={16} />
@@ -393,7 +393,12 @@ export default function Header({
                           <span className="notification-item-content">
                             <strong>{notification.titre}</strong>
                             <span className="notification-message">
-                              {notification.message}
+                              <TexteAvecAgent
+                                texte={notification.message}
+                                agentId={notification.employeId}
+                                nom={notification.employeNom}
+                                onNavigate={() => { setNotificationsOpen(false); void marquerCommeLue(notification); }}
+                              />
                             </span>
                             <span>
                               {formatNotificationDate(notification.creeLe)}
@@ -401,9 +406,16 @@ export default function Header({
                           </span>
 
                           {!isRead && (
-                            <span className="notification-unread-dot" />
+                            <button
+                              type="button"
+                              className="notification-unread-dot"
+                              aria-label={`Marquer comme lue : ${notification.titre}`}
+                              title="Marquer comme lue"
+                              disabled={isUpdating}
+                              onClick={(event) => { event.stopPropagation(); void marquerCommeLue(notification); }}
+                            />
                           )}
-                        </button>
+                        </div>
                         {notification.messageId && (
                           <button
                             type="button"

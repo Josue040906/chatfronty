@@ -6,6 +6,8 @@ import CandidatsReleve from './CandidatsReleve';
 import { formatJour } from '../../utils/documentCycle';
 import { totauxPostes } from '../../utils/postes';
 import { getEmployeeInitials, getEmployeePhotoUrl } from '../../utils/employee';
+import { estServicePersonnel } from '../../utils/session';
+import { Link } from 'react-router-dom';
 import PersonPhoto from '../agents/PersonPhoto';
 import TypeEmploiBadge from '../agents/TypeEmploiBadge';
 
@@ -19,6 +21,8 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
   const [postes, setPostes] = useState(null);
   const [erreur, setErreur] = useState('');
   const [releve, setReleve] = useState(null);
+  // Le Service du Personnel pourvoit les places libres depuis la page Gestion des postes.
+  const peutGerer = estServicePersonnel();
 
   useEffect(() => {
     let cancelled = false;
@@ -96,14 +100,30 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
                     )}
                   </button>
                 ))}
-                {Array.from({ length: poste.libres }, (_, index) => (
+                {Array.from({ length: poste.libres }, (_, index) => (peutGerer ? (
+                  <Link
+                    key={`libre-${index}`}
+                    to={`/postes?poste=${poste.id}`}
+                    className="plan-siege is-libre is-lien"
+                    title={`Pourvoir le poste ${poste.intitule}`}
+                  >
+                    <Armchair size={18} aria-hidden="true" />
+                    <span className="plan-siege-nom">Libre</span>
+                    <small className="plan-siege-note">Pourvoir →</small>
+                  </Link>
+                ) : (
                   <span key={`libre-${index}`} className="plan-siege is-libre">
                     <Armchair size={18} aria-hidden="true" />
                     <span className="plan-siege-nom">Libre</span>
                   </span>
-                ))}
+                )))}
               </div>
-              {poste.statut === 'SE_LIBERE' && (
+              {poste.statut === 'SE_LIBERE' && peutGerer && (
+                <Link className="rf-btn rf-btn-sm plan-poste-releve" to={`/postes?poste=${poste.id}`}>
+                  <UserRoundSearch size={15} /> Préparer la relève
+                </Link>
+              )}
+              {poste.statut === 'SE_LIBERE' && !peutGerer && (
                 <button type="button" className="rf-btn rf-btn-sm plan-poste-releve" onClick={() => ouvrirReleve(poste)}>
                   <UserRoundSearch size={15} /> Qui pourrait reprendre ce poste ?
                 </button>

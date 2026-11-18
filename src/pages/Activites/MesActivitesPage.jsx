@@ -1,3 +1,4 @@
+import LienAgent from '../../components/agents/LienAgent';
 import { useEffect, useState } from 'react';
 import {
   AlertCircle,
@@ -199,6 +200,12 @@ export default function MesActivitesPage() {
                               {TYPE_ACTIONS[type] || type || 'Activité'}
                             </span>
                             <h4>{activite.description || 'Aucune description disponible.'}</h4>
+                            {activite.employeId && (activite.employeNom || activite.employePrenom) && (
+                              <p className="activity-agent">
+                                Agent :{' '}
+                                <LienAgent id={activite.employeId} nom={[activite.employePrenom, activite.employeNom].filter(Boolean).join(' ')} />
+                              </p>
+                            )}
                           </div>
 
                           <time className="activity-time" dateTime={activite.dateHeure || undefined}>

@@ -317,3 +317,5 @@
 }
 
 .activities-page.rf-page { max-width: 1040px; }
+
+.activity-agent { margin: 4px 0 0; color: var(--color-text-muted); font-size: 13px; }

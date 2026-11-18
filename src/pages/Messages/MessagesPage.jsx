@@ -1,3 +1,4 @@
+import LienAgent from '../../components/agents/LienAgent';
 import { useCallback, useEffect, useState } from 'react';
 import { Mail, MailCheck } from 'lucide-react';
 import { getMessagesAgents, getModeEnvoi } from '../../api/messagesAgents';
@@ -99,7 +100,7 @@ export default function MessagesPage() {
               <div className="message-carte-texte">
                 <strong>{message.sujet}</strong>
                 <small>
-                  {TYPES_MESSAGE[message.type] || message.type} · {nom} ({message.matricule})
+                  {TYPES_MESSAGE[message.type] || message.type} · <LienAgent id={message.employe_id} nom={nom} /> ({message.matricule})
                   {message.email_agent ? '' : ' · sans adresse e-mail'}
                 </small>
                 <small>

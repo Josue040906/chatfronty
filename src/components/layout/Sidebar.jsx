@@ -42,11 +42,11 @@ const ESPACES = [
     id: 'personnel',
     label: 'Personnel',
     icon: Users,
-    description: 'Les agents, leur carrière et la relève des postes qui vont se libérer.',
+    description: 'Les agents, leur carrière, et les postes à pourvoir ou à préparer.',
     pages: [
       { path: '/agents', label: 'Agents', hint: 'Fiches, dossiers et CV', icon: Users },
       { path: '/carrieres', label: 'Carrières', hint: 'Avancements, reclassements, simulations', icon: BarChart3 },
-      { path: '/releve', label: 'Préparer les départs', hint: 'Qui part, quel poste, qui peut succéder', icon: GitBranch, personnel: true },
+      { path: '/postes', label: 'Gestion des postes', hint: 'Postes libres, départs à venir, successeurs', icon: GitBranch, personnel: true },
     ],
   },
   {

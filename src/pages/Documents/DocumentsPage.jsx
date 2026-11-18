@@ -1,3 +1,4 @@
+import LienAgent from '../../components/agents/LienAgent';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
@@ -580,7 +581,11 @@ export default function DocumentsPage({ user }) {
                       <span className={`rf-avatar rf-avatar-tone-${index % 5}`}>
                         {getInitials(item)}
                       </span>
-                      {getAgentName(item)}
+                      {item.employeId
+                        ? (
+                          <LienAgent id={item.employeId} nom={getAgentName(item)} variante="texte" />
+                        )
+                        : getAgentName(item)}
                     </span>
                     <span className="documents-row-date">
                       {formatDateShort(item.dateCreation || item.dateDocument)}
@@ -655,7 +660,11 @@ export default function DocumentsPage({ user }) {
               </div>
               <div>
                 <dt>Agent</dt>
-                <dd>{getAgentName(selectedDocument)}</dd>
+                <dd>
+                  {selectedDocument.employeId
+                    ? <LienAgent id={selectedDocument.employeId} nom={getAgentName(selectedDocument)} />
+                    : getAgentName(selectedDocument)}
+                </dd>
               </div>
               <div>
                 <dt>Destinataire</dt>

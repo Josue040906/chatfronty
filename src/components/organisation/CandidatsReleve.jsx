@@ -1,5 +1,5 @@
+import LienAgent from '../agents/LienAgent';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getReleve } from '../../api/postes';
 import TypeEmploiBadge from '../agents/TypeEmploiBadge';
 
@@ -32,7 +32,7 @@ export default function CandidatsReleve({ posteId, renderAction }) {
           <span className="candidat-rang" aria-label={`Rang ${rang + 1}`}>{rang + 1}</span>
           <div className="candidat-texte">
             <div className="candidat-nom">
-              <Link to={`/agents/${agent.id}`}>{agent.prenom} {agent.nom}</Link>
+              <LienAgent id={agent.id} nom={`${agent.prenom || ''} ${agent.nom || ''}`.trim()} photo={agent.photo} />
               <TypeEmploiBadge type={agent.type_emploi} />
             </div>
             <small>

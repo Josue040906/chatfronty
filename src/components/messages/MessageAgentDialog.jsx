@@ -1,3 +1,4 @@
+import LienAgent from '../agents/LienAgent';
 import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Info, Mail, Send, X } from 'lucide-react';
@@ -76,10 +77,10 @@ export default function MessageAgentDialog({ message, onClose, onDone }) {
         <p className={`message-destinataire${adresse ? '' : ' is-manquant'}`}>
           <strong>À :</strong>{' '}
           {adresse
-            ? `${nom} <${adresse}>`
+            ? <><LienAgent id={message.employe_id} nom={nom} onNavigate={onClose} /> &lt;{adresse}&gt;</>
             : (
               <>
-                {nom} n’a pas d’adresse e-mail.{' '}
+                <LienAgent id={message.employe_id} nom={nom} onNavigate={onClose} /> n’a pas d’adresse e-mail.{' '}
                 <Link to={`/agents/${message.employe_id}`} onClick={onClose}>Ajouter son e-mail sur sa fiche</Link>
               </>
             )}

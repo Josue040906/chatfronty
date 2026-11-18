@@ -201,8 +201,14 @@ export default function AppRouter({
         />
 
         <Route
-          path="/releve"
+          path="/postes"
           element={<RelevePage />}
+        />
+
+        {/* L'ancienne adresse de la page, avant qu'elle ne gère aussi les postes libres. */}
+        <Route
+          path="/releve"
+          element={<Navigate to="/postes" replace />}
         />
 
         <Route

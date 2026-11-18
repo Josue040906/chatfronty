@@ -1,3 +1,4 @@
+import LienAgent from '../../components/agents/LienAgent';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
@@ -891,7 +892,7 @@ export default function CareerAnalysisPage({ user }) {
           <div className="career-hero-texte">
             <p className="rf-eyebrow career-hero-eyebrow">Analyse de carrière</p>
             <div className="career-hero-nom">
-              <h1>{agentName}</h1>
+              <h1><LienAgent id={agent.id || id} nom={agentName} photo={agent.photo} variante="texte" /></h1>
               <TypeEmploiBadge type={agent.type_emploi} grand />
             </div>
             <p className="career-hero-poste">

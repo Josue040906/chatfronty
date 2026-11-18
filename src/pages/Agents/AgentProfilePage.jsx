@@ -1,3 +1,4 @@
+import PosteMission from '../../components/agents/PosteMission';
 import { useEffect, useState } from 'react';
 import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -7,11 +8,9 @@ import {
   Award,
   BriefcaseBusiness,
   CalendarDays,
-  Building2,
   Cake,
   Hourglass,
   IdCard,
-  Landmark,
   Mail,
   MapPin,
   Phone,
@@ -426,9 +425,7 @@ export default function AgentProfilePage({ user }) {
     {
       cle: 'poste', titre: 'Poste actuel', Icone: BriefcaseBusiness,
       items: [
-        [BriefcaseBusiness, 'Poste', agent.poste],
-        [Building2, 'Service', agent.service],
-        [Landmark, 'Direction', agent.direction],
+        // Le poste, le service et la direction sont présentés au-dessus, avec leur description.
         [MapPin, 'Lieu de travail', agent.lieu_travail],
         [CalendarDays, 'Embauche', agent.date_embauche
           && `${formatDate(agent.date_embauche)}${service ? ` · ${libelleDuree(service)} de service` : ''}`],
@@ -530,6 +527,15 @@ export default function AgentProfilePage({ user }) {
                 <span className="rf-ico"><Icone size={18} /></span>
                 {titre}
               </h2>
+              {cle === 'poste' && (
+                <PosteMission
+                  poste={agent.poste}
+                  service={agent.service}
+                  direction={agent.direction}
+                  descriptionPoste={agent.description_poste}
+                  descriptionService={agent.description_service}
+                />
+              )}
               <dl className="profil-section-grille">
                 {items.map(([IconeChamp, label, valeur, genre]) => (
                   <div className={`rf-info${genre === 'large' ? ' is-large' : ''}`} key={label}>

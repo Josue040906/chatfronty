@@ -1,3 +1,4 @@
+import LienAgent from '../../components/agents/LienAgent';
 import { useEffect, useMemo, useState } from 'react';
 import { classeTypeEmploi } from '../../utils/typeEmploi';
 import {
@@ -177,7 +178,7 @@ export default function CarrieresPage() {
                   />
                 </span>
                 <div className="career-agent-identity">
-                  <h2>{agent.prenom} {agent.nom}</h2>
+                  <h2><LienAgent id={agent.id} nom={`${agent.prenom || ''} ${agent.nom || ''}`.trim()} photo={agent.photo} variante="texte" /></h2>
                   <span>{agent.matricule}</span>
                   <TypeEmploiBadge type={agent.type_emploi} />
                 </div>
