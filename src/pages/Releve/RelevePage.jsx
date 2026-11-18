@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Building2, CalendarClock, ShieldAlert, Users } from 'lucide-react';
+import { AlertTriangle, Building2, CalendarClock, ChevronDown, ShieldAlert, UserRoundSearch, Users } from 'lucide-react';
 import { getReleve } from '../../api/releve';
 import { Segmented, StatCard } from '../../components/ui';
 import { formatJour } from '../../utils/documentCycle';
 import { getEmployeeInitials } from '../../utils/employee';
+import CandidatsReleve from '../../components/organisation/CandidatsReleve';
 
 const HORIZONS = [
   { value: 1, label: '1 an' },
@@ -20,6 +21,7 @@ export default function RelevePage() {
   const [horizon, setHorizon] = useState(2);
   const [tableau, setTableau] = useState(null);
   const [erreur, setErreur] = useState('');
+  const [ouvert, setOuvert] = useState(null);
 
   useEffect(() => {
     let actif = true;
@@ -115,6 +117,17 @@ export default function RelevePage() {
                   {poste.se_vide ? 'Le poste se vide' : 'D’autres titulaires restent'}
                   {poste.responsable ? ' · poste de responsable' : ''}
                 </p>
+                <button
+                  type="button"
+                  className="rf-btn rf-btn-sm releve-voir"
+                  aria-expanded={ouvert === poste.poste_id}
+                  onClick={() => setOuvert((actuel) => (actuel === poste.poste_id ? null : poste.poste_id))}
+                >
+                  <UserRoundSearch size={15} />
+                  Successeurs possibles
+                  <ChevronDown size={14} className="releve-voir-chevron" />
+                </button>
+                {ouvert === poste.poste_id && <CandidatsReleve posteId={poste.poste_id} />}
               </article>
             ))}
           </div>

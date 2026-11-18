@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { Armchair, Hourglass, Palmtree, UserRoundSearch, X } from 'lucide-react';
-import { getEtatPostes, getReleve } from '../../api/postes';
+import { getEtatPostes } from '../../api/postes';
+import CandidatsReleve from './CandidatsReleve';
 import { formatJour } from '../../utils/documentCycle';
 import { totauxPostes } from '../../utils/postes';
 import { getEmployeeInitials, getEmployeePhotoUrl } from '../../utils/employee';
@@ -27,14 +28,8 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
     return () => { cancelled = true; };
   }, [serviceId, directionId]);
 
-  async function ouvrirReleve(poste) {
-    setReleve({ poste, candidats: null, erreur: '' });
-    try {
-      const candidats = await getReleve(poste.id);
-      setReleve({ poste, candidats, erreur: '' });
-    } catch (err) {
-      setReleve({ poste, candidats: [], erreur: err?.message || 'Impossible de proposer une relève.' });
-    }
+  function ouvrirReleve(poste) {
+    setReleve({ poste });
   }
 
   if (erreur) return <p className="rf-error" role="alert">{erreur}</p>;
@@ -121,20 +116,13 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
                       <X size={14} />
                     </button>
                   </div>
-                  <p>Agents de la même direction, de catégorie au moins égale, sans départ dans l’année. L’humain décide.</p>
-                  {releve.erreur && <p className="rf-error">{releve.erreur}</p>}
-                  {!releve.candidats && <p className="rf-note">Recherche…</p>}
-                  {releve.candidats?.length === 0 && !releve.erreur && <p className="rf-note">Aucun agent ne correspond.</p>}
-                  {releve.candidats?.map((agent) => (
-                    <button key={agent.id} type="button" className="plan-releve-agent" onClick={() => onAgentClick?.(agent.id)}>
-                      <strong>{agent.prenom} {agent.nom}</strong>
-                      <TypeEmploiBadge type={agent.type_emploi} />
-                      <small>
-                        {agent.poste} · {agent.meme_service ? 'même service' : agent.service} · catégorie {agent.categorie}
-                        {agent.grade_code ? ` · ${agent.grade_code}` : ''}{agent.indice ? ` · indice ${agent.indice}` : ''}
-                      </small>
-                    </button>
-                  ))}
+                  <p>Agents de la même direction, classés selon ce qui les rapproche du poste. L’humain décide.</p>
+                  <CandidatsReleve
+                    posteId={poste.id}
+                    renderAction={onAgentClick ? (agent) => (
+                      <button type="button" className="rf-btn rf-btn-sm" onClick={() => onAgentClick(agent.id)}>Voir</button>
+                    ) : undefined}
+                  />
                 </div>
               )}
             </div>

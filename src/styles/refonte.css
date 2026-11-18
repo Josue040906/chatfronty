@@ -2181,3 +2181,24 @@ button.rf-row {
   .releve-chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .releve-frise > li { grid-template-columns: 1fr; gap: 8px; }
 }
+
+/* ---------- Candidats à la relève (page Relève et organigramme) ---------- */
+.releve-voir { justify-self: start; margin-top: 4px; }
+.releve-voir[aria-expanded='true'] .releve-voir-chevron { transform: rotate(180deg); }
+.candidats-releve { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.candidat-releve {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); background: var(--color-surface);
+}
+.candidat-rang {
+  display: inline-flex; flex: none; align-items: center; justify-content: center; width: 24px; height: 24px;
+  border-radius: 50%; background: var(--color-brand); color: var(--color-on-brand); font: 700 12px var(--font-ui);
+}
+.candidat-texte { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.candidat-nom { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.candidat-nom a { font-weight: 700; color: var(--color-text); text-decoration: none; }
+.candidat-nom a:hover { color: var(--color-brand); text-decoration: underline; }
+.candidat-texte > small { color: var(--color-text-muted); font-size: 12px; }
+.candidat-raisons { display: grid; gap: 2px; margin: 4px 0 0; padding: 0 0 0 14px; color: var(--color-text); font-size: 12px; }
+.candidat-raisons li::marker { color: var(--color-accent); }
+.candidat-action { flex: none; }
