@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Building2, CalendarClock, ChevronDown, ShieldAlert, UserRoundSearch, Users } from 'lucide-react';
-import { getReleve } from '../../api/releve';
+import { designerReleve, getReleve } from '../../api/releve';
 import { Segmented, StatCard } from '../../components/ui';
 import { formatJour } from '../../utils/documentCycle';
 import { getEmployeeInitials } from '../../utils/employee';
 import CandidatsReleve from '../../components/organisation/CandidatsReleve';
+import PlanReleve from '../../components/organisation/PlanReleve';
+import { useToast } from '../../components/ui/toastContext';
 
 const HORIZONS = [
   { value: 1, label: '1 an' },
@@ -22,6 +24,8 @@ export default function RelevePage() {
   const [tableau, setTableau] = useState(null);
   const [erreur, setErreur] = useState('');
   const [ouvert, setOuvert] = useState(null);
+  const [version, setVersion] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
     let actif = true;
@@ -29,7 +33,18 @@ export default function RelevePage() {
       .then((resultat) => { if (actif) { setTableau(resultat); setErreur(''); } })
       .catch((err) => { if (actif) setErreur(err?.message || 'Impossible de charger le plan de relève.'); });
     return () => { actif = false; };
-  }, [horizon]);
+  }, [horizon, version]);
+
+  async function designer(poste, agent) {
+    try {
+      await designerReleve(poste.poste_id, { successeurId: agent.id, statut: 'A_PREPARER' });
+      toast.succes(`${agent.prenom} ${agent.nom} est désigné·e pour reprendre le poste ${poste.poste}.`);
+      setOuvert(null);
+      setVersion((valeur) => valeur + 1);
+    } catch (err) {
+      toast.erreur(err?.message || 'Le successeur n’a pas pu être désigné.');
+    }
+  }
 
   const parAnnee = useMemo(() => {
     const groupes = new Map();
@@ -72,7 +87,9 @@ export default function RelevePage() {
           <StatCard icon={CalendarClock} label="Départs prévus" value={chiffres.departs}
             caption={`d’ici le ${formatJour(tableau.jusquau)}`} index={0} />
           <StatCard icon={ShieldAlert} label="Postes à risque élevé" value={chiffres.postes_risque_eleve}
-            caption="se vident sous 2 ans, ou de responsable" index={1} />
+            caption={chiffres.risque_eleve_sans_releve
+              ? `dont ${chiffres.risque_eleve_sans_releve} sans relève désignée`
+              : 'tous ont une relève désignée'} index={1} />
           <StatCard icon={Users} label="Postes concernés" value={chiffres.postes_concernes}
             caption="au moins un titulaire part" index={2} />
           <StatCard icon={Building2} label="Services touchés" value={chiffres.services_touches} index={3} />
@@ -117,6 +134,7 @@ export default function RelevePage() {
                   {poste.se_vide ? 'Le poste se vide' : 'D’autres titulaires restent'}
                   {poste.responsable ? ' · poste de responsable' : ''}
                 </p>
+                <PlanReleve poste={poste} onChange={() => setVersion((valeur) => valeur + 1)} />
                 <button
                   type="button"
                   className="rf-btn rf-btn-sm releve-voir"
@@ -127,7 +145,18 @@ export default function RelevePage() {
                   Successeurs possibles
                   <ChevronDown size={14} className="releve-voir-chevron" />
                 </button>
-                {ouvert === poste.poste_id && <CandidatsReleve posteId={poste.poste_id} />}
+                {ouvert === poste.poste_id && (
+                  <CandidatsReleve
+                    posteId={poste.poste_id}
+                    renderAction={(agent) => (poste.releve?.successeur_id === agent.id
+                      ? <span className="candidat-designe">Désigné·e</span>
+                      : (
+                        <button type="button" className="rf-btn rf-btn-sm rf-btn-primary" onClick={() => designer(poste, agent)}>
+                          {poste.releve ? 'Choisir plutôt' : 'Désigner'}
+                        </button>
+                      ))}
+                  />
+                )}
               </article>
             ))}
           </div>

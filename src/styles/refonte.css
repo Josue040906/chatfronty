@@ -2202,3 +2202,19 @@ button.rf-row {
 .candidat-raisons { display: grid; gap: 2px; margin: 4px 0 0; padding: 0 0 0 14px; color: var(--color-text); font-size: 12px; }
 .candidat-raisons li::marker { color: var(--color-accent); }
 .candidat-action { flex: none; }
+
+/* ---------- Relève désignée ---------- */
+.plan-releve-manquant {
+  display: flex; align-items: center; gap: 6px; margin: 4px 0 0; padding: 8px 10px; border-radius: var(--radius-md);
+  background: var(--color-danger-soft); color: var(--color-danger); font-size: 13px; font-weight: 600;
+}
+.plan-releve-bloc { display: grid; gap: 6px; margin-top: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-success-soft); }
+.plan-releve-bloc.is-a_preparer { background: var(--color-accent-soft); }
+.plan-releve-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 14px; }
+.plan-releve-ligne svg { color: var(--color-success); }
+.plan-releve-ligne a { font-weight: 700; color: var(--color-text); }
+.plan-releve-statut { margin-left: auto; padding: 2px 10px; border-radius: var(--radius-pill); background: var(--color-surface); font-size: 12px; font-weight: 700; }
+.plan-releve-note { margin: 0; color: var(--color-text-muted); font-size: 13px; font-style: italic; }
+.plan-releve-edition { display: grid; gap: 8px; }
+.plan-releve-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.candidat-designe { padding: 4px 10px; border-radius: var(--radius-pill); background: var(--color-success-soft); color: var(--color-success); font-size: 12px; font-weight: 700; }
