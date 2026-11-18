@@ -21,6 +21,7 @@ import {
   updateDirection,
 } from '../../api/directions';
 import { canManageReferentiels } from '../../utils/roles';
+import { useToast } from '../../components/ui/toastContext';
 
 const EMPTY_FORM = {
   nom: '',
@@ -37,7 +38,7 @@ export default function DirectionsPage({ user }) {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const toast = useToast();
 
   const [showForm, setShowForm] = useState(false);
   const [editingDirection, setEditingDirection] =
@@ -98,7 +99,6 @@ export default function DirectionsPage({ user }) {
   }
 
   function openCreateForm() {
-    setSuccess('');
     setError('');
     setFormError('');
 
@@ -107,7 +107,6 @@ export default function DirectionsPage({ user }) {
   }
 
   function openEditForm(direction) {
-    setSuccess('');
     setError('');
     setFormError('');
 
@@ -143,7 +142,6 @@ export default function DirectionsPage({ user }) {
     event.preventDefault();
 
     setFormError('');
-    setSuccess('');
     setError('');
 
     const nom = form.nom.trim();
@@ -177,13 +175,13 @@ export default function DirectionsPage({ user }) {
           data
         );
 
-        setSuccess(
+        toast.succes(
           'La direction a été modifiée avec succès.'
         );
       } else {
         await createDirection(data);
 
-        setSuccess(
+        toast.succes(
           'La direction a été créée avec succès.'
         );
       }
@@ -217,12 +215,11 @@ export default function DirectionsPage({ user }) {
 
     try {
       setDeletingId(direction.id);
-      setSuccess('');
       setError('');
 
       await deleteDirection(direction.id);
 
-      setSuccess(
+      toast.succes(
         'La direction a été supprimée avec succès.'
       );
 
@@ -291,12 +288,6 @@ export default function DirectionsPage({ user }) {
         )}
       </header>
 
-      {success && (
-        <div className="adm-notice adm-notice-success" role="status">
-          <Check size={17} />
-          {success}
-        </div>
-      )}
 
       {!loading && error && (
         <div className="adm-notice adm-notice-error" role="alert">

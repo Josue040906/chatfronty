@@ -475,3 +475,85 @@
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: none; }
 }
+
+/* ---------- Messages d'action, en haut de l'écran ---------- */
+
+.ui-toasts {
+  position: fixed;
+  z-index: 1000;
+  top: 16px;
+  left: 50%;
+  display: grid;
+  gap: 8px;
+  width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.ui-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-success);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lift);
+  color: var(--color-text);
+  pointer-events: auto;
+  animation: ui-toast-entree 260ms var(--ease-out);
+}
+
+.ui-toast.is-succes svg:first-child { color: var(--color-success); }
+.ui-toast.is-erreur { border-left-color: var(--color-danger); }
+.ui-toast.is-erreur svg:first-child { color: var(--color-danger); }
+.ui-toast svg:first-child { flex-shrink: 0; margin-top: 1px; }
+
+.ui-toast p {
+  flex: 1;
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+.ui-toast button {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.ui-toast button:hover { background: var(--color-surface-sunken); color: var(--color-text); }
+
+@keyframes ui-toast-entree {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Erreur d'un champ, montrée dès qu'on le quitte ---------- */
+
+/* Le thème admin grise tous les <small> : l'erreur garde sa couleur. */
+.rf-field-error,
+.admin-theme .app-content .rf-field-error {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-danger) !important;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+:is(input, select, textarea)[aria-invalid='true'],
+:is(input, select, textarea)[aria-invalid='true']:hover {
+  border-color: var(--color-danger) !important;
+  background-color: color-mix(in srgb, var(--color-danger-soft) 45%, var(--color-surface)) !important;
+}
+
+:is(input, select, textarea)[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 18%, transparent) !important;
+}

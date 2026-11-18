@@ -20,6 +20,7 @@ import AnnulerDemande from '../documents/AnnulerDemande';
 import ReponseDemande from '../documents/ReponseDemande';
 import SignataireChamp from '../documents/SignataireChamp';
 import CongesResume from './CongesResume';
+import { useToast } from '../ui/toastContext';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -52,6 +53,7 @@ export default function ActionsCarriere({
   employeId, analysis, canManageHr, onChanged, onAvancement, onMutation, onReclassement,
 }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const today = isoToday();
   const [retraite, setRetraite] = useState(null);
   const [conges, setConges] = useState(null);
@@ -94,7 +96,8 @@ export default function ActionsCarriere({
       await appliquerDocument(demande.id);
       termine(`Demande ${demande.reference_document} appliquée : son effet est produit.`);
     } catch (err) {
-      setEnvoi({ running: false, error: err?.message || 'La demande n’a pas pu être appliquée.', message: '' });
+      setEnvoi({ running: false, error: '', message: '' });
+      toast.erreur(err?.message || 'La demande n’a pas pu être appliquée.');
     }
   }
 
@@ -113,7 +116,8 @@ export default function ActionsCarriere({
 
   function termine(message) {
     setOuvert('');
-    setEnvoi({ running: false, error: '', message });
+    setEnvoi({ running: false, error: '', message: '' });
+    toast.succes(message);
     setVersion((v) => v + 1);
     onChanged?.();
   }
@@ -374,7 +378,6 @@ export default function ActionsCarriere({
         </div>
       )}
       {envoi.error && <p className="rf-error" role="alert">{envoi.error}</p>}
-      {envoi.message && <p className="rf-success" role="status">{envoi.message}</p>}
 
       {demandes.length > 0 && (
         <div className="actions-carriere-groupe">

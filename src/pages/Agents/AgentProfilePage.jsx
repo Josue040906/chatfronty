@@ -14,7 +14,6 @@ import {
   UserRound,
   AlertCircle,
   Pencil,
-  Check,
   X,
   ImagePlus,
 } from 'lucide-react';
@@ -39,6 +38,7 @@ import { isPhoneNumberValid } from '../../utils/phone';
 import { applyPrefill, prefillClass, readPrefill, readPrefillScan } from '../../utils/bandyPrefill';
 import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
+import { useToast } from '../../components/ui/toastContext';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -76,7 +76,7 @@ export default function AgentProfilePage({ user }) {
   const [scanRefresh, setScanRefresh] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [saveSuccess, setSaveSuccess] = useState('');
+  const toast = useToast();
 
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
@@ -231,7 +231,6 @@ export default function AgentProfilePage({ user }) {
     setPhotoFile(null);
     setPhotoPreview('');
     setSaveError('');
-    setSaveSuccess('');
     setEditing(true);
   }
 
@@ -265,7 +264,6 @@ export default function AgentProfilePage({ user }) {
 
     setSaving(true);
     setSaveError('');
-    setSaveSuccess('');
 
     try {
       /*
@@ -320,7 +318,7 @@ export default function AgentProfilePage({ user }) {
 
       setEditing(false);
 
-      setSaveSuccess(
+      toast.succes(
         `Les informations de l'agent ont été enregistrées.${scanNote}`
       );
     } catch (err) {
@@ -402,11 +400,6 @@ export default function AgentProfilePage({ user }) {
         Retour aux agents
       </button>
 
-      {saveSuccess && (
-        <p className="rf-success" role="status">
-          <Check size={16} /> {saveSuccess}
-        </p>
-      )}
 
       <div className="rf-profile">
         <aside className="rf-card rf-profile-card">

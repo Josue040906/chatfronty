@@ -20,6 +20,7 @@ import AgentPresence from '../../components/agents/AgentPresence';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import CreateAgentModal from './CreateAgentModal';
+import { useToast } from '../../components/ui/toastContext';
 
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
@@ -60,7 +61,7 @@ export default function AgentsPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
-  const [createFeedback, setCreateFeedback] = useState(null);
+  const toast = useToast();
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
@@ -162,17 +163,15 @@ export default function AgentsPage({ user }) {
 
   async function handleAgentCreated(feedback) {
     setCreateOpen(false);
-    setCreateFeedback(feedback);
+    if (feedback?.tone === 'success') toast.succes(feedback.message);
+    else toast.erreur(feedback?.message);
 
     try {
       const result = await getAgents();
       setAgents(result);
     } catch (refreshError) {
       console.error('Agent créé, mais impossible d’actualiser la liste.', refreshError);
-      setCreateFeedback({
-        tone: 'warning',
-        message: `${feedback.message} La liste n’a pas pu être actualisée.`,
-      });
+      toast.erreur(`${feedback.message} La liste n’a pas pu être actualisée.`);
     }
   }
 
@@ -248,7 +247,6 @@ export default function AgentsPage({ user }) {
             type="button"
             className="rf-btn rf-btn-primary"
             onClick={() => {
-              setCreateFeedback(null);
               setCreateOpen(true);
             }}
           >
@@ -264,22 +262,6 @@ export default function AgentsPage({ user }) {
         </p>
       )}
 
-      {createFeedback && (
-        <p
-          className={createFeedback.tone === 'success' ? 'rf-success' : 'rf-error'}
-          role={createFeedback.tone === 'success' ? 'status' : 'alert'}
-        >
-          {createFeedback.message}
-          <button
-            type="button"
-            className="agents-feedback-close"
-            onClick={() => setCreateFeedback(null)}
-            aria-label="Fermer le message"
-          >
-            ×
-          </button>
-        </p>
-      )}
 
       <div className="rf-toolbar">
         <label className="rf-search">

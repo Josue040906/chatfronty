@@ -14,11 +14,15 @@ import LocaliteField from '../../components/forms/LocaliteField';
 import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
+import useValidationImmediate from '../../hooks/useValidationImmediate';
+import { erreurCin, erreurDatePassee, erreurMatricule, erreurNom } from '../../utils/validationAgent';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { getGrilleIndiciaire, getParcoursGrades } from '../../api/parcours';
 
 const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
+// Les champs vérifiés dès qu'on les quitte, étape par étape.
+const CHAMPS_ETAPE = [['matricule', 'nom', 'prenom'], ['cin', 'telephone', 'dateNaissance'], ['dateEmbauche']];
 
 const EMPTY_FORM = {
   matricule: '',
@@ -189,6 +193,11 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   }
 
   function validateStep(index) {
+    if (!verifier(CHAMPS_ETAPE[index] || [])) {
+      const premier = (CHAMPS_ETAPE[index] || []).find((champ) => regles[champ]?.(form));
+      formRef.current?.querySelector(`[name="${premier}"]`)?.focus();
+      return false;
+    }
     const fieldset = formRef.current?.querySelector(`fieldset[data-step="${index}"]`);
 
     if (!fieldset) {
@@ -225,10 +234,8 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
       return;
     }
 
-    if (!isPhoneNumberValid(form.telephone)) {
-      setFormError(
-        'Le numéro de téléphone est invalide. Vérifiez le pays, l’indicatif et le nombre de chiffres.'
-      );
+    if (!verifier(CHAMPS_ETAPE.flat())) {
+      setStep(CHAMPS_ETAPE.findIndex((champs) => champs.some((champ) => regles[champ]?.(form))));
       return;
     }
 
@@ -286,6 +293,25 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
     ? grille.find((cellule) => cellule.grade_code === gradeChoisi.code
       && cellule.categorie === categorieChoisie.code)?.indice ?? null
     : null;
+  const regles = {
+    matricule: (v) => erreurMatricule(v.matricule),
+    nom: (v) => erreurNom(v.nom, 'Le nom', true),
+    prenom: (v) => erreurNom(v.prenom, 'Le prénom', false),
+    cin: (v) => erreurCin(v.cin),
+    telephone: (v) => (v.telephone && !isPhoneNumberValid(v.telephone)
+      ? 'Le numéro est invalide : vérifiez le pays, l’indicatif et le nombre de chiffres.' : ''),
+    dateNaissance: (v) => erreurDatePassee(v.dateNaissance, 'La date de naissance', aujourdhui)
+      || (v.dateNaissance && naissanceMax && v.dateNaissance > naissanceMax
+        ? `L’agent doit avoir au moins ${ageMinimum} ans à son embauche.` : ''),
+    dateEmbauche: (v) => erreurDatePassee(v.dateEmbauche, 'La date d’embauche', aujourdhui, true)
+      || (v.dateEmbauche && embaucheMin && v.dateEmbauche < embaucheMin
+        ? `L’agent doit avoir au moins ${ageMinimum} ans à son embauche : pas avant le ${embaucheMin.split('-').reverse().join('/')}.`
+        : ''),
+  };
+  const { erreur, quitter, verifier, champProps } = useValidationImmediate(form, regles);
+  const aide = (champ) => (erreur(champ)
+    ? <small id={`${champ}-erreur`} className="rf-field-error">{erreur(champ)}</small>
+    : null);
   const serviceName = services.find((service) => String(service.id) === String(form.serviceId))?.nom;
   const posteName = postes.find((poste) => String(poste.id) === String(form.posteId))?.intitule;
   const trackedFields = [
@@ -382,7 +408,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     maxLength={30}
                     autoComplete="off"
                     required
+                    {...champProps('matricule')}
                   />
+                  {aide('matricule')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Nom <b>*</b></span>
@@ -393,7 +421,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     maxLength={100}
                     autoComplete="family-name"
                     required
+                    {...champProps('nom')}
                   />
+                  {aide('nom')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Prénom</span>
@@ -403,7 +433,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     onChange={handleChange}
                     maxLength={100}
                     autoComplete="given-name"
+                    {...champProps('prenom')}
                   />
+                  {aide('prenom')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Sexe</span>
@@ -427,17 +459,28 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
             <div className="rf-dialog-grid">
                 <label className="rf-field">
                   <span className="rf-label">CIN</span>
-                  <input name="cin" value={form.cin} onChange={handleChange} />
+                  <input
+                    name="cin"
+                    value={form.cin}
+                    onChange={handleChange}
+                    inputMode="numeric"
+                    maxLength={12}
+                    {...champProps('cin')}
+                  />
+                  {aide('cin')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Téléphone</span>
-                  <PhoneField
-                    value={form.telephone}
-                    onChange={(telephone) =>
-                      setForm((current) => ({ ...current, telephone }))
-                    }
-                    disabled={saving}
-                  />
+                  <div onBlur={() => quitter('telephone')} className="rf-field-groupe">
+                    <PhoneField
+                      value={form.telephone}
+                      onChange={(telephone) =>
+                        setForm((current) => ({ ...current, telephone }))
+                      }
+                      disabled={saving}
+                    />
+                  </div>
+                  {aide('telephone')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Date de naissance</span>
@@ -447,7 +490,9 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     value={form.dateNaissance}
                     max={naissanceMax}
                     onChange={handleChange}
+                    {...champProps('dateNaissance')}
                   />
+                  {aide('dateNaissance')}
                 </label>
                 <label className="rf-field">
                   <span className="rf-label">Lieu de naissance</span>
@@ -539,8 +584,10 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
                     max={aujourdhui}
                     onChange={handleChange}
                     required
+                    {...champProps('dateEmbauche')}
                   />
-                  {ageMinimum > 0 && (
+                  {aide('dateEmbauche')}
+                  {!erreur('dateEmbauche') && ageMinimum > 0 && (
                     <small className="rf-hint">Au moins {ageMinimum} ans à l’embauche.</small>
                   )}
                 </label>

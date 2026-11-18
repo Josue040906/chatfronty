@@ -5,6 +5,7 @@ import { deposerPieceScannee } from '../../api/piecesScannees';
 import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import ActionsCarriere from '../../components/carriere/ActionsCarriere';
 import SignataireChamp from '../../components/documents/SignataireChamp';
+import { useToast } from '../../components/ui/toastContext';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -209,7 +210,7 @@ export default function CareerAnalysisPage({ user }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [diplomasError, setDiplomasError] = useState('');
-  const [feedback, setFeedback] = useState('');
+  const toast = useToast();
   const [dialog, setDialog] = useState('');
   const [diplomaForm, setDiplomaForm] = useState(EMPTY_DIPLOMA_FORM);
   // Champs du diplôme proposés par Bandy (lus sur une pièce), à vérifier avant d'enregistrer.
@@ -371,7 +372,6 @@ export default function CareerAnalysisPage({ user }) {
 
   /** Le dialogue d'ajout d'un diplôme, vide ou prérempli (proposition de Bandy). */
   function showDiplomaDialog(proposition, scan = null) {
-    setFeedback('');
     setFormError('');
     setDiplomaForm(proposition.form);
     setDiplomaPrefilled(proposition.changed);
@@ -427,7 +427,6 @@ export default function CareerAnalysisPage({ user }) {
 
   async function openAssignmentDialog() {
     setActe({ signataire: '' });
-    setFeedback('');
     setFormError('');
     setAssignmentForm({ ...EMPTY_ASSIGNMENT_FORM, dateEffet: todayInputValue() });
     setAssignmentServices([]);
@@ -545,7 +544,6 @@ export default function CareerAnalysisPage({ user }) {
 
   async function openProposal(type) {
     setActe({ signataire: '' });
-    setFeedback('');
     setFormError('');
     setProposal(null);
     setEffectDate(todayInputValue());
@@ -617,7 +615,7 @@ export default function CareerAnalysisPage({ user }) {
       }
       const diplomasRefreshed = await refreshDiplomas();
       setDialog('');
-      setFeedback((diplomasRefreshed
+      toast.succes((diplomasRefreshed
         ? 'Le diplôme a été ajouté à l’historique sans modifier la carrière.'
         : 'Le diplôme a été enregistré, mais l’historique n’a pas pu être actualisé. Rechargez la page.')
         + scanNote);
@@ -655,12 +653,12 @@ export default function CareerAnalysisPage({ user }) {
       });
       const successMessage = result?.message || 'Affectation modifiée avec succès.';
       setDialog('');
-      setFeedback(successMessage);
+      toast.succes(successMessage);
       try {
         await refreshCareerData();
       } catch (refreshError) {
         console.error(refreshError);
-        setFeedback(`${successMessage} La fiche n’a pas pu être actualisée; rechargez la page.`);
+        toast.erreur(`${successMessage} La fiche n’a pas pu être actualisée; rechargez la page.`);
       }
     } catch (saveError) {
       setFormError(saveError.message || 'Impossible de modifier l’affectation.');
@@ -704,12 +702,12 @@ export default function CareerAnalysisPage({ user }) {
       }
       setDialog('');
       setProposal(null);
-      setFeedback(successMessage);
+      toast.succes(successMessage);
       try {
         await Promise.all([refreshCareerData(), refreshDiplomas(), getReclassementHistory(id).then((result) => setReclassementHistory(Array.isArray(result) ? result : []))]);
       } catch (refreshError) {
         console.error(refreshError);
-        setFeedback(
+        toast.erreur(
           `${successMessage} La fiche n’a pas pu être actualisée; rechargez la page.`
         );
       }
@@ -888,7 +886,6 @@ export default function CareerAnalysisPage({ user }) {
         )}
       </section>
 
-      {feedback && <div className="career-feedback success" role="status">{feedback}</div>}
 
       {!analysis.situationActuelle && (
         <section className="career-empty-analysis">

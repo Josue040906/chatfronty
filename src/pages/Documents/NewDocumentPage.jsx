@@ -12,6 +12,7 @@ import {
   getDocumentTypes,
 } from '../../api/documents';
 import VilleField from '../../components/forms/VilleField';
+import useValidationImmediate from '../../hooks/useValidationImmediate';
 import { getPostesByService } from '../../api/postes';
 import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
@@ -161,6 +162,33 @@ export default function NewDocumentPage() {
   const posteObligatoire = isMutationRequest
     && Boolean(formData.serviceSouhaiteId)
     && String(formData.serviceSouhaiteId) !== String(selectedAgent?.service_id ?? '');
+  const aVenir = isAdvancementRequest || isMutationRequest || isTitularisationRequest;
+  // Chaque champ est vérifié dès qu'on le quitte ; les mêmes messages bloquent l'enregistrement.
+  const regles = {
+    destinataire: (v) => (v.destinataire.trim() ? '' : 'Le destinataire du document est obligatoire.'),
+    dateDebut: (v) => (isLeaveRequest && !v.dateDebut ? 'La date de début du congé est obligatoire.' : ''),
+    dateFin: (v) => {
+      if (!isLeaveRequest) return '';
+      if (!v.dateFin) return 'La date de fin du congé est obligatoire.';
+      return v.dateDebut && v.dateFin < v.dateDebut ? 'La date de fin ne peut pas précéder la date de début.' : '';
+    },
+    dateEffetSouhaitee: (v) => {
+      if (!aVenir) return '';
+      if (!v.dateEffetSouhaitee) return 'La date d’effet est obligatoire : la demande prendra effet ce jour-là.';
+      return v.dateEffetSouhaitee < todayInputValue()
+        ? 'La date d’effet ne peut pas être passée : une demande vise l’avenir.' : '';
+    },
+    dateDepartSouhaitee: (v) => (isRetirementRequest
+      && (!v.dateDepartSouhaitee || v.dateDepartSouhaitee < todayInputValue())
+      ? 'Indiquez une date de départ à venir.' : ''),
+    posteSouhaiteId: (v) => (posteObligatoire && !v.posteSouhaiteId
+      ? 'Précisez le poste souhaité dans le nouveau service : une affectation exige un poste.' : ''),
+    motif: (v) => (isMutationRequest && !v.motif.trim() ? 'Le motif de la mutation est obligatoire.' : ''),
+  };
+  const { erreur, verifier, champProps } = useValidationImmediate(formData, regles);
+  const aide = (champ) => (erreur(champ)
+    ? <small id={`${champ}-erreur`} className="rf-field-error">{erreur(champ)}</small>
+    : null);
   const filteredServices = formData.directionSouhaiteeId
     ? services.filter(
         (service) =>
@@ -306,38 +334,9 @@ export default function NewDocumentPage() {
       return;
     }
 
-    if (!formData.destinataire.trim()) {
-      setError('Le destinataire du document est obligatoire.');
-      return;
-    }
-
-    if (
-      isLeaveRequest &&
-      (!formData.dateDebut || !formData.dateFin)
-    ) {
-      setError('Les dates de début et de fin du congé sont obligatoires.');
-      return;
-    }
-
-    if (
-      isLeaveRequest &&
-      formData.dateFin < formData.dateDebut
-    ) {
-      setError('La date de fin ne peut pas précéder la date de début.');
-      return;
-    }
-
-    if ((isAdvancementRequest || isMutationRequest || isTitularisationRequest) && !formData.dateEffetSouhaitee) {
-      setError('La date d’effet est obligatoire : la demande prendra effet ce jour-là.');
-      return;
-    }
-    if ((isAdvancementRequest || isMutationRequest || isTitularisationRequest)
-      && formData.dateEffetSouhaitee < todayInputValue()) {
-      setError('La date d’effet ne peut pas être passée : une demande vise l’avenir.');
-      return;
-    }
-    if (isRetirementRequest && (!formData.dateDepartSouhaitee || formData.dateDepartSouhaitee < todayInputValue())) {
-      setError('Indiquez une date de départ à venir.');
+    if (!verifier()) {
+      const premier = Object.keys(regles).find((champ) => regles[champ](formData));
+      document.getElementById(premier)?.focus();
       return;
     }
 
@@ -352,18 +351,8 @@ export default function NewDocumentPage() {
         return;
       }
 
-      if (posteObligatoire && !formData.posteSouhaiteId) {
-        setError('Précisez le poste souhaité dans le nouveau service : une affectation exige un poste.');
-        return;
-      }
-
       if (formData.directionSouhaiteeId && !formData.serviceSouhaiteId && !formData.lieuTravailSouhaite.trim()) {
         setError('Précisez le service et le poste souhaités : une direction seule ne suffit pas.');
-        return;
-      }
-
-      if (!formData.motif.trim()) {
-        setError('Le motif de la mutation est obligatoire.');
         return;
       }
     }
@@ -474,6 +463,7 @@ export default function NewDocumentPage() {
       </label>
       <textarea
         id="motif"
+        {...champProps('motif')}
         name="motif"
         value={formData.motif}
         onChange={handleChange}
@@ -487,6 +477,7 @@ export default function NewDocumentPage() {
             : undefined
         }
       />
+      {aide('motif')}
       {!isLeaveRequest && <small>{formData.motif.length}/2000 caractères</small>}
     </div>
   );
@@ -558,6 +549,7 @@ export default function NewDocumentPage() {
               <label htmlFor="destinataire">Destinataire <b>*</b></label>
               <input
                 id="destinataire"
+                {...champProps('destinataire')}
                 name="destinataire"
                 type="text"
                 value={formData.destinataire}
@@ -567,6 +559,7 @@ export default function NewDocumentPage() {
                 disabled={saving}
                 required
               />
+              {aide('destinataire')}
             </div>
           </div>
 
@@ -618,6 +611,7 @@ export default function NewDocumentPage() {
                       <label htmlFor="dateDebut">Date de début <b>*</b></label>
                       <input
                         id="dateDebut"
+                        {...champProps('dateDebut')}
                         name="dateDebut"
                         type="date"
                         value={formData.dateDebut}
@@ -625,11 +619,13 @@ export default function NewDocumentPage() {
                         disabled={saving}
                         required
                       />
+                      {aide('dateDebut')}
                     </div>
                     <div className={prefillClass('rf-field', 'dateFin', prefilled)}>
                       <label htmlFor="dateFin">Date de fin <b>*</b></label>
                       <input
                         id="dateFin"
+                        {...champProps('dateFin')}
                         name="dateFin"
                         type="date"
                         value={formData.dateFin}
@@ -637,6 +633,7 @@ export default function NewDocumentPage() {
                         disabled={saving}
                         required
                       />
+                      {aide('dateFin')}
                     </div>
                     {(() => {
                       const jours = joursConge(formData.dateDebut, formData.dateFin);
@@ -682,6 +679,7 @@ export default function NewDocumentPage() {
                     <label htmlFor="dateEffetSouhaitee">Date d’effet <b>*</b></label>
                     <input
                       id="dateEffetSouhaitee"
+                      {...champProps('dateEffetSouhaitee')}
                       name="dateEffetSouhaitee"
                       type="date"
                       value={formData.dateEffetSouhaitee}
@@ -690,6 +688,7 @@ export default function NewDocumentPage() {
                       disabled={saving}
                       required
                     />
+                    {aide('dateEffetSouhaitee')}
                   </div>
                 )}
 
@@ -699,6 +698,7 @@ export default function NewDocumentPage() {
                       <label htmlFor="dateDepartSouhaitee">Départ souhaité <b>*</b></label>
                       <input
                         id="dateDepartSouhaitee"
+                        {...champProps('dateDepartSouhaitee')}
                         name="dateDepartSouhaitee"
                         type="date"
                         value={formData.dateDepartSouhaitee}
@@ -707,6 +707,7 @@ export default function NewDocumentPage() {
                         disabled={saving}
                         required
                       />
+                      {aide('dateDepartSouhaitee')}
                     </div>
                     {retraite && (
                       <div className="new-document-retraite" role="status">
@@ -767,6 +768,7 @@ export default function NewDocumentPage() {
                       </label>
                       <select
                         id="posteSouhaiteId"
+                        {...champProps('posteSouhaiteId')}
                         name="posteSouhaiteId"
                         value={formData.posteSouhaiteId}
                         onChange={handleChange}
@@ -785,6 +787,7 @@ export default function NewDocumentPage() {
                           <option key={poste.id} value={poste.id}>{libellePoste(poste)}</option>
                         ))}
                       </select>
+                      {aide('posteSouhaiteId')}
                       {posteObligatoire && (
                         <small id="posteSouhaiteId-aide">
                           Obligatoire : dans un autre service, l’affectation exige un poste.

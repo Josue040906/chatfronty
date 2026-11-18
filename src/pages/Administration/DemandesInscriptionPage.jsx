@@ -9,6 +9,7 @@ import {
   listerComptesEnAttente,
   validerCompte,
 } from '../../api/utilisateurs';
+import { useToast } from '../../components/ui/toastContext';
 
 function getInitials(request) {
   return [request.prenom, request.nom]
@@ -26,7 +27,7 @@ export default function DemandesInscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const toast = useToast();
   const [selected, setSelected] = useState([]);
 
   const loadRequests = useCallback(async () => {
@@ -74,14 +75,13 @@ export default function DemandesInscriptionPage() {
 
     setBusyId(userId);
     setError('');
-    setNotice('');
 
     try {
       await validerCompte(userId, decision);
       setRequests((current) => current.filter(
         (item) => (item.user_id ?? item.userId) !== userId
       ));
-      setNotice(
+      toast.succes(
         decision === 'approuver'
           ? 'Le compte a été accepté.'
           : 'La demande a été refusée.'
@@ -113,7 +113,6 @@ export default function DemandesInscriptionPage() {
 
     setBusyId('bulk');
     setError('');
-    setNotice('');
 
     const done = [];
     try {
@@ -121,7 +120,7 @@ export default function DemandesInscriptionPage() {
         await validerCompte(getRequestId(target), decision);
         done.push(getRequestId(target));
       }
-      setNotice(
+      toast.succes(
         decision === 'approuver'
           ? `${done.length} compte(s) accepté(s).`
           : `${done.length} demande(s) refusée(s).`
@@ -156,7 +155,6 @@ export default function DemandesInscriptionPage() {
       </header>
 
       {error && <div className="registration-message is-error" role="alert">{error}</div>}
-      {notice && <div className="registration-message is-success" role="status">{notice}</div>}
 
       {!loading && requests.length > 0 && (
         <section className="registration-bulk" aria-live="polite">

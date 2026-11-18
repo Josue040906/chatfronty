@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
-  CheckCircle2,
   ChevronDown,
   FileText,
   Plus,
@@ -35,6 +34,7 @@ import {
 import { DemandeEffet, DemandeFrise } from '../../components/documents/DemandeSuivi';
 import ReponseDemande from '../../components/documents/ReponseDemande';
 import AnnulerDemande from '../../components/documents/AnnulerDemande';
+import { useToast } from '../../components/ui/toastContext';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -206,7 +206,7 @@ export default function DocumentsPage({ user }) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [pdfError, setPdfError] = useState('');
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('TOUS');
   const [statusFilter, setStatusFilter] = useUrlFilter('statut', statusCodes, 'TOUS');
@@ -256,6 +256,7 @@ export default function DocumentsPage({ user }) {
 
   useEffect(() => {
     if (!demandeCreee) return;
+    toast.succes(`Demande ${demandeCreee.reference || ''} enregistrée : sa lettre est ouverte, prête à faire signer.`);
     // L'état de navigation est consommé : un rechargement ne rouvre pas le message.
     navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -325,7 +326,7 @@ export default function DocumentsPage({ user }) {
   async function handleOpenPdf(documentData) {
     const type = typeById.get(String(documentData.typeDocumentId));
     if (!canOpenPdf(type)) {
-      setPdfError(
+      toast.erreur(
         'Le backend ne dispose pas encore d’un modèle PDF pour ce type de document.'
       );
       return;
@@ -333,7 +334,6 @@ export default function DocumentsPage({ user }) {
 
     const popup = window.open('', '_blank');
     setOpeningPdfId(documentData.id);
-    setPdfError('');
 
     try {
       const pdf = await getDocumentRequestPdf(documentData.id);
@@ -341,7 +341,7 @@ export default function DocumentsPage({ user }) {
     } catch (err) {
       console.error(err);
       popup?.close();
-      setPdfError(
+      toast.erreur(
         err?.message || 'Le PDF de ce document ne peut pas être ouvert.'
       );
     } finally {
@@ -365,9 +365,11 @@ export default function DocumentsPage({ user }) {
       const update = (item) => (item.id === documentData.id ? { ...item, statut } : item);
       setDocuments((current) => current.map(update));
       setSelectedDocument((current) => (current ? update(current) : current));
-      setCycle({ running: '', message, error: '' });
+      setCycle({ running: '', message: '', error: '' });
+      toast.succes(message);
     } catch (err) {
-      setCycle({ running: '', message: '', error: err?.message || 'Action impossible.' });
+      setCycle({ running: '', message: '', error: '' });
+      toast.erreur(err?.message || 'Action impossible.');
     }
   }
 
@@ -381,12 +383,10 @@ export default function DocumentsPage({ user }) {
       const statut = decision;
       setSelectedDocument((current) => (current ? { ...current, statut } : current));
     }
-    setCycle({
-      running: '', error: '', repondre: false,
-      message: decision === 'ACCEPTE'
-        ? 'Accord enregistré : la demande s’appliquera à sa date d’effet.'
-        : 'Refus enregistré : la demande ne prendra pas effet.',
-    });
+    setCycle({ running: '', error: '', message: '', repondre: false });
+    toast.succes(decision === 'ACCEPTE'
+      ? 'Accord enregistré : la demande s’appliquera à sa date d’effet.'
+      : 'Refus enregistré : la demande ne prendra pas effet.');
   }
 
   function closeDetail() {
@@ -472,18 +472,6 @@ export default function DocumentsPage({ user }) {
 
       {error && (
         <p className="rf-error" role="alert">{error}</p>
-      )}
-      {pdfError && (
-        <p className="rf-error" role="alert">{pdfError}</p>
-      )}
-      {demandeCreee && (
-        <p className="documents-nouvelle" role="status">
-          <CheckCircle2 size={18} aria-hidden="true" />
-          <span>
-            Demande <strong>{demandeCreee.reference || 'créée'}</strong> enregistrée : sa lettre est ouverte
-            ci-contre, prête à faire signer.
-          </span>
-        </p>
       )}
 
       <div className="rf-toolbar">
@@ -736,7 +724,8 @@ export default function DocumentsPage({ user }) {
                           ? { ...item, statut: 'ANNULE', empechement: null } : item);
                         setDocuments((current) => current.map(update));
                         setSelectedDocument((current) => (current ? update(current) : current));
-                        setCycle({ running: '', error: '', message: 'Demande annulée : elle ne prendra pas effet.' });
+                        setCycle({ running: '', error: '', message: '' });
+                        toast.succes(`Demande ${selectedDocument.referenceDocument || ''} annulée : elle ne prendra pas effet.`);
                       }}
                       onCancel={() => setCycle((current) => ({ ...current, annuler: false }))}
                     />
@@ -814,8 +803,6 @@ export default function DocumentsPage({ user }) {
                 </div>
               );
             })()}
-            {cycle.message && <p className="rf-success" role="status">{cycle.message}</p>}
-            {cycle.error && <p className="rf-error" role="alert">{cycle.error}</p>}
 
             {canOpenPdf(selectedType) && (
               <div className="documents-aside-actions">
