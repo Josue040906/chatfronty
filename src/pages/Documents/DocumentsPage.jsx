@@ -35,6 +35,7 @@ import { DemandeEffet, DemandeFrise } from '../../components/documents/DemandeSu
 import ReponseDemande from '../../components/documents/ReponseDemande';
 import AnnulerDemande from '../../components/documents/AnnulerDemande';
 import { useToast } from '../../components/ui/toastContext';
+import { useMessageAgent } from '../../components/messages/messageAgentContext';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -207,6 +208,7 @@ export default function DocumentsPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const toast = useToast();
+  const { proposerApres } = useMessageAgent();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('TOUS');
   const [statusFilter, setStatusFilter] = useUrlFilter('statut', statusCodes, 'TOUS');
@@ -366,7 +368,7 @@ export default function DocumentsPage({ user }) {
       setDocuments((current) => current.map(update));
       setSelectedDocument((current) => (current ? update(current) : current));
       setCycle({ running: '', message: '', error: '' });
-      toast.succes(message);
+      void proposerApres(documentData.employeId, message);
     } catch (err) {
       setCycle({ running: '', message: '', error: '' });
       toast.erreur(err?.message || 'Action impossible.');
@@ -384,7 +386,7 @@ export default function DocumentsPage({ user }) {
       setSelectedDocument((current) => (current ? { ...current, statut } : current));
     }
     setCycle({ running: '', error: '', message: '', repondre: false });
-    toast.succes(decision === 'ACCEPTE'
+    void proposerApres(documentData.employeId, decision === 'ACCEPTE'
       ? 'Accord enregistré : la demande s’appliquera à sa date d’effet.'
       : 'Refus enregistré : la demande ne prendra pas effet.');
   }

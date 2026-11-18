@@ -557,3 +557,10 @@
 :is(input, select, textarea)[aria-invalid='true']:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 18%, transparent) !important;
 }
+.ui-toast-corps { flex: 1; display: grid; gap: 8px; justify-items: start; }
+.ui-toast-corps p { flex: none; }
+.ui-toast .ui-toast-action {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-pill);
+  background: var(--color-brand); color: var(--color-on-brand); font: 600 var(--text-sm) var(--font-ui);
+}
+.ui-toast .ui-toast-action:hover { background: var(--color-brand-strong); color: var(--color-on-brand); }

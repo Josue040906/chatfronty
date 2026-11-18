@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import AssistantFloating from '../assistant/AssistantFloating';
+import MessageAgentProvider from '../messages/MessageAgentProvider';
 
 export default function AppLayout({
   user,
@@ -13,6 +14,8 @@ export default function AppLayout({
 
   return (
     <div className={`app-shell${isAdmin ? ' admin-theme' : ''}`}>
+      {/* La fenêtre d'envoi d'un e-mail à un agent, ouvrable depuis n'importe quel écran. */}
+      <MessageAgentProvider>
       <Sidebar
         user={user}
         open={sidebarOpen}
@@ -33,6 +36,7 @@ export default function AppLayout({
 
       {/* Assistant disponible sur toutes les pages protégées */}
       <AssistantFloating key={user?.userId || 'anonymous'} user={user} />
+      </MessageAgentProvider>
     </div>
   );
 }

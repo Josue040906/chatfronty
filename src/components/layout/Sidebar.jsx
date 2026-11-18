@@ -5,6 +5,7 @@ import {
   Building2,
   FileText,
   LayoutDashboard,
+  Mail,
   ShieldCheck,
   Settings,
   Users,
@@ -68,6 +69,13 @@ const documentNavigation = [
     label: 'Nouveau document',
     icon: Plus,
     path: '/documents/nouveau',
+  },
+  {
+    id: 'messages',
+    short: 'Messages',
+    label: 'Messages aux agents',
+    icon: Mail,
+    path: '/messages',
   },
 ];
 

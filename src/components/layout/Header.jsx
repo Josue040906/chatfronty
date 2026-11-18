@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bell,
+  Mail,
   ChevronDown,
   LogOut,
   Menu,
@@ -16,6 +17,7 @@ import {
 } from '../../api/notifications';
 import { getEmployeePhotoUrl } from '../../utils/employee';
 import EmployeePhoto from '../EmployeePhoto';
+import { useMessageAgent } from '../messages/messageAgentContext';
 
 function formatNotificationDate(value) {
   if (!value) {
@@ -54,6 +56,7 @@ export default function Header({
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { ouvrir: ouvrirMessage } = useMessageAgent();
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
   const [notificationActionError, setNotificationActionError] = useState('');
@@ -401,6 +404,15 @@ export default function Header({
                             <span className="notification-unread-dot" />
                           )}
                         </button>
+                        {notification.messageId && (
+                          <button
+                            type="button"
+                            className="notification-email-button"
+                            onClick={() => { setNotificationsOpen(false); ouvrirMessage(notification.messageId); }}
+                          >
+                            <Mail size={13} />E-mail
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="notification-delete-button"

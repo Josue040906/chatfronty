@@ -21,6 +21,7 @@ import ReponseDemande from '../documents/ReponseDemande';
 import SignataireChamp from '../documents/SignataireChamp';
 import CongesResume from './CongesResume';
 import { useToast } from '../ui/toastContext';
+import { useMessageAgent } from '../messages/messageAgentContext';
 import TitularisationConfirmation from './TitularisationConfirmation';
 
 /** Le jour où la durée minimale dans l'échelon actuel est atteinte, s'il est connu. */
@@ -54,6 +55,7 @@ export default function ActionsCarriere({
 }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const { proposerApres } = useMessageAgent();
   const today = isoToday();
   const [retraite, setRetraite] = useState(null);
   const [conges, setConges] = useState(null);
@@ -117,7 +119,7 @@ export default function ActionsCarriere({
   function termine(message) {
     setOuvert('');
     setEnvoi({ running: false, error: '', message: '' });
-    toast.succes(message);
+    void proposerApres(employeId, message);
     setVersion((v) => v + 1);
     onChanged?.();
   }

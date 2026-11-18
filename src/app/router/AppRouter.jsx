@@ -22,6 +22,7 @@ import ServicesPage from '../../pages/Administration/ServicesPage';
 import PostesPage from '../../pages/Administration/PostesPage';
 import ParcoursPage from '../../pages/Administration/ParcoursPage';
 import DestinatairesPage from '../../pages/Administration/DestinatairesPage';
+import MessagesPage from '../../pages/Messages/MessagesPage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
 
@@ -196,6 +197,11 @@ export default function AppRouter({
         <Route
           path="/administration/parcours"
           element={<ParcoursPage />}
+        />
+
+        <Route
+          path="/messages"
+          element={<MessagesPage />}
         />
 
         <Route

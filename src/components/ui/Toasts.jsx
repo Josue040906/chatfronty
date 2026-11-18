@@ -10,6 +10,8 @@ import { ToastContext } from './toastContext';
  * (chargement impossible, demande bloquée) reste sur la page.
  */
 const DUREE_SUCCES = 5000;
+// Un message qui propose une suite (« Prévenir Hery par e-mail ») reste plus longtemps.
+const DUREE_AVEC_ACTION = 12000;
 let suivant = 1;
 
 export default function ToastProvider({ children }) {
@@ -22,13 +24,13 @@ export default function ToastProvider({ children }) {
     minuteurs.current.delete(id);
   }, []);
 
-  const afficher = useCallback((ton, texte) => {
+  const afficher = useCallback((ton, texte, action) => {
     if (!texte) return;
     const id = suivant++;
     // Le même message affiché deux fois de suite ne s'empile pas.
-    setMessages((liste) => [...liste.filter((message) => message.texte !== texte), { id, ton, texte }].slice(-4));
+    setMessages((liste) => [...liste.filter((message) => message.texte !== texte), { id, ton, texte, action }].slice(-4));
     if (ton === 'succes') {
-      minuteurs.current.set(id, setTimeout(() => fermer(id), DUREE_SUCCES));
+      minuteurs.current.set(id, setTimeout(() => fermer(id), action ? DUREE_AVEC_ACTION : DUREE_SUCCES));
     }
   }, [fermer]);
 
@@ -38,8 +40,9 @@ export default function ToastProvider({ children }) {
   }, []);
 
   const api = useMemo(() => ({
-    succes: (texte) => afficher('succes', texte),
-    erreur: (texte) => afficher('erreur', texte),
+    // action facultative : { libelle, onClick } — un bouton dans le message.
+    succes: (texte, action) => afficher('succes', texte, action),
+    erreur: (texte, action) => afficher('erreur', texte, action),
   }), [afficher]);
 
   return (
@@ -51,7 +54,18 @@ export default function ToastProvider({ children }) {
             {message.ton === 'erreur'
               ? <AlertTriangle size={18} aria-hidden="true" />
               : <CheckCircle2 size={18} aria-hidden="true" />}
-            <p>{message.texte}</p>
+            <div className="ui-toast-corps">
+              <p>{message.texte}</p>
+              {message.action && (
+                <button
+                  type="button"
+                  className="ui-toast-action"
+                  onClick={() => { fermer(message.id); message.action.onClick(); }}
+                >
+                  {message.action.libelle}
+                </button>
+              )}
+            </div>
             <button type="button" aria-label="Fermer le message" onClick={() => fermer(message.id)}>
               <X size={15} />
             </button>

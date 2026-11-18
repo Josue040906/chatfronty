@@ -6,6 +6,7 @@ import PieceScanneeLinks from '../../components/PieceScanneeLinks';
 import ActionsCarriere from '../../components/carriere/ActionsCarriere';
 import SignataireChamp from '../../components/documents/SignataireChamp';
 import { useToast } from '../../components/ui/toastContext';
+import { useMessageAgent } from '../../components/messages/messageAgentContext';
 import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '../../utils/agentFaits';
 import TelechargerCv from '../../components/agents/TelechargerCv';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
@@ -218,6 +219,7 @@ export default function CareerAnalysisPage({ user }) {
   const [error, setError] = useState('');
   const [diplomasError, setDiplomasError] = useState('');
   const toast = useToast();
+  const { proposerApres } = useMessageAgent();
   const [dialog, setDialog] = useState('');
   const [diplomaForm, setDiplomaForm] = useState(EMPTY_DIPLOMA_FORM);
   // Champs du diplôme proposés par Bandy (lus sur une pièce), à vérifier avant d'enregistrer.
@@ -668,7 +670,7 @@ export default function CareerAnalysisPage({ user }) {
       });
       const successMessage = result?.message || 'Affectation modifiée avec succès.';
       setDialog('');
-      toast.succes(successMessage);
+      void proposerApres(id, successMessage);
       try {
         await refreshCareerData();
       } catch (refreshError) {
@@ -717,7 +719,7 @@ export default function CareerAnalysisPage({ user }) {
       }
       setDialog('');
       setProposal(null);
-      toast.succes(successMessage);
+      void proposerApres(id, successMessage);
       try {
         await Promise.all([refreshCareerData(), refreshDiplomas(), getReclassementHistory(id).then((result) => setReclassementHistory(Array.isArray(result) ? result : []))]);
       } catch (refreshError) {

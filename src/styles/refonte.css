@@ -2092,3 +2092,37 @@ button.rf-row {
   .pc-vue { grid-template-columns: 1fr; }
 }
 .profil-carte-actions .profil-carte-cv { grid-column: 1 / -1; }
+
+/* ---------- E-mails aux agents : fenêtre d'envoi et page Messages ---------- */
+.message-dialogue {
+  width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box;
+  display: grid; gap: 14px; padding: 24px 28px;
+}
+.message-dialogue-tete { display: flex; align-items: center; gap: 12px; }
+.message-dialogue-tete > div { flex: 1; min-width: 0; }
+.message-dialogue-tete .rf-eyebrow { margin: 0; }
+.message-dialogue-tete h2 { margin: 2px 0 0; font: 600 22px / 1.2 var(--font-display); }
+.message-destinataire { margin: 0; padding: 10px 14px; border-radius: var(--radius-md); background: var(--color-surface-sunken); font-size: 14px; }
+.message-destinataire.is-manquant { background: var(--color-danger-soft); color: var(--color-danger); }
+.message-mode {
+  display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: var(--radius-md);
+  background: var(--color-info-soft); color: var(--color-info); font-size: 13px;
+}
+.message-dialogue textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; line-height: 1.55; }
+.message-dialogue-pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.message-dialogue-pied > span { display: flex; gap: 10px; }
+
+.messages-liste { display: grid; gap: 12px; }
+.message-carte { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px 20px; }
+.message-carte-texte { flex: 1 1 320px; min-width: 0; display: grid; gap: 3px; }
+.message-carte-texte strong { font-size: 15px; }
+.message-carte-texte small { color: var(--color-text-muted); font-size: 13px; }
+.message-carte-statut { padding: 3px 10px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; background: var(--color-surface-sunken); color: var(--color-text-muted); }
+.message-carte-statut.is-envoye { background: var(--color-success-soft); color: var(--color-success); }
+.message-carte-statut.is-echec { background: var(--color-danger-soft); color: var(--color-danger); }
+.notification-email-button {
+  align-self: center; display: inline-flex; align-items: center; gap: 4px; margin-right: 4px; padding: 6px 10px; border: 0;
+  border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-strong);
+  font: 600 12px var(--font-ui); cursor: pointer; white-space: nowrap;
+}
+.notification-email-button:hover { background: var(--color-brand); color: var(--color-on-brand); }
