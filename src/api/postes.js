@@ -72,7 +72,23 @@ export async function getEtatPostes({ serviceId, directionId } = {}) {
   return Array.isArray(response) ? response : [];
 }
 
-/** Qui pourrait reprendre ce poste (même direction, catégorie au moins égale). */
+/** L'analyse d'un agent choisi librement pour ce poste : atouts, exigences, points d'attention. */
+export async function analyserCandidat(posteId, employeId) {
+  return apiGet(`/api/postes/${encodeURIComponent(posteId)}/releve/agents/${encodeURIComponent(employeId)}`);
+}
+
+/** Les exigences du poste (langue, diplôme, compétence, formation). */
+export async function getExigences(posteId) {
+  const response = await apiGet(`/api/postes/${encodeURIComponent(posteId)}/exigences`);
+  return Array.isArray(response) ? response : [];
+}
+
+/** Remplace les exigences du poste : [{ type, valeur, niveau, indispensable }]. */
+export async function enregistrerExigences(posteId, exigences) {
+  return apiPut(`/api/postes/${encodeURIComponent(posteId)}/exigences`, { exigences });
+}
+
+/** Les agents recommandés pour ce poste, avec leurs atouts, exigences et points d'attention. */
 export async function getReleve(posteId) {
   const response = await apiGet(`/api/postes/${encodeURIComponent(posteId)}/releve`);
   return Array.isArray(response) ? response : [];

@@ -1,4 +1,4 @@
-import { ArrowLeftRight, CircleCheck, CircleX, Hourglass, Mail, TrendingUp } from 'lucide-react';
+import { ArrowLeftRight, CircleCheck, CircleX, Hourglass, Mail, TrendingUp, UserPlus } from 'lucide-react';
 
 // Les libellés des e-mails aux agents, par type d'événement.
 export const TYPES_MESSAGE = {
@@ -12,6 +12,8 @@ export const TYPES_MESSAGE = {
   AVANCEMENT_BIENTOT: 'Avancement dans le mois',
   AVANCEMENT_POSSIBLE: 'Avancement possible',
   RETRAITE_PROCHE: 'Retraite dans six mois',
+  BIENVENUE: 'Bienvenue',
+  INFORMATION: 'Information',
 };
 
 export const STATUTS_MESSAGE = {
@@ -42,6 +44,8 @@ export function familleMessage(type) {
       return { ton: 'carriere', Icone: CircleCheck };
     case 'DEMANDE_REFUSEE':
       return { ton: 'refus', Icone: CircleX };
+    case 'BIENVENUE':
+      return { ton: 'affectation', Icone: UserPlus };
     default:
       return { ton: 'autre', Icone: Mail };
   }

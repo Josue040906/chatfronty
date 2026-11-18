@@ -17,7 +17,9 @@ export default function MessageAgentDialog({ message, onClose, onDone, position,
   const id = useId();
   const [sujet, setSujet] = useState(message.sujet || '');
   const [corps, setCorps] = useState(message.corps || '');
-  const [edition, setEdition] = useState(false);
+  // Un e-mail rédigé depuis une notification est à compléter : il s'ouvre en modification.
+  const aCompleter = (texte) => texte.includes('[Complétez');
+  const [edition, setEdition] = useState(() => aCompleter(message.corps || ''));
   const [mode, setMode] = useState(modeEnCache);
   const [envoi, setEnvoi] = useState({ running: '', error: '' });
   const nom = [message.prenom, message.nom].filter(Boolean).join(' ');
@@ -38,6 +40,11 @@ export default function MessageAgentDialog({ message, onClose, onDone, position,
 
   async function envoyer(event) {
     event.preventDefault();
+    if (aCompleter(corps)) {
+      setEdition(true);
+      setEnvoi({ running: '', error: 'Complétez le message (remplacez le texte entre crochets) avant de l’envoyer.' });
+      return;
+    }
     setEnvoi({ running: 'envoyer', error: '' });
     try {
       const resultat = await envoyerMessageAgent(message.id, { sujet, corps });

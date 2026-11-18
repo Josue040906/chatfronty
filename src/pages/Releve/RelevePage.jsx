@@ -8,14 +8,14 @@ import {
 import { getReleve } from '../../api/releve';
 import { Segmented } from '../../components/ui';
 import { formatJour } from '../../utils/documentCycle';
-import { getEmployeeInitials, getEmployeePhotoUrl } from '../../utils/employee';
+import { getEmployeePhotoUrl } from '../../utils/employee';
 import PersonPhoto from '../../components/agents/PersonPhoto';
 import PassationDialog from '../../components/organisation/PassationDialog';
 
 const HORIZONS = [
-  { value: 1, label: 'Départs d’ici 1 an' },
-  { value: 2, label: 'Départs d’ici 2 ans' },
-  { value: 5, label: 'Départs d’ici 5 ans' },
+  { value: 1, label: 'Dans 1 an' },
+  { value: 2, label: 'Dans 2 ans' },
+  { value: 5, label: 'Dans 5 ans' },
 ];
 
 const PREPARATION = { A_PREPARER: 'à préparer', EN_PREPARATION: 'en préparation', PRET: 'prêt·e' };
@@ -65,12 +65,12 @@ function etatPoste(poste) {
   }
   if (poste.type === 'libre') {
     return poste.responsable
-      ? { ton: 'urgent', Icone: CircleAlert, texte: 'Responsable à pourvoir' }
-      : { ton: 'adecider', Icone: CircleDashed, texte: 'Personne de pressenti' };
+      ? { ton: 'urgent', Icone: CircleAlert, texte: 'Poste de responsable libre' }
+      : { ton: 'adecider', Icone: CircleDashed, texte: 'Aucun agent choisi' };
   }
   return poste.niveau === 'ELEVE'
-    ? { ton: 'urgent', Icone: CircleAlert, texte: 'Aucun successeur' }
-    : { ton: 'adecider', Icone: CircleDashed, texte: 'Successeur à choisir' };
+    ? { ton: 'urgent', Icone: CircleAlert, texte: 'Aucun successeur choisi' }
+    : { ton: 'adecider', Icone: CircleDashed, texte: 'Aucun successeur choisi' };
 }
 
 /** « Lova ANDRIANINAY » → « LA ». */
@@ -95,10 +95,10 @@ function LignePoste({ poste, enRetard, onOuvrir }) {
   const libre = poste.type === 'libre';
   const premier = poste.titulaires_partants?.[0];
   const action = poste.releve
-    ? { classe: 'is-suivi', Icone: ClipboardCheck, texte: 'Suivi', aria: 'Voir le suivi' }
+    ? { classe: 'is-suivi', Icone: ClipboardCheck, texte: 'Voir le choix', aria: 'Voir le choix' }
     : libre
-      ? { classe: 'is-pourvoir', Icone: UserPlus, texte: 'Pourvoir', aria: 'Pourvoir' }
-      : { classe: 'is-preparer', Icone: UserSearch, texte: 'Préparer', aria: 'Préparer la relève' };
+      ? { classe: 'is-pourvoir', Icone: UserPlus, texte: 'Choisir un agent', aria: 'Choisir un agent' }
+      : { classe: 'is-preparer', Icone: UserSearch, texte: 'Choisir un successeur', aria: 'Choisir un successeur' };
   const urgent = etat.ton === 'urgent' || quand?.ton === 'urgent';
   return (
     <li className={`depart-poste${urgent ? ' is-urgent' : ''}`}>
@@ -146,9 +146,8 @@ function LignePoste({ poste, enRetard, onOuvrir }) {
 }
 
 /**
- * Gestion des postes : les postes déjà libres, à pourvoir, et ceux que des
- * départs vont libérer, à préparer. Une phrase pour comprendre, une liste pour
- * agir ; la frise et la vue par service ne s'affichent que si on les demande.
+ * Gestion des postes : deux listes seulement, les postes libres aujourd'hui et
+ * ceux qui se libéreront (départs à la retraite) dans 1, 2 ou 5 ans.
  * /postes?poste=ID ouvre directement la fenêtre d'un poste (depuis l'organigramme).
  */
 export default function RelevePage() {
@@ -170,18 +169,18 @@ export default function RelevePage() {
   }, [horizon, version]);
 
   const libres = (tableau?.postes_libres || []).map((poste) => ({ ...poste, type: 'libre' }));
-  const departs = [...(tableau?.postes || [])]
+  const bientot = [...(tableau?.postes || [])]
     .map((poste) => ({ ...poste, type: 'depart' }))
     .sort((a, b) => rangUrgence(a) - rangUrgence(b));
-  const urgents = departs.filter((poste) => !poste.releve && poste.niveau === 'ELEVE').length;
+  const urgents = bientot.filter((poste) => !poste.releve && poste.niveau === 'ELEVE').length;
   const enRetard = new Set((tableau?.departs || []).filter((d) => d.en_retard).map((d) => d.id));
-  const nbDeparts = tableau?.departs.length || 0;
   const placesLibres = tableau?.chiffres?.places_libres || 0;
+  const periode = HORIZONS.find((option) => option.value === horizon)?.label || '';
 
   // Le poste demandé par l'adresse (?poste=ID), s'il est libre ou se libère.
   const posteDemande = searchParams.get('poste');
   const posteAdresse = posteDemande
-    ? libres.find((p) => String(p.poste_id) === posteDemande) || departs.find((p) => String(p.poste_id) === posteDemande)
+    ? libres.find((p) => String(p.poste_id) === posteDemande) || bientot.find((p) => String(p.poste_id) === posteDemande)
     : null;
   const ouvert = passation || posteAdresse;
 
@@ -191,21 +190,11 @@ export default function RelevePage() {
   }
 
   const vues = [
-    { value: 'libres', label: `À pourvoir · ${libres.length}` },
-    { value: 'departs', label: `Se libèrent · ${departs.length}` },
-    { value: 'frise', label: 'La frise' },
-    { value: 'services', label: 'Par service' },
+    { value: 'libres', label: `Libres aujourd’hui · ${libres.length}` },
+    { value: 'bientot', label: `Libres bientôt · ${bientot.length}` },
   ];
-  const vueActive = vue || (posteAdresse?.type === 'depart' || (libres.length === 0 && departs.length > 0) ? 'departs' : 'libres');
-
-  const parAnnee = new Map();
-  (tableau?.departs || []).forEach((depart) => {
-    const annee = String(depart.depart_prevu).slice(0, 4);
-    if (!parAnnee.has(annee)) parAnnee.set(annee, []);
-    parAnnee.get(annee).push(depart);
-  });
-  const maximum = Math.max(1, ...(tableau?.services || [])
-    .flatMap((service) => Object.values(service.par_annee || {})));
+  const vueActive = vue || (posteAdresse?.type === 'depart' || (libres.length === 0 && bientot.length > 0) ? 'bientot' : 'libres');
+  const liste = vueActive === 'libres' ? libres : bientot;
 
   return (
     <div className="rf-page depart-page">
@@ -215,12 +204,6 @@ export default function RelevePage() {
           <h1 className="rf-title">Gestion des postes</h1>
         </div>
         <div className="depart-outils">
-          <label className="depart-horizon">
-            <span className="ui-visually-hidden">Horizon des départs</span>
-            <select value={horizon} onChange={(event) => setHorizon(Number(event.target.value))}>
-              {HORIZONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
-          </label>
           <button
             type="button"
             className={`depart-aide-btn${aide ? ' is-ouvert' : ''}`}
@@ -237,9 +220,9 @@ export default function RelevePage() {
 
       {aide && (
         <div id="depart-aide" className="depart-aide">
-          <p><strong>À pourvoir</strong> : les postes qui ont déjà une place libre aujourd’hui.</p>
-          <p><strong>Se libèrent</strong> : les postes dont un titulaire part à la retraite (droit atteint ou demande en cours) sur la période choisie. Les plus urgents sont en haut : un poste qui se vide dans les deux ans, ou un poste de responsable.</p>
-          <p><strong>Pourvoir ou Préparer</strong> ouvre une fenêtre : SYGPERS propose des agents, classés avec leurs raisons ; vous en désignez un et suivez sa préparation. Personne n’est muté : la mutation se fait ensuite par une demande.</p>
+          <p><strong>Libres aujourd’hui</strong> : les postes qui ont une place sans titulaire.</p>
+          <p><strong>Libres bientôt</strong> : les postes dont le titulaire part à la retraite dans 1, 2 ou 5 ans. Les plus urgents sont en haut.</p>
+          <p><strong>Choisir un agent</strong> : SYGPERS recommande des agents et explique pourquoi, mais vous pouvez choisir n’importe qui. Personne n’est muté : la mutation se fait ensuite par une demande, préparée depuis la même fenêtre.</p>
         </div>
       )}
 
@@ -249,131 +232,56 @@ export default function RelevePage() {
       {tableau && (
         <p className="depart-resume">
           {placesLibres > 0
-            ? <>Aujourd’hui, <em>{placesLibres} place{placesLibres > 1 ? 's' : ''}</em> {placesLibres > 1 ? 'sont libres' : 'est libre'} dans {libres.length} poste{libres.length > 1 ? 's' : ''}. </>
-            : 'Aujourd’hui, tous les postes sont pourvus. '}
-          {nbDeparts > 0
+            ? <>Aujourd’hui, <em>{placesLibres} place{placesLibres > 1 ? 's' : ''}</em> {placesLibres > 1 ? 'sont libres' : 'est libre'}. </>
+            : 'Aujourd’hui, aucune place n’est libre. '}
+          {bientot.length > 0
             ? (
               <>
-                D’ici le {formatJour(tableau.jusquau)}, {nbDeparts} agent{nbDeparts > 1 ? 's partent' : ' part'} à la retraite
+                {periode}, {bientot.length} poste{bientot.length > 1 ? 's se libéreront' : ' se libérera'}
                 {urgents > 0
-                  ? <> : <span className="is-urgent">{urgents} poste{urgents > 1 ? 's' : ''} urgent{urgents > 1 ? 's n’ont' : ' n’a'} pas encore de successeur</span>.</>
+                  ? <>, dont <span className="is-urgent">{urgents} urgent{urgents > 1 ? 's' : ''} sans successeur</span>.</>
                   : '.'}
               </>
             )
-            : `Aucun départ prévu d’ici le ${formatJour(tableau.jusquau)}.`}
+            : `${periode}, aucun poste ne se libérera.`}
         </p>
       )}
 
-      {tableau && (libres.length > 0 || nbDeparts > 0) && (
+      {tableau && (
         <>
           <div className="depart-barre">
-            <Segmented label="Affichage" options={vues} value={vueActive} onChange={setVue} className="depart-vues" />
-            {(vueActive === 'libres' || vueActive === 'departs') && (
-              <ul className="depart-legende" aria-label="Code couleur">
-                {LEGENDE.map((item) => (
-                  <li key={item.ton}><span className={`depart-legende-point is-${item.ton}`} aria-hidden="true" />{item.label}</li>
-                ))}
-              </ul>
-            )}
+            <div className="depart-barre-gauche">
+              <Segmented label="Postes affichés" options={vues} value={vueActive} onChange={setVue} className="depart-vues" />
+              {vueActive === 'bientot' && (
+                <label className="depart-horizon">
+                  <span className="ui-visually-hidden">Période</span>
+                  <select value={horizon} onChange={(event) => setHorizon(Number(event.target.value))}>
+                    {HORIZONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                </label>
+              )}
+            </div>
+            <ul className="depart-legende" aria-label="Code couleur">
+              {LEGENDE.map((item) => (
+                <li key={item.ton}><span className={`depart-legende-point is-${item.ton}`} aria-hidden="true" />{item.label}</li>
+              ))}
+            </ul>
           </div>
 
-          {vueActive === 'libres' && (
-            libres.length === 0
-              ? <p className="rf-note">Aucune place libre aujourd’hui.</p>
-              : (
-                <ul className="rf-card depart-postes">
-                  {libres.map((poste) => (
-                    <LignePoste key={`l-${poste.poste_id}`} poste={poste} enRetard={enRetard} onOuvrir={setPassation} />
-                  ))}
-                </ul>
-              )
-          )}
-
-          {vueActive === 'departs' && (
-            departs.length === 0
-              ? <p className="rf-note">Aucun poste ne se libère sur cette période.</p>
-              : (
-                <ul className="rf-card depart-postes">
-                  {departs.map((poste) => (
-                    <LignePoste key={`d-${poste.poste_id}`} poste={poste} enRetard={enRetard} onOuvrir={setPassation} />
-                  ))}
-                </ul>
-              )
-          )}
-
-          {vueActive === 'frise' && (
-            nbDeparts === 0 ? <p className="rf-note">Aucun départ sur cette période.</p> : (
-              <ol className="releve-frise">
-                {[...parAnnee.entries()].map(([annee, liste]) => (
-                  <li key={annee}>
-                    <span className="releve-annee">{annee}<small>{liste.length} départ{liste.length > 1 ? 's' : ''}</small></span>
-                    <ul>
-                      {liste.map((depart) => (
-                        <li key={depart.id} className="rf-card releve-depart">
-                          <span className="releve-avatar" aria-hidden="true">
-                            <PersonPhoto src={getEmployeePhotoUrl(depart.photo)} alt="" initials={getEmployeeInitials(depart)} />
-                          </span>
-                          <span className="releve-depart-texte">
-                            <LienAgent id={depart.id} nom={[depart.prenom, depart.nom].filter(Boolean).join(' ')} photo={depart.photo} variante="texte" />
-                            <small>{depart.poste} · {depart.service}</small>
-                          </span>
-                          <span className="releve-depart-date">
-                            {depart.en_retard
-                              ? <span className="releve-retard">Droit atteint depuis le {formatJour(depart.retraite_possible_le)}</span>
-                              : formatJour(depart.depart_prevu)}
-                            <small>{depart.motif_depart === 'DEMANDE_RETRAITE' ? 'Demande de retraite en cours' : 'Droit au départ'}</small>
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ol>
-            )
-          )}
-
-          {vueActive === 'services' && (
-            tableau.services.length === 0 ? <p className="rf-note">Aucun départ sur cette période.</p> : (
-              <div className="rf-card releve-carte-scroll">
-                <table className="releve-carte">
-                  <caption className="ui-visually-hidden">Nombre de départs par service et par année</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Service</th>
-                      {tableau.annees.map((annee) => <th scope="col" key={annee}>{annee}</th>)}
-                      <th scope="col">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableau.services.map((service) => (
-                      <tr key={service.service_id}>
-                        <th scope="row">{service.service}<small>{service.direction}</small></th>
-                        {tableau.annees.map((annee) => {
-                          const nombre = service.par_annee?.[annee] || 0;
-                          return (
-                            <td key={annee} style={nombre ? { '--intensite': nombre / maximum } : undefined}
-                              className={nombre ? 'is-plein' : undefined}>
-                              {nombre || ''}
-                            </td>
-                          );
-                        })}
-                        <td className="releve-total">{service.total}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
+          {liste.length === 0 ? (
+            <div className="rf-card documents-empty">
+              <CalendarClock size={40} />
+              <h3>{vueActive === 'libres' ? 'Aucune place libre aujourd’hui' : 'Aucun poste ne se libère sur cette période'}</h3>
+              <p>{vueActive === 'libres' ? 'Tous les postes ont leurs titulaires.' : 'Choisissez une période plus longue pour voir plus loin.'}</p>
+            </div>
+          ) : (
+            <ul className="rf-card depart-postes">
+              {liste.map((poste) => (
+                <LignePoste key={`${poste.type}-${poste.poste_id}`} poste={poste} enRetard={enRetard} onOuvrir={setPassation} />
+              ))}
+            </ul>
           )}
         </>
-      )}
-
-      {tableau && libres.length === 0 && nbDeparts === 0 && (
-        <div className="rf-card documents-empty">
-          <CalendarClock size={40} />
-          <h3>Rien à pourvoir ni à préparer</h3>
-          <p>Choisissez un horizon plus lointain pour voir plus loin.</p>
-        </div>
       )}
 
       {ouvert && (

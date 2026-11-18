@@ -1,4 +1,5 @@
 import PosteMission from '../../components/agents/PosteMission';
+import EmailsAgent from '../../components/messages/EmailsAgent';
 import { useEffect, useState } from 'react';
 import { classeTypeEmploi } from '../../utils/typeEmploi';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -558,6 +559,7 @@ export default function AgentProfilePage({ user }) {
             enregistrer={(donnees) => saveProfilComplementaire(agent.id, donnees)}
             peutModifier={['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role)}
           />
+          {['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role) && <EmailsAgent agentId={agent.id} />}
         </div>
       </div>
 

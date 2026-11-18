@@ -22,7 +22,6 @@ import ServicesPage from '../../pages/Administration/ServicesPage';
 import PostesPage from '../../pages/Administration/PostesPage';
 import ParcoursPage from '../../pages/Administration/ParcoursPage';
 import DestinatairesPage from '../../pages/Administration/DestinatairesPage';
-import MessagesPage from '../../pages/Messages/MessagesPage';
 import RelevePage from '../../pages/Releve/RelevePage';
 import ProfilPage from '../../pages/Profil/ProfilPage';
 import DemandesInscriptionPage from '../../pages/Administration/DemandesInscriptionPage';
@@ -211,9 +210,10 @@ export default function AppRouter({
           element={<Navigate to="/postes" replace />}
         />
 
+        {/* Les e-mails aux agents se préparent depuis les notifications et la fiche de l'agent. */}
         <Route
           path="/messages"
-          element={<MessagesPage />}
+          element={<Navigate to="/dashboard" replace />}
         />
 
         <Route

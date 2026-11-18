@@ -6,7 +6,6 @@ import {
   FileText,
   GitBranch,
   LayoutDashboard,
-  Mail,
   Plus,
   Settings,
   ShieldCheck,
@@ -18,7 +17,6 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { listerComptesEnAttente } from '../../api/utilisateurs';
-import { getMessagesAgents } from '../../api/messagesAgents';
 
 /*
  * Le menu en espaces : cinq entrées seulement dans la barre.
@@ -42,7 +40,7 @@ const ESPACES = [
     id: 'personnel',
     label: 'Personnel',
     icon: Users,
-    description: 'Les agents, leur carrière, et les postes à pourvoir ou à préparer.',
+    description: 'Les agents, leur carrière, et les postes libres ou bientôt libres.',
     pages: [
       { path: '/agents', label: 'Agents', hint: 'Fiches, dossiers et CV', icon: Users },
       { path: '/carrieres', label: 'Carrières', hint: 'Avancements, reclassements, simulations', icon: BarChart3 },
@@ -58,13 +56,11 @@ const ESPACES = [
     ],
   },
   {
-    id: 'courrier',
-    label: 'Courrier',
-    icon: Mail,
-    description: 'Les documents administratifs et les e-mails à envoyer aux agents.',
+    id: 'documents',
+    label: 'Documents',
+    icon: FileText,
     pages: [
       { path: '/documents', label: 'Documents RH', hint: 'Arrêtés, décisions, attestations', icon: FileText },
-      { path: '/messages', label: 'E-mails aux agents', hint: 'Relire et envoyer les e-mails préparés', icon: Mail, personnel: true, badge: 'emails' },
     ],
   },
   {
@@ -157,7 +153,7 @@ export default function Sidebar({ user, open, onClose }) {
   const autorise = (page) => (!page.personnel || estPersonnel) && (!page.chef || isChef);
   const { pathname } = useLocation();
   const [panneau, setPanneau] = useState(null);
-  const [compteurs, setCompteurs] = useState({ inscriptions: 0, emails: 0 });
+  const [compteurs, setCompteurs] = useState({ inscriptions: 0 });
   const racine = useRef(null);
 
   const espaces = ESPACES
@@ -173,18 +169,8 @@ export default function Sidebar({ user, open, onClose }) {
         .then((r) => !annule && setCompteurs((c) => ({ ...c, inscriptions: Array.isArray(r) ? r.length : 0 })))
         .catch(() => {});
     }
-    const compterEmails = () => {
-      if (!estPersonnel) return;
-      getMessagesAgents({ statut: 'PROPOSE' })
-        .then((r) => !annule && setCompteurs((c) => ({ ...c, emails: r.length })))
-        .catch(() => {});
-    };
-    compterEmails();
-    // Un e-mail envoyé ou écarté ailleurs : la pastille suit.
-    window.addEventListener('messages-agents:change', compterEmails);
     return () => {
       annule = true;
-      window.removeEventListener('messages-agents:change', compterEmails);
     };
   }, [isChef, estPersonnel]);
 

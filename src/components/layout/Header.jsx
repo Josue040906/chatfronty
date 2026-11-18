@@ -2,7 +2,14 @@ import TexteAvecAgent from '../agents/TexteAvecAgent';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bell,
+  CircleCheck,
+  CircleX,
+  FileCheck2,
+  Hourglass,
   Mail,
+  MailCheck,
+  TrendingUp,
+  UserPlus,
   ChevronDown,
   LogOut,
   Menu,
@@ -11,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
+  emailNotification,
   getNotifications,
   deleteNotification,
   markAllNotificationsRead,
@@ -19,6 +27,20 @@ import {
 import { getEmployeePhotoUrl } from '../../utils/employee';
 import EmployeePhoto from '../EmployeePhoto';
 import { useMessageAgent } from '../messages/messageAgentContext';
+import { useToast } from '../ui/toastContext';
+import { estServicePersonnel } from '../../utils/session';
+
+/** L'icône et la couleur d'une alerte, selon sa nature. */
+const NATURES = {
+  ANCIENNETE_ATTEINTE: { Icone: TrendingUp, ton: 'carriere' },
+  ANCIENNETE_UN_MOIS: { Icone: TrendingUp, ton: 'bientot' },
+  RETRAITE_PROCHE: { Icone: Hourglass, ton: 'retraite' },
+  NOUVEL_AGENT: { Icone: UserPlus, ton: 'affectation' },
+  DOCUMENT_ACCEPTE: { Icone: CircleCheck, ton: 'carriere' },
+  DOCUMENT_APPLIQUE: { Icone: FileCheck2, ton: 'carriere' },
+  DOCUMENT_APPLICABLE: { Icone: FileCheck2, ton: 'bientot' },
+  DOCUMENT_REFUSE: { Icone: CircleX, ton: 'refus' },
+};
 
 function formatNotificationDate(value) {
   if (!value) {
@@ -58,6 +80,23 @@ export default function Header({
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { ouvrir: ouvrirMessage } = useMessageAgent();
+  const toast = useToast();
+  const peutEcrire = estServicePersonnel();
+  const [emailEnCours, setEmailEnCours] = useState(null);
+
+  /** Prévenir l'agent : l'e-mail de cette situation s'ouvre pour être relu (rien n'est envoyé). */
+  async function prevenir(notification) {
+    setEmailEnCours(notification.id);
+    try {
+      const message = await emailNotification(notification.id);
+      setNotificationsOpen(false);
+      ouvrirMessage(message);
+    } catch (err) {
+      toast.erreur(err?.message || 'L’e-mail n’a pas pu être préparé.');
+    } finally {
+      setEmailEnCours(null);
+    }
+  }
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
   const [notificationActionError, setNotificationActionError] = useState('');
@@ -121,6 +160,13 @@ export default function Header({
       }
     }
   }, [userId]);
+
+  // Un e-mail envoyé ou écarté : le bouton de sa notification change d'état.
+  useEffect(() => {
+    const rafraichir = () => { void chargerNotifications(); };
+    window.addEventListener('messages-agents:change', rafraichir);
+    return () => window.removeEventListener('messages-agents:change', rafraichir);
+  }, [chargerNotifications]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -386,9 +432,14 @@ export default function Header({
                           }`}
                           onClick={() => marquerCommeLue(notification)}
                         >
-                          <span className="notification-item-icon">
-                            <Bell size={16} />
-                          </span>
+                          {(() => {
+                            const { Icone, ton } = NATURES[notification.type] || { Icone: Bell, ton: 'autre' };
+                            return (
+                              <span className={`notification-item-icon courriel-icone is-${ton}`}>
+                                <Icone size={16} />
+                              </span>
+                            );
+                          })()}
 
                           <span className="notification-item-content">
                             <strong>{notification.titre}</strong>
@@ -416,13 +467,23 @@ export default function Header({
                             />
                           )}
                         </div>
-                        {notification.messageId && (
+                        {peutEcrire && notification.employeId && (
                           <button
                             type="button"
-                            className="notification-email-button"
-                            onClick={() => { setNotificationsOpen(false); ouvrirMessage(notification.messageId); }}
+                            className={`notification-email-button${notification.messageStatut === 'ENVOYE' ? ' is-envoye' : ''}${notification.messageStatut === 'ECARTE' ? ' is-ecarte' : ''}`}
+                            onClick={() => void prevenir(notification)}
+                            disabled={emailEnCours === notification.id}
+                            title={notification.messageStatut === 'ENVOYE'
+                              ? 'Un e-mail a déjà été envoyé à l’agent pour cette situation'
+                              : notification.messageStatut === 'ECARTE'
+                                ? 'L’e-mail de cette situation a été écarté'
+                                : 'Prévenir l’agent par e-mail : vous relisez avant d’envoyer'}
                           >
-                            <Mail size={13} />E-mail
+                            {notification.messageStatut === 'ENVOYE'
+                              ? <><MailCheck size={13} />Envoyé</>
+                              : notification.messageStatut === 'ECARTE'
+                                ? <><Mail size={13} />Écarté</>
+                                : <><Mail size={13} />Prévenir {String(notification.employeNom || 'l’agent').split(' ')[0]}</>}
                           </button>
                         )}
                         <button

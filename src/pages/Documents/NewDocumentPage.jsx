@@ -519,9 +519,11 @@ export default function NewDocumentPage() {
             {demandeCarriere ? 'Nouvelle demande' : 'Nouveau document'}
           </h1>
           <p className="rf-lead">
-            {demandeCarriere
-              ? 'Préparée depuis l’analyse de carrière : le type et l’agent sont déjà choisis.'
-              : 'Choisissez un type, un agent et complétez les informations.'}
+            {demandeCarriere?.origine === 'postes'
+              ? 'Préparée depuis la Gestion des postes : l’agent choisi et le poste visé sont déjà remplis.'
+              : demandeCarriere
+                ? 'Préparée depuis l’analyse de carrière : le type et l’agent sont déjà choisis.'
+                : 'Choisissez un type, un agent et complétez les informations.'}
           </p>
         </div>
       </header>
@@ -533,8 +535,9 @@ export default function NewDocumentPage() {
 
       {prefilled.length > 0 && (
         <p className="bandy-prefill-notice" role="status">
-          Band’IAkam a prérempli les champs surlignés en vert. Vérifiez-les, puis
-          enregistrez : aucun document n’est créé avant.
+          {demandeCarriere?.origine === 'postes'
+            ? 'Les champs surlignés en vert viennent de la Gestion des postes. Vérifiez-les, complétez la date d’effet, puis enregistrez : aucune demande n’est créée avant.'
+            : 'Band’IAkam a prérempli les champs surlignés en vert. Vérifiez-les, puis enregistrez : aucun document n’est créé avant.'}
         </p>
       )}
       <div className="new-document-layout">

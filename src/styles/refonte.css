@@ -2106,40 +2106,14 @@ button.rf-row {
   border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-strong);
   font: 600 12px var(--font-ui); cursor: pointer; white-space: nowrap;
 }
+.notification-email-button.is-envoye { background: var(--color-success-soft); color: var(--color-success); }
+.notification-email-button.is-ecarte { background: var(--color-surface-sunken); color: var(--color-text-muted); }
+.notification-email-button:disabled { opacity: 0.6; cursor: wait; }
 .notification-email-button:hover { background: var(--color-brand); color: var(--color-on-brand); }
 
 /* ---------- Départs et relève ---------- */
-.releve-frise { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
-.releve-frise > li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
-.releve-annee { display: grid; font: 600 28px / 1 var(--font-display); color: var(--color-brand); }
-.releve-annee small { margin-top: 4px; color: var(--color-text-muted); font: 500 12px var(--font-ui); }
-.releve-frise ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.releve-depart { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
-.releve-avatar {
-  overflow: hidden; display: inline-flex; flex: none; align-items: center; justify-content: center; width: 38px; height: 38px;
-  border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent-strong); font: 700 13px var(--font-ui);
-}
-.releve-depart-texte { flex: 1; min-width: 0; display: grid; }
-.releve-depart-texte a { font-weight: 600; color: var(--color-text); text-decoration: none; }
-.releve-depart-texte a:hover { color: var(--color-brand); text-decoration: underline; }
-.releve-depart-texte small, .releve-depart-date small { color: var(--color-text-muted); font-size: 12px; }
-.releve-depart-date { display: grid; justify-items: end; text-align: right; font-weight: 600; font-size: 14px; }
-.releve-retard { color: var(--color-danger); }
 
-.releve-carte-scroll { overflow-x: auto; padding: 8px 12px; }
-.releve-carte { width: 100%; border-collapse: collapse; font-size: 14px; }
-.releve-carte th, .releve-carte td { padding: 10px 12px; border-bottom: 1px solid var(--color-border); text-align: center; }
-.releve-carte thead th { color: var(--color-text-muted); font-size: 12px; font-weight: 600; }
-.releve-carte tbody th { text-align: left; font-weight: 600; }
-.releve-carte tbody th small { display: block; color: var(--color-text-muted); font-size: 12px; font-weight: 400; }
-.releve-carte td.is-plein {
-  font-weight: 700; color: var(--color-text);
-  background: color-mix(in srgb, var(--color-danger) calc(12% + var(--intensite) * 38%), transparent);
-}
-.releve-carte .releve-total { font-weight: 700; }
-@media (max-width: 900px) {
-  .releve-frise > li { grid-template-columns: 1fr; gap: 8px; }
-}
+
 
 /* ---------- Candidats à la relève (page Relève et organigramme) ---------- */
 .candidats-releve { display: grid; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
@@ -2200,7 +2174,7 @@ button.rf-row {
 }
 .depart-photo { border-radius: 50%; }
 .depart-icone { background: var(--color-success-soft); color: var(--color-success); }
-.depart-photo img, .releve-avatar img, .passation-photo img { width: 100%; height: 100%; object-fit: cover; }
+.depart-photo img, .passation-photo img { width: 100%; height: 100%; object-fit: cover; }
 .depart-poste:last-child { border-bottom: 0; }
 .depart-poste-nom { display: grid; gap: 3px; min-width: 0; }
 .depart-poste-nom strong { font-size: 16px; }
@@ -2263,6 +2237,7 @@ button.rf-row {
 /* Les onglets, et la légende du code couleur à côté. */
 .depart-barre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin-bottom: 16px; }
 .depart-barre .depart-vues { margin-bottom: 0; }
+.depart-barre-gauche { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .depart-legende { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; color: var(--color-text-muted); font-size: 12px; font-weight: 600; }
 .depart-legende li { display: inline-flex; align-items: center; gap: 6px; }
 .depart-legende-point { width: 10px; height: 10px; border-radius: 50%; }
@@ -2344,6 +2319,54 @@ button.rf-row {
 .passation-pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px solid var(--color-border); }
 .passation-pied-gauche { display: flex; flex-wrap: wrap; gap: 4px; }
 .passation-retirer { color: var(--color-danger); }
+/* Les sections de la liste : votre choix, puis les recommandés. */
+.passation-section { margin: 4px 0 0; color: var(--color-text-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+/* Le bilan face aux exigences du poste : vert rempli, ambre non rempli, gris à vérifier. */
+.passation-exigences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.passation-exigences-titre { flex-basis: 100%; color: var(--color-text-muted); font-size: 12px; font-weight: 700; }
+.passation-exigence {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px 3px 7px; border-radius: var(--radius-pill);
+  border: 1px solid transparent; font-size: 12px; font-weight: 600;
+}
+.passation-exigence.is-remplie { background: var(--color-success-soft); color: var(--color-success); }
+.passation-exigence.is-manquante { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.passation-exigence.is-manquante.is-indispensable { background: var(--color-danger-soft); color: var(--color-danger); }
+.passation-exigence.is-averifier { border: 1px dashed color-mix(in srgb, var(--color-text-muted) 45%, transparent); color: var(--color-text-muted); }
+.passation-exigence.is-indispensable { box-shadow: inset 0 0 0 1px currentColor; }
+.passation-attentions { display: grid; gap: 3px; margin-top: 8px; }
+.passation-attentions span { display: flex; align-items: flex-start; gap: 6px; color: var(--color-accent-strong); font-size: 12.5px; line-height: 1.4; }
+.passation-attentions svg { flex: none; margin-top: 2px; }
+.passation-bilan { padding: 4px 2px 0; }
+/* Choisir un autre agent. */
+.passation-libre { position: relative; display: grid; gap: 6px; margin-top: 4px; padding-top: 14px; border-top: 1px dashed var(--color-border); }
+.passation-libre-titre { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+.passation-libre input {
+  height: 42px; padding: 0 14px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md);
+  background: var(--color-surface); color: var(--color-text); font: 500 14px var(--font-ui);
+}
+.passation-libre-resultats {
+  margin: 0; padding: 6px; list-style: none; border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface); box-shadow: var(--shadow-card);
+}
+.passation-libre-resultats button {
+  width: 100%; display: grid; gap: 2px; padding: 8px 10px; border: 0; border-radius: 10px; background: transparent;
+  color: var(--color-text); text-align: left; font: inherit; cursor: pointer;
+}
+.passation-libre-resultats button:hover, .passation-libre-resultats button:focus-visible { background: var(--color-surface-sunken); outline: none; }
+.passation-libre-resultats small { color: var(--color-text-muted); font-size: 12px; }
+/* L'étape suivante : préparer la demande de mutation. */
+.passation-suite {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent); border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-success-soft), color-mix(in srgb, var(--color-success-soft) 35%, var(--color-surface)));
+}
+.passation-suite-icone {
+  width: 40px; height: 40px; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: var(--color-surface); color: var(--color-success);
+}
+.passation-suite-texte { flex: 1 1 260px; display: grid; gap: 2px; min-width: 0; }
+.passation-suite-texte strong { font-size: 14px; }
+.passation-suite-texte small { color: var(--color-text-muted); font-size: 12.5px; line-height: 1.45; }
 @media (max-width: 600px) { .passation { padding: 22px 18px; } }
 
 /* ---------- Le poste d'un agent : sa mission et son service ---------- */
@@ -2362,23 +2385,6 @@ button.rf-row {
 .poste-mission-texte.is-vide { color: var(--color-text-muted); font-style: italic; }
 @media (max-width: 760px) { .poste-mission { grid-template-columns: 1fr; } }
 
-/* ---------- E-mails aux agents : la liste ---------- */
-.courriel-page { max-width: 1080px; }
-.courriel-liste { margin: 0; padding: 0; list-style: none; overflow: hidden; }
-.courriel {
-  position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) auto 112px; align-items: center; gap: 16px;
-  padding: 16px 22px; border-bottom: 1px solid var(--color-border); transition: background 0.18s;
-}
-.courriel:last-child { border-bottom: 0; }
-.courriel:hover { background: color-mix(in srgb, var(--color-surface-sunken) 55%, transparent); }
-.courriel.is-urgent::before {
-  content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0; background: var(--color-danger);
-}
-.courriel-texte { display: grid; gap: 6px; min-width: 0; }
-.courriel-texte strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
-.courriel-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--color-text-muted); font-size: 13px; }
-.courriel-sans-adresse { color: var(--color-danger); font-weight: 600; }
-
 /* La tuile d'un événement : une couleur par famille. */
 .courriel-icone {
   --ton: var(--color-text-muted);
@@ -2391,12 +2397,10 @@ button.rf-row {
 .courriel-icone.is-carriere { --ton: var(--color-success); --ton-fond: var(--color-success-soft); }
 .courriel-icone.is-retraite { --ton: var(--color-accent-strong); --ton-fond: var(--color-accent-soft); }
 .courriel-icone.is-refus { --ton: var(--color-danger); --ton-fond: var(--color-danger-soft); }
-@media (max-width: 900px) {
-  .courriel { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px 12px; }
-  .courriel > .statut-pastille { grid-column: 2; justify-self: start; }
-  .courriel .depart-action { grid-column: 3; grid-row: 1 / span 2; }
-  .courriel-texte strong { white-space: normal; }
-}
+
+.courriel-icone.is-bientot { --ton: var(--color-accent-strong); --ton-fond: var(--color-accent-soft); }
+/* Dans la cloche, la tuile reste ronde. */
+.notification-item-icon.courriel-icone { width: 40px; height: 40px; border-radius: 50%; }
 
 /* ---------- Le volet de lecture : une lettre ---------- */
 /* Au-dessus du bouton de l'assistant (1000), sous l'assistant en plein écran (1200). */
@@ -2442,3 +2446,58 @@ button.rf-row {
   .message-volet { max-height: 100vh; border-radius: 0; padding: 20px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .message-volet { animation: none; } }
+
+/* ---------- Exigences d'un poste (Administration › Postes) ---------- */
+.exigences-editeur { display: grid; gap: 10px; margin-top: 18px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-sunken); }
+.exigences-editeur-tete { display: grid; gap: 2px; }
+.exigences-editeur-titre { font-size: 14px; font-weight: 700; color: var(--color-text); }
+.exigences-editeur-tete small, .exigences-editeur-vide { margin: 0; color: var(--color-text-muted); font-size: 12.5px; }
+.exigence-ligne { display: grid; gap: 8px; padding: 10px; border-radius: var(--radius-md); background: var(--color-surface); }
+.exigence-entete { display: flex; align-items: center; gap: 10px; }
+.exigence-entete select { flex: 0 1 180px; }
+.exigence-entete .exigence-indispensable { margin-left: auto; }
+.exigence-champs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.exigence-champs .ui-combobox { width: 100%; min-width: 0; }
+.exigence-ligne select, .exigence-ligne .exigence-texte, .exigence-ligne .ui-combobox input {
+  width: 100%; height: 38px; box-sizing: border-box; border: 1px solid var(--color-border-strong);
+  border-radius: 10px; background-color: var(--color-surface); color: var(--color-text); font: 500 13px var(--font-ui);
+}
+.exigence-ligne select, .exigence-ligne .exigence-texte { padding: 0 10px; }
+.exigence-ligne .ui-combobox input { padding: 0 34px 0 10px; }
+.exigence-texte { grid-column: 1 / -1; }
+.exigence-indispensable { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.exigence-indispensable input { accent-color: var(--color-danger); }
+.exigence-retirer {
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 10px;
+  background: transparent; color: var(--color-text-muted); cursor: pointer;
+}
+.exigence-retirer:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+.exigence-ajouter {
+  justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-brand); font: 600 13px var(--font-ui); cursor: pointer;
+}
+.exigence-ajouter:hover { border-style: solid; background: var(--color-accent-soft); }
+@media (max-width: 520px) {
+  .exigence-champs { grid-template-columns: 1fr; }
+}
+
+/* ---------- Fiche agent : les e-mails à l'agent ---------- */
+.emails-agent-liste { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.emails-agent-liste button {
+  width: 100%; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 10px 12px; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--color-text);
+  text-align: left; font: inherit; cursor: pointer; transition: background 0.18s;
+}
+.emails-agent-liste button:hover, .emails-agent-liste button:focus-visible { background: var(--color-surface-sunken); outline: none; }
+.emails-agent-liste .courriel-icone { width: 40px; height: 40px; border-radius: 12px; }
+.emails-agent-texte { display: grid; gap: 2px; min-width: 0; }
+.emails-agent-texte strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.emails-agent-texte small { color: var(--color-text-muted); font-size: 12px; }
+.emails-agent-tout {
+  justify-self: start; margin-top: 6px; padding: 0; border: 0; background: transparent;
+  color: var(--color-brand); font: 600 13px var(--font-ui); cursor: pointer;
+}
+@media (max-width: 640px) {
+  .emails-agent-liste button { grid-template-columns: 40px minmax(0, 1fr); }
+  .emails-agent-liste .statut-pastille { grid-column: 2; justify-self: start; }
+}

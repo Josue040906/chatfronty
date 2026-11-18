@@ -19,6 +19,8 @@ import {
 } from '../../api/postes';
 
 import { getServices } from '../../api/services';
+import { enregistrerExigences, getExigences } from '../../api/postes';
+import ExigencesPosteEditeur from '../../components/organisation/ExigencesPosteEditeur';
 import { canManageReferentiels } from '../../utils/roles';
 
 const EMPTY_FORM = {
@@ -46,6 +48,8 @@ export default function PostesPage({ user }) {
   const [editingPoste, setEditingPoste] = useState(null);
 
   const [form, setForm] = useState(EMPTY_FORM);
+  // Les exigences du poste modifié (null : pas encore chargées, ou création d'un poste).
+  const [exigences, setExigences] = useState(null);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -95,6 +99,12 @@ export default function PostesPage({ user }) {
     setFormError('');
 
     setEditingPoste(poste);
+    setExigences(null);
+    getExigences(poste.id)
+      .then((liste) => setExigences(liste.map(({ type, valeur, niveau, indispensable }) => ({
+        type, valeur: valeur || '', niveau: niveau || '', indispensable: Boolean(indispensable),
+      }))))
+      .catch(() => setExigences([]));
 
     setForm({
       intitule: poste.intitule || '',
@@ -164,6 +174,9 @@ export default function PostesPage({ user }) {
           serviceId,
           nombrePlaces: Number(form.nombrePlaces) || 1,
         });
+        if (exigences) {
+          await enregistrerExigences(editingPoste.id, exigences);
+        }
 
         setSuccess('Le poste a été modifié avec succès.');
       } else {
@@ -742,6 +755,11 @@ export default function PostesPage({ user }) {
                     }}
                   />
                 </label>
+                {editingPoste && (
+                  exigences
+                    ? <ExigencesPosteEditeur exigences={exigences} onChange={setExigences} disabled={saving} />
+                    : <p className="rf-note">Chargement des exigences…</p>
+                )}
               </div>
 
               <div

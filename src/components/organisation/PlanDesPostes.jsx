@@ -105,11 +105,11 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
                     key={`libre-${index}`}
                     to={`/postes?poste=${poste.id}`}
                     className="plan-siege is-libre is-lien"
-                    title={`Pourvoir le poste ${poste.intitule}`}
+                    title={`Choisir un agent pour le poste ${poste.intitule}`}
                   >
                     <Armchair size={18} aria-hidden="true" />
                     <span className="plan-siege-nom">Libre</span>
-                    <small className="plan-siege-note">Pourvoir →</small>
+                    <small className="plan-siege-note">Choisir un agent →</small>
                   </Link>
                 ) : (
                   <span key={`libre-${index}`} className="plan-siege is-libre">
@@ -120,7 +120,7 @@ export default function PlanDesPostes({ serviceId, directionId, onAgentClick }) 
               </div>
               {poste.statut === 'SE_LIBERE' && peutGerer && (
                 <Link className="rf-btn rf-btn-sm plan-poste-releve" to={`/postes?poste=${poste.id}`}>
-                  <UserRoundSearch size={15} /> Préparer la relève
+                  <UserRoundSearch size={15} /> Choisir un successeur
                 </Link>
               )}
               {poste.statut === 'SE_LIBERE' && !peutGerer && (
