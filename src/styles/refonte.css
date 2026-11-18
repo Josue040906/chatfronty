@@ -2049,3 +2049,45 @@ button.rf-row {
   .destinataire-row { flex-wrap: wrap; }
   .destinataire-choix { flex-basis: 100%; }
 }
+
+/* ---------- Profil complémentaire : compétences, langues, formations ---------- */
+.pc-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-vide { margin: 12px 0 0; color: var(--color-text-muted); font-size: 14px; }
+.pc-vue { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; margin-top: 8px; }
+.pc-vue .rf-info.is-large { grid-column: 1 / -1; }
+.pc-puces { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.pc-puces li {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 12px; border-radius: var(--radius-pill);
+  background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 13px; font-weight: 600;
+}
+.pc-puces li button {
+  display: inline-flex; padding: 2px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer;
+}
+.pc-puces li button:hover { background: rgb(0 0 0 / 0.08); }
+.pc-puces-lecture { margin: 4px 0 0; }
+.pc-puces-lecture li { padding: 4px 12px; }
+.pc-formations { display: grid; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.pc-formations li { display: grid; gap: 1px; }
+.pc-formations span { color: var(--color-text-muted); font-size: 13px; font-weight: 500; }
+
+.pc-dialogue {
+  width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box;
+  display: grid; gap: 18px; padding: 26px 28px;
+}
+.pc-editeur { display: grid; gap: 14px; }
+.pc-groupe { display: grid; gap: 10px; margin: 0; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.pc-groupe legend { padding: 0 6px; font-weight: 700; font-size: 14px; }
+.pc-ligne { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.pc-ligne > .rf-field { flex: 1 1 200px; min-width: 0; }
+.pc-ligne > .pc-court, .pc-formation > .pc-court { flex: 0 1 140px; }
+.pc-formation { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.pc-formation > .rf-field { flex: 1 1 180px; min-width: 0; }
+.pc-formation > .pc-large { flex-basis: 100%; }
+.pc-element { padding-bottom: 10px; border-bottom: 1px dashed var(--color-border); }
+.pc-retirer { flex: none; margin-bottom: 2px; }
+.pc-ajouter { justify-self: start; }
+.pc-ajout-competence > .pc-ajouter { flex: none; margin-bottom: 2px; }
+.pc-pied { display: flex; justify-content: flex-end; gap: 10px; }
+@media (max-width: 640px) {
+  .pc-vue { grid-template-columns: 1fr; }
+}

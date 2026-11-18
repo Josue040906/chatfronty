@@ -15,12 +15,15 @@ import PhoneField from '../../components/forms/PhoneField';
 import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 import useValidationImmediate from '../../hooks/useValidationImmediate';
+import ProfilComplementaireEditeur from '../../components/agents/ProfilComplementaireEditeur';
+import { getCompetencesConnues, saveProfilComplementaire } from '../../api/profilComplementaire';
+import { PROFIL_VIDE, estVide, versApi } from '../../utils/profilComplementaire';
 import { erreurCin, erreurDatePassee, erreurEmail, erreurMatricule, erreurNom } from '../../utils/validationAgent';
 import AgentDialogCard from '../../components/agents/AgentDialogCard';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
 import { getGrilleIndiciaire, getParcoursGrades } from '../../api/parcours';
 
-const STEPS = ['Identité', 'Coordonnées', 'Affectation'];
+const STEPS = ['Identité', 'Coordonnées', 'Affectation', 'Compétences'];
 // Les champs vérifiés dès qu'on les quitte, étape par étape.
 const CHAMPS_ETAPE = [['matricule', 'nom', 'prenom'], ['cin', 'telephone', 'email', 'dateNaissance'], ['dateEmbauche']];
 
@@ -62,6 +65,12 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(0);
+  const [complement, setComplement] = useState(() => structuredClone(PROFIL_VIDE));
+  const [competencesConnues, setCompetencesConnues] = useState([]);
+
+  useEffect(() => {
+    getCompetencesConnues().then(setCompetencesConnues).catch(() => setCompetencesConnues([]));
+  }, []);
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -266,6 +275,17 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
         message =
           'Agent créé. Le serveur n’a pas renvoyé son identifiant, la photo n’a donc pas pu être enregistrée.';
         tone = 'warning';
+      }
+
+      if (!estVide(complement) && result?.id) {
+        try {
+          await saveProfilComplementaire(result.id, versApi(complement));
+        } catch (error) {
+          message = `${tone === 'warning' ? `${message} ` : 'Agent créé. '}Compétences et formations non enregistrées : ${
+            error?.message || 'erreur inconnue'
+          } Complétez-les depuis sa fiche.`;
+          tone = 'warning';
+        }
       }
 
       onCreated({ message, tone });
@@ -691,6 +711,21 @@ export default function CreateAgentModal({ acteurId, onClose, onCreated }) {
         </label>
       </div>
 
+          </fieldset>
+
+          <fieldset
+            className="rf-fieldset"
+            data-step="3"
+            hidden={step !== 3}
+            disabled={saving || loadingOptions}
+          >
+            <legend>Compétences et formations (facultatif)</legend>
+            <ProfilComplementaireEditeur
+              valeur={complement}
+              onChange={setComplement}
+              competencesConnues={competencesConnues}
+              disabled={saving}
+            />
           </fieldset>
 
           <footer className="rf-dialog-foot">

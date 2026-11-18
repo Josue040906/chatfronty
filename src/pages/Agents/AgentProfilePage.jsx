@@ -48,6 +48,8 @@ import { getRetraiteAnalyse } from '../../api/carrieres';
 import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '../../utils/agentFaits';
 import useValidationImmediate from '../../hooks/useValidationImmediate';
 import { erreurEmail } from '../../utils/validationAgent';
+import ProfilComplementaireSection from '../../components/agents/ProfilComplementaireSection';
+import { getProfilComplementaire, saveProfilComplementaire } from '../../api/profilComplementaire';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
 }
@@ -542,6 +544,12 @@ export default function AgentProfilePage({ user }) {
               )}
             </section>
           ))}
+          <ProfilComplementaireSection
+            cle={`agent-${agent.id}`}
+            charger={() => getProfilComplementaire(agent.id)}
+            enregistrer={(donnees) => saveProfilComplementaire(agent.id, donnees)}
+            peutModifier={['SPERS_AGENT', 'SPERS_CHEF'].includes(user?.role)}
+          />
         </div>
       </div>
 

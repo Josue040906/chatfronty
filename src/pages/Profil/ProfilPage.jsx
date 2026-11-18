@@ -27,6 +27,8 @@ import VilleField from '../../components/forms/VilleField';
 import { isPhoneNumberValid } from '../../utils/phone';
 import { gradeLabel } from '../../utils/parcours';
 import { erreurEmail } from '../../utils/validationAgent';
+import ProfilComplementaireSection from '../../components/agents/ProfilComplementaireSection';
+import { getMonProfilComplementaire, saveMonProfilComplementaire } from '../../api/profilComplementaire';
 
 function formatDate(value) {
   if (!value) {
@@ -713,6 +715,13 @@ export default function ProfilPage({ user, onUserUpdated }) {
         </div>
 
       </section>
+
+      <ProfilComplementaireSection
+        cle="moi"
+        charger={getMonProfilComplementaire}
+        enregistrer={saveMonProfilComplementaire}
+        peutModifier
+      />
 
       <section className="profil-section">
 
