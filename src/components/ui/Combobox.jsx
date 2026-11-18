@@ -15,6 +15,8 @@ const normaliser = (texte) => String(texte || '')
 export default function Combobox({
   id, name, value, onChange, options = [], placeholder, disabled = false,
   required = false, maxLength, className = '', 'aria-label': ariaLabel,
+  // Le reste (onBlur, aria-invalid, aria-describedby…) va au champ lui-même.
+  ...autres
 }) {
   const genere = useId();
   const champId = id || genere;
@@ -96,6 +98,7 @@ export default function Combobox({
         required={required}
         maxLength={maxLength}
         autoComplete="off"
+        {...autres}
       />
       <ChevronDown size={16} className="ui-combobox-chevron" aria-hidden="true" />
       {ouvert && !disabled && visibles.length > 0 && (

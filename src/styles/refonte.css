@@ -2038,3 +2038,14 @@ button.rf-row {
   .profil-section-grille { grid-template-columns: 1fr; }
   .profil-section-grille .rf-info.is-large { grid-column: auto; }
 }
+
+/* ---------- Destinataires des demandes (administration) ---------- */
+.destinataire-row { align-items: center; }
+.destinataire-row .adm-row-body { display: grid; gap: 2px; }
+.destinataire-row .adm-row-body small { color: var(--color-text-muted); font-size: var(--text-sm); }
+.destinataire-choix { flex: 0 1 340px; min-width: 220px; }
+.destinataire-choix select { width: 100%; }
+@media (max-width: 640px) {
+  .destinataire-row { flex-wrap: wrap; }
+  .destinataire-choix { flex-basis: 100%; }
+}

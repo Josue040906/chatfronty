@@ -108,3 +108,13 @@ export async function annulerDocument(id, motif) {
 export async function archiverDocument(id) {
   return apiPut(`/api/documents/${encodeURIComponent(id)}/archiver`, {});
 }
+
+/** Les destinataires possibles d'une demande : { poste_id, fonction, titulaire }. */
+export async function getDestinataires() {
+  return normalizeResponse(await apiGet('/api/documents/destinataires'));
+}
+
+/** Le décideur par défaut d'un type de demande (posteId null : aucun). Réservé au chef. */
+export async function changerDestinataireType(typeDocumentId, posteId) {
+  return apiPut(`/api/documents/types/${encodeURIComponent(typeDocumentId)}/destinataire`, { posteId: posteId || null });
+}

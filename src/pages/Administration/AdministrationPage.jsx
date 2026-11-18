@@ -3,6 +3,7 @@ import {
   BriefcaseBusiness,
   GraduationCap,
   Landmark,
+  Send,
   ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
@@ -43,6 +44,11 @@ const administrationSections = [
         description: 'Consulter les parcours de chaque type d’emploi et leurs grades',
         icon: GraduationCap,
       },
+      {
+        label: 'Destinataires des demandes',
+        description: 'À qui chaque type de demande s’adresse par défaut',
+        icon: Send,
+      },
     ],
   },
 ];
@@ -61,6 +67,9 @@ export default function AdministrationPage() {
         }
         if (item.label === 'Parcours et grades') {
              navigate('/administration/parcours');
+        }
+        if (item.label === 'Destinataires des demandes') {
+             navigate('/administration/destinataires');
         }
 
     }

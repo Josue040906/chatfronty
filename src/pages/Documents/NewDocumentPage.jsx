@@ -9,8 +9,10 @@ import { getAgents } from '../../api/agents';
 import { getDirections } from '../../api/directions';
 import {
   createDocumentRequest,
+  getDestinataires,
   getDocumentTypes,
 } from '../../api/documents';
+import Combobox from '../../components/ui/Combobox';
 import VilleField from '../../components/forms/VilleField';
 import useValidationImmediate from '../../hooks/useValidationImmediate';
 import { getPostesByService } from '../../api/postes';
@@ -18,6 +20,11 @@ import { libellePoste, trierPostes } from '../../utils/postes';
 import { getServices } from '../../api/services';
 import { getConges, getRetraiteAnalyse, getTitularisation } from '../../api/carrieres';
 import { formatJour, formatJours, joursConge } from '../../utils/documentCycle';
+
+/** La fonction à laquelle ce type de demande s'adresse par défaut (réglée dans l'administration). */
+function destinataireParDefaut(types, typeId) {
+  return types.find((type) => String(type.id) === String(typeId))?.destinataireFonction || '';
+}
 
 function todayInputValue() {
   const now = new Date();
@@ -69,6 +76,7 @@ function readDemandeCarriere(locationState) {
 export default function NewDocumentPage() {
   const navigate = useNavigate();
   const [types, setTypes] = useState([]);
+  const [destinataires, setDestinataires] = useState([]);
   const [agents, setAgents] = useState([]);
   const [directions, setDirections] = useState([]);
   const [services, setServices] = useState([]);
@@ -108,25 +116,33 @@ export default function NewDocumentPage() {
 
     async function loadOptions() {
       try {
-        const [documentTypes, employees] = await Promise.all([
+        const [documentTypes, employees, postesDecision] = await Promise.all([
           getDocumentTypes(),
           getAgents(),
+          // Les suggestions du destinataire : sans elles, le champ reste libre.
+          getDestinataires().catch(() => []),
         ]);
 
         if (cancelled) return;
 
         setTypes(documentTypes);
         setAgents(employees);
+        setDestinataires(postesDecision);
         const typeCarriere = demandeCarriere
           ? documentTypes.find((type) => type.code === demandeCarriere.typeCode)
           : null;
-        setFormData((current) => ({
-          ...current,
-          typeDocumentId: typeCarriere
+        setFormData((current) => {
+          const typeDocumentId = typeCarriere
             ? String(typeCarriere.id)
-            : current.typeDocumentId || String(documentTypes[0]?.id || ''),
-          employeId: demandeCarriere ? String(demandeCarriere.employeId) : current.employeId,
-        }));
+            : current.typeDocumentId || String(documentTypes[0]?.id || '');
+          return {
+            ...current,
+            typeDocumentId,
+            employeId: demandeCarriere ? String(demandeCarriere.employeId) : current.employeId,
+            // Un destinataire déjà proposé (Band'IAkam) est gardé ; sinon, celui du type.
+            destinataire: current.destinataire || destinataireParDefaut(documentTypes, typeDocumentId),
+          };
+        });
       } catch (err) {
         console.error(err);
         if (!cancelled) {
@@ -284,7 +300,15 @@ export default function NewDocumentPage() {
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
+    setFormData((current) => {
+      const suivant = { ...current, [name]: value };
+      // Changer de type change le destinataire proposé, sauf s'il a été choisi à la main.
+      if (name === 'typeDocumentId'
+        && (!current.destinataire || current.destinataire === destinataireParDefaut(types, current.typeDocumentId))) {
+        suivant.destinataire = destinataireParDefaut(types, value);
+      }
+      return suivant;
+    });
     setError('');
     setMutationOptionsError('');
     if (name === 'typeDocumentId') {
@@ -547,17 +571,20 @@ export default function NewDocumentPage() {
             </div>
             <div className={prefillClass('rf-field rf-field-full', 'destinataire', prefilled)}>
               <label htmlFor="destinataire">Destinataire <b>*</b></label>
-              <input
+              <Combobox
                 id="destinataire"
-                {...champProps('destinataire')}
                 name="destinataire"
-                type="text"
                 value={formData.destinataire}
-                onChange={handleChange}
+                onChange={(destinataire) => setFormData((current) => ({ ...current, destinataire }))}
+                options={destinataires.map((poste) => ({
+                  value: poste.fonction,
+                  detail: poste.titulaire ? `Titulaire actuel : ${poste.titulaire}` : 'Poste vacant',
+                }))}
                 maxLength={255}
                 placeholder="Ex. Chef du Service du Personnel"
                 disabled={saving}
                 required
+                {...champProps('destinataire')}
               />
               {aide('destinataire')}
             </div>
