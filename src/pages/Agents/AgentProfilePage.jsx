@@ -49,6 +49,7 @@ import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '..
 import useValidationImmediate from '../../hooks/useValidationImmediate';
 import { erreurEmail } from '../../utils/validationAgent';
 import ProfilComplementaireSection from '../../components/agents/ProfilComplementaireSection';
+import TelechargerCv from '../../components/agents/TelechargerCv';
 import { getProfilComplementaire, saveProfilComplementaire } from '../../api/profilComplementaire';
 function formatName(agent) {
   return `${agent.prenom || ''} ${agent.nom || ''}`.trim();
@@ -518,6 +519,7 @@ export default function AgentProfilePage({ user }) {
               <Pencil size={16} />
               Modifier
             </button>
+            <TelechargerCv employeId={agent.id} matricule={agent.matricule} className="rf-btn profil-carte-cv" />
           </div>
         </aside>
 

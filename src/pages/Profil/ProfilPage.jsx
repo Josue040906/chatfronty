@@ -28,6 +28,7 @@ import { isPhoneNumberValid } from '../../utils/phone';
 import { gradeLabel } from '../../utils/parcours';
 import { erreurEmail } from '../../utils/validationAgent';
 import ProfilComplementaireSection from '../../components/agents/ProfilComplementaireSection';
+import TelechargerCv from '../../components/agents/TelechargerCv';
 import { getMonProfilComplementaire, saveMonProfilComplementaire } from '../../api/profilComplementaire';
 
 function formatDate(value) {
@@ -418,6 +419,7 @@ export default function ProfilPage({ user, onUserUpdated }) {
             professionnelles.
           </p>
         </div>
+        {profil.id && <TelechargerCv employeId={profil.id} matricule={profil.matricule} className="rf-btn" />}
       </section>
 
       <div className="profil-layout">

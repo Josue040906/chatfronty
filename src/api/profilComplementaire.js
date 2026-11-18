@@ -1,4 +1,4 @@
-import { apiGet, apiPut } from './client';
+import { apiGet, apiGetBlob, apiPut } from './client';
 
 // Situation familiale, langues, compétences et formations continues d'un agent.
 export async function getProfilComplementaire(employeId) {
@@ -21,4 +21,9 @@ export async function saveMonProfilComplementaire(donnees) {
 export async function getCompetencesConnues() {
   const reponse = await apiGet('/api/referentiels/competences');
   return Array.isArray(reponse) ? reponse : reponse?.value || [];
+}
+
+/** Le CV de l'agent en PDF (Service du Personnel, ou l'agent lui-même). */
+export async function getCvAgent(employeId) {
+  return apiGetBlob(`/api/employes/${encodeURIComponent(employeId)}/cv`);
 }

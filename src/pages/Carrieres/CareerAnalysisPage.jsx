@@ -7,6 +7,7 @@ import ActionsCarriere from '../../components/carriere/ActionsCarriere';
 import SignataireChamp from '../../components/documents/SignataireChamp';
 import { useToast } from '../../components/ui/toastContext';
 import { ageAgent, delaiJusqua, dureeService, formatCin, libelleDuree } from '../../utils/agentFaits';
+import TelechargerCv from '../../components/agents/TelechargerCv';
 import AncienneteAnneau from '../../components/carriere/AncienneteAnneau';
 import SimulationCarriere from '../../components/carriere/SimulationCarriere';
 import TypeEmploiBadge from '../../components/agents/TypeEmploiBadge';
@@ -903,6 +904,9 @@ export default function CareerAnalysisPage({ user }) {
             <button type="button" className="career-hero-profil" onClick={() => navigate(`/agents/${id}`)}>
               Voir le profil <ArrowUpRight size={16} />
             </button>
+            {canManageHr && (
+              <TelechargerCv employeId={id} matricule={agent.matricule} className="career-hero-cv" />
+            )}
           </div>
         </div>
 

@@ -2091,3 +2091,4 @@ button.rf-row {
 @media (max-width: 640px) {
   .pc-vue { grid-template-columns: 1fr; }
 }
+.profil-carte-actions .profil-carte-cv { grid-column: 1 / -1; }
