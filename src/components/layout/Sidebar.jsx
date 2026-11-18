@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   FileText,
+  GitBranch,
   LayoutDashboard,
   Mail,
   ShieldCheck,
@@ -31,6 +32,15 @@ const mainNavigation = [
     label: 'Organisation',
     icon: Building2,
     path: '/organisation',
+  },
+  {
+    // Qui part et qui succède : réservé au Service du Personnel.
+    id: 'releve',
+    short: 'Relève',
+    label: 'Départs et relève',
+    icon: GitBranch,
+    path: '/releve',
+    personnel: true,
   },
   {
     id: 'agents',
@@ -76,6 +86,7 @@ const documentNavigation = [
     label: 'Messages aux agents',
     icon: Mail,
     path: '/messages',
+    personnel: true,
   },
 ];
 
@@ -134,6 +145,8 @@ const demandesNavigation = {
 
 export default function Sidebar({ user, open, onClose }) {
   const isChef = user?.role === 'SPERS_CHEF';
+  const estPersonnel = isChef || user?.role === 'SPERS_AGENT';
+  const visible = (item) => !item.personnel || estPersonnel;
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -200,7 +213,7 @@ export default function Sidebar({ user, open, onClose }) {
 
         <nav className="sidebar-navigation">
           <div className="sidebar-nav-list">
-            {mainNavigation.map((item) => (
+            {mainNavigation.filter(visible).map((item) => (
               <NavigationItem
                 key={item.id}
                 item={item}
@@ -210,7 +223,7 @@ export default function Sidebar({ user, open, onClose }) {
           </div>
 
           <div className="sidebar-nav-list sidebar-nav-group">
-            {documentNavigation.map((item) => (
+            {documentNavigation.filter(visible).map((item) => (
               <NavigationItem
                 key={item.id}
                 item={item}

@@ -2126,3 +2126,58 @@ button.rf-row {
   font: 600 12px var(--font-ui); cursor: pointer; white-space: nowrap;
 }
 .notification-email-button:hover { background: var(--color-brand); color: var(--color-on-brand); }
+
+/* ---------- Départs et relève ---------- */
+.releve-page .rf-head { align-items: flex-end; }
+.releve-chiffres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+.releve-bloc { margin-bottom: 28px; }
+.releve-titre { margin: 0 0 12px; font: 600 22px / 1.2 var(--font-display); color: var(--color-text); }
+.releve-postes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.releve-poste { display: grid; gap: 6px; padding: 18px 20px; border-top: 4px solid var(--color-accent); }
+.releve-poste.is-eleve { border-top-color: var(--color-danger); }
+.releve-poste h3 { margin: 4px 0 0; font-size: 17px; }
+.releve-poste-tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.releve-niveau {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--radius-pill);
+  background: var(--color-accent-soft); color: var(--color-accent-strong); font-size: 12px; font-weight: 700;
+}
+.releve-niveau.is-eleve { background: var(--color-danger-soft); color: var(--color-danger); }
+.releve-places, .releve-poste-service, .releve-poste-pied { margin: 0; color: var(--color-text-muted); font-size: 13px; }
+.releve-partants { display: grid; gap: 4px; margin: 4px 0; padding: 0; list-style: none; }
+.releve-partants li { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.releve-partants a { font-weight: 600; color: var(--color-text); text-decoration: none; }
+.releve-partants a:hover { color: var(--color-brand); text-decoration: underline; }
+.releve-partants span { color: var(--color-text-muted); }
+
+.releve-frise { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.releve-frise > li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
+.releve-annee { display: grid; font: 600 28px / 1 var(--font-display); color: var(--color-brand); }
+.releve-annee small { margin-top: 4px; color: var(--color-text-muted); font: 500 12px var(--font-ui); }
+.releve-frise ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.releve-depart { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+.releve-avatar {
+  display: inline-flex; flex: none; align-items: center; justify-content: center; width: 38px; height: 38px;
+  border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent-strong); font: 700 13px var(--font-ui);
+}
+.releve-depart-texte { flex: 1; min-width: 0; display: grid; }
+.releve-depart-texte a { font-weight: 600; color: var(--color-text); text-decoration: none; }
+.releve-depart-texte a:hover { color: var(--color-brand); text-decoration: underline; }
+.releve-depart-texte small, .releve-depart-date small { color: var(--color-text-muted); font-size: 12px; }
+.releve-depart-date { display: grid; justify-items: end; text-align: right; font-weight: 600; font-size: 14px; }
+.releve-retard { color: var(--color-danger); }
+
+.releve-carte-scroll { overflow-x: auto; padding: 8px 12px; }
+.releve-carte { width: 100%; border-collapse: collapse; font-size: 14px; }
+.releve-carte th, .releve-carte td { padding: 10px 12px; border-bottom: 1px solid var(--color-border); text-align: center; }
+.releve-carte thead th { color: var(--color-text-muted); font-size: 12px; font-weight: 600; }
+.releve-carte tbody th { text-align: left; font-weight: 600; }
+.releve-carte tbody th small { display: block; color: var(--color-text-muted); font-size: 12px; font-weight: 400; }
+.releve-carte td.is-plein {
+  font-weight: 700; color: var(--color-text);
+  background: color-mix(in srgb, var(--color-danger) calc(12% + var(--intensite) * 38%), transparent);
+}
+.releve-carte .releve-total { font-weight: 700; }
+@media (max-width: 900px) {
+  .releve-chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .releve-frise > li { grid-template-columns: 1fr; gap: 8px; }
+}
