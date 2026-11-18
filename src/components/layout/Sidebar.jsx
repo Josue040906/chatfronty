@@ -30,10 +30,16 @@ const ESPACES = [
     id: 'accueil',
     label: 'Accueil',
     icon: LayoutDashboard,
-    description: 'Votre tableau de bord et ce que vous avez fait récemment.',
     pages: [
       { path: '/dashboard', label: 'Tableau de bord', hint: 'Chiffres clés et tâches du jour', icon: LayoutDashboard },
-      { path: '/activites', label: 'Mes activités', hint: 'Ce que vous avez fait récemment', icon: Activity },
+    ],
+  },
+  {
+    id: 'organisation',
+    label: 'Organisation',
+    icon: Building2,
+    pages: [
+      { path: '/organisation', label: 'Organisation', hint: 'Directions, services et postes', icon: Building2 },
     ],
   },
   {
@@ -45,14 +51,6 @@ const ESPACES = [
       { path: '/agents', label: 'Agents', hint: 'Fiches, dossiers et CV', icon: Users },
       { path: '/carrieres', label: 'Carrières', hint: 'Avancements, reclassements, simulations', icon: BarChart3 },
       { path: '/postes', label: 'Gestion des postes', hint: 'Postes libres, départs à venir, successeurs', icon: GitBranch, personnel: true },
-    ],
-  },
-  {
-    id: 'structure',
-    label: 'Structure',
-    icon: Building2,
-    pages: [
-      { path: '/organisation', label: 'Organisation', hint: 'Directions, services et postes', icon: Building2 },
     ],
   },
   {
@@ -71,6 +69,16 @@ const ESPACES = [
     pages: [
       { path: '/administration', label: 'Administration', hint: 'Directions, services, postes, parcours', icon: Settings },
       { path: '/administration/demandes-inscription', label: 'Demandes d’inscription', hint: 'Comptes à valider', icon: ShieldCheck, chef: true, badge: 'inscriptions' },
+    ],
+  },
+  {
+    // Tout en bas, séparé des espaces de travail : ce que l'on a fait soi-même.
+    id: 'activites',
+    label: 'Activités',
+    icon: Activity,
+    enBas: true,
+    pages: [
+      { path: '/activites', label: 'Mes activités', hint: 'Ce que vous avez fait récemment', icon: Activity },
     ],
   },
 ];
@@ -249,7 +257,7 @@ export default function Sidebar({ user, open, onClose }) {
             {espaces.map((espace) => {
               const Icon = espace.icon;
               const nombre = compteurEspace(espace);
-              const classe = `sidebar-nav-item${actif === espace.id ? ' sidebar-nav-item-active' : ''}${
+              const classe = `sidebar-nav-item${espace.enBas ? ' sidebar-nav-item-bas' : ''}${actif === espace.id ? ' sidebar-nav-item-active' : ''}${
                 panneau === espace.id ? ' sidebar-nav-item-open' : ''
               }`;
               const contenu = (

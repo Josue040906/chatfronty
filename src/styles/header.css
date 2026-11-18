@@ -213,7 +213,7 @@
   top: calc(100% + 12px);
   right: -60px;
   z-index: 70;
-  width: min(440px, calc(100vw - 32px));
+  width: min(640px, calc(100vw - 32px));
   max-height: min(620px, calc(100vh - 100px));
   display: flex;
   flex-direction: column;
@@ -276,7 +276,8 @@
 
 .notification-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* La notification, puis « Prévenir » et la corbeille côte à côte. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 4px;
 }

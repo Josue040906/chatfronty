@@ -540,3 +540,15 @@ button.sidebar-nav-item {
     transition: none;
   }
 }
+
+/* Activités : tout en bas du menu, sous un filet. */
+.sidebar-nav-item-bas { margin-top: 14px; }
+.sidebar-nav-item-bas::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 14px;
+  right: 14px;
+  height: 1px;
+  background: var(--color-menu-border);
+}
