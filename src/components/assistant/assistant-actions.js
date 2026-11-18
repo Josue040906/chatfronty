@@ -13,6 +13,7 @@ const ROUTE_LABELS = [
   { pattern: /^\/agents$/, label: 'Ouvrir la liste des agents' },
   { pattern: /^\/documents$/, label: 'Ouvrir les documents' },
   { pattern: /^\/activites$/, label: 'Ouvrir mes activités' },
+  { pattern: /^\/postes$/, label: 'Ouvrir la Gestion des postes' },
 ];
 
 export function isInternalRoute(route) {
@@ -36,6 +37,8 @@ function navigationTarget(route, knownNames = new Map()) {
     ? `Ouvrir la fiche de ${name}`
     : path === '/agents' && params.has('recherche')
       ? 'Voir ces agents dans la page Agents'
+      : path === '/postes' && params.has('poste')
+        ? 'Ouvrir ce poste dans la Gestion des postes'
       : ROUTE_LABELS.find(({ pattern }) => pattern.test(path))?.label || 'Ouvrir la page';
   return { route: rest ? `${path}?${rest}` : path, label };
 }
