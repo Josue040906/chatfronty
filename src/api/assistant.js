@@ -7,6 +7,9 @@ import {
 const CONVERSATIONS_URL = `${BANDY_API_URL}/api/conversations`;
 const MESSAGE_PAGE_SIZE = 100;
 const DEFAULT_TIMEOUT_MILLIS = 15_000;
+// Un tour de Band'IAkam peut durer jusqu'à 60 s (budget côté Bandy) : on lui laisse
+// cette marge plutôt que d'abandonner une réponse lente mais en cours.
+const ASSISTANT_TURN_TIMEOUT_MILLIS = 65_000;
 const UUID_PATTERN = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i;
 
 class BandyApiError extends Error {
@@ -190,7 +193,7 @@ export function sendConversationMessage(
     },
     signal,
     onToken,
-    timeoutMillis: 35_000,
+    timeoutMillis: ASSISTANT_TURN_TIMEOUT_MILLIS,
   });
 }
 
@@ -201,7 +204,7 @@ export function sendConversationMessage(
 export function confirmPendingAction(conversationId, confirmationId, { signal } = {}) {
   return request(
     `/${encodeURIComponent(conversationId)}/confirmations/${encodeURIComponent(confirmationId)}`,
-    { method: 'POST', signal, timeoutMillis: 35_000 }
+    { method: 'POST', signal, timeoutMillis: ASSISTANT_TURN_TIMEOUT_MILLIS }
   );
 }
 

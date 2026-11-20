@@ -332,7 +332,7 @@ describe('Band’IAkam conversation API', () => {
     const assertion = expect(request).rejects.toThrow(
       'Le délai de réponse de Band’IAkam est dépassé.'
     );
-    await vi.advanceTimersByTimeAsync(35_000);
+    await vi.advanceTimersByTimeAsync(65_000);
     await assertion;
   });
 
